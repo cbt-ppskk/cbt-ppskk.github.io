@@ -1,0 +1,19 @@
+{
+  "name": "Sistem Pengurusan Penugasan — CBT PPSKK",
+  "short_name": "CBT Penugasan",
+  "description": "Sistem Pengurusan Penugasan Cawangan Bantuan Teknik PPSKK — log penugasan, personel, penyelia, audit dan command center.",
+  "lang": "ms",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

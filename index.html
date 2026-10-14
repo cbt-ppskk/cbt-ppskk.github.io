@@ -6170,7 +6170,7 @@ function diagPill(id,ok,txt){
 }
 /* v48: simpan hasil diagnostik Sheet untuk butang Salin / Buka. */
 const DIAG={sheetId:'',sheetName:'',tabs:0,missing:[]};
-function isBackendNew_(v){return /^v(5[0-9]|[6-9]\d)/.test(String(v||''));}
+function isBackendNew_(v){var n=_verNum(v),f=_verNum(APP_VER);return n>=50&&(!f||n>=f);} /* v103-fix: banding NOMBOR (regex lama gagal untuk v100+) */
 function setSheetLink_(id){
   const op=document.getElementById('diag-open-sheet');
   if(!op)return;
@@ -6188,7 +6188,7 @@ async function runDiagnostik(){
     const ms=Math.round(performance.now()-t0);
     const isNew=isBackendNew_(ver);
     diagPill('diag-api-pill',isNew,ver);
-    const ap=document.getElementById('diag-api');if(ap)ap.textContent='Versi '+ver+(isNew?' · terkini ✓':' · LAMA — sila deploy semula Code.gs v53')+' · '+ms+' ms';
+    const ap=document.getElementById('diag-api');if(ap)ap.textContent='Versi '+ver+(isNew?' · terkini ✓':' · LAMA — sila deploy semula Code.gs '+APP_VER)+' · '+ms+' ms';
   }catch(e){
     diagPill('diag-api-pill',false,'Gagal');
     const ap=document.getElementById('diag-api');if(ap)ap.textContent='Tidak dapat dihubungi — '+((e&&e.message)||'ralat rangkaian');

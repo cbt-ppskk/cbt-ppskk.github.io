@@ -398,6 +398,7 @@ function pollLocal(){
     if(aL > lastAddLen){
       pushEvent('simpan', 'LOG PENUH', 'Rekod penugasan disimpan (' + (aL - lastAddLen) + ')');
       triggerBurst();
+      try{ syncMeeting(); syncTeamAgents(); }catch(e){}
     }
     if(dL > lastDrafLen){
       pushEvent('draf', 'DRAF', 'Draf disimpan (' + (dL - lastDrafLen) + ')');
@@ -444,10 +445,14 @@ function isRecordValidated(rec){
   return !!(S.validated[id] || S.validated[rowKey] || S.validated[bilKey]);
 }
 function syncMeeting(){
-  /* rekod terkini yang belum divalidasi dan melibatkan >=2 team */
+  /* Rekod setempat yang baru disimpan didahulukan: ia adalah entri terbaharu dan
+     belum tentu muncul dalam senarai pelayan. Tanpa ini mesyuarat hanya bermula
+     pada pusingan muat semula pelayan seterusnya. */
+  const source = (S.localAdded || []).slice().reverse().concat(S.records || []);
   let best = null;
-  for(let i = S.records.length - 1; i >= 0 && i > S.records.length - 120; i--){
-    const r = S.records[i];
+  for(let i = 0; i < source.length && i < 120; i++){
+    const r = source[i];
+    if(!r) continue;
     if(isRecordValidated(r)) continue;
     const t = recordTeams(r);
     if(t.length >= 2){ best = { rec:r, teams:t }; break; }

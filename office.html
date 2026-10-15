@@ -188,7 +188,7 @@ const CONFIG = {
 };
 
 /* Tindakan backend yang DIBENARKAN — semuanya baca sahaja. */
-const READ_ONLY_ACTIONS = ['ping','fetchLogData','fetchLogCounts','getPersonnelList','getValidasiRekod','getStagingPenugasan'];
+const READ_ONLY_ACTIONS = ['ping','fetchLogData','fetchLogCounts','getPersonnelList','getValidasiRekod','getStagingPenugasan','getDeletedLogs'];
 function assertReadOnly(action){
   if(READ_ONLY_ACTIONS.indexOf(action) < 0) throw new Error('Tindakan ditolak (bukan baca sahaja): ' + action);
 }
@@ -289,7 +289,8 @@ async function refreshAll(manual){
       callRead('fetchLogCounts', {}).then(v => ({ v })).catch(e => ({ e })),
       callRead('getPersonnelList', {}).then(v => ({ v })).catch(e => ({ e })),
       callRead('getValidasiRekod', {}).then(v => ({ v })).catch(e => ({ e })),
-      callRead('getStagingPenugasan', {}).then(v => ({ v })).catch(e => ({ e }))
+      callRead('getStagingPenugasan', {}).then(v => ({ v })).catch(e => ({ e })),
+      callRead('getDeletedLogs', {}).then(v => ({ v })).catch(e => ({ e }))
     ]);
 
     /* Jika SEMUA panggilan gagal, ini bukan "LIVE" — jangan mengaku sebaliknya.
@@ -303,7 +304,7 @@ async function refreshAll(manual){
     }
 
     const before = snapshotCounts();
-    applyData(settled[0].v, settled[1].v, settled[2].v, settled[3].v, settled[4].v);
+    applyData(settled[0].v, settled[1].v, settled[2].v, settled[3].v, settled[4].v, settled[5].v);
     S.lastOk = Date.now(); S.lastErr = ''; S.status = 'live';
     setStatus('live');
     detectBackendEvents(before);
@@ -318,7 +319,7 @@ async function refreshAll(manual){
 
 function snapshotCounts(){ return Object.assign({}, S.counts); }
 
-function applyData(logs, counts, pers, val, draf){
+function applyData(logs, counts, pers, val, draf, deleted){
   if(logs && logs.ok && Array.isArray(logs.data)){
     S.records = logs.data.filter(r => !/^OPS/i.test(String(r.jenis || '')));
   }
@@ -354,7 +355,12 @@ function applyData(logs, counts, pers, val, draf){
     });
   }
   if(draf && draf.ok && Array.isArray(draf.data)) S.counts.draf = draf.data.length;
-  S.counts.audit = null;   /* tiada endpoint audit — jangan reka nilai */
+  /* Audit = rekod dalam Log_Deleted (jejak pemadaman sebenar). Hanya diganti
+     apabila respons sah; jika tidak kekal null supaya tidak mengelirukan. */
+  if(deleted && deleted.ok && Array.isArray(deleted.data)){
+    S.counts.audit = deleted.data.length;
+    S.deleted = deleted.data;
+  }
 
   /* Belum / selesai dikira daripada senarai rekod SEBENAR + peta validasi yang
      baru dimuatkan di atas. Ini mesti berlaku SELEPAS peta validasi diset,
@@ -734,7 +740,7 @@ function fileCountFor(id){
   if(id === 'personel') return c.personel;
   if(id === 'penyelia') return c.penyelia;
   if(id === 'dashboard') return c.log;
-  if(id === 'audit') return null;   /* tiada endpoint audit dalam sistem CBT */
+  if(id === 'audit') return c.audit;
   return null;
 }
 function drawMeeting(){
@@ -927,12 +933,12 @@ function openCard(hit){
       note = 'Audit Log hanya dipaparkan kepada Pentadbir Sistem. Sesi semasa tidak disahkan sebagai Admin.';
     } else if(c == null){
       rows.push(['Jumlah rekod', 'Data belum tersedia']);
-      note = st.id === 'audit'
-        ? 'Tiada endpoint audit dalam sistem CBT — nilai tidak dipaparkan supaya tidak mengelirukan.'
-        : 'Endpoint tidak menyediakan nilai ini.';
+      note = 'Endpoint tidak menyediakan nilai ini, atau permintaan gagal.';
     } else {
       rows.push(['Jumlah rekod', String(c)]);
-      note = 'Longgokan fail pada meja ialah visual mampatan (√ skala), bukan 1 fail = 1 rekod.';
+      note = st.id === 'audit'
+        ? 'Jejak pemadaman (Log_Deleted): rekod yang telah dipadam. ' + String(c) + ' rekod dipadam.'
+        : 'Longgokan fail pada meja ialah visual mampatan (√ skala), bukan 1 fail = 1 rekod.';
     }
     rows.push(['Status data', statusLabel()]);
     rows.push(['Kemas kini terakhir', S.lastOk ? fmtTime(S.lastOk) : '—']);

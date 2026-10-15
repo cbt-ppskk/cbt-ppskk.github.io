@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103b">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vBcprMvCN3GbeuOvD7o01RFWKyFVMsEGo8py4yFFRPY=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vBcprMvCN3GbeuOvD7o01RFWKyFVMsEGo8py4yFFRPY=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-K0jjbQUMWbL28kZp1Y8WVlMxGKvgoB/R+ZuerSbEyeQ=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-K0jjbQUMWbL28kZp1Y8WVlMxGKvgoB/R+ZuerSbEyeQ=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -1109,6 +1109,7 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
             <button class="bm-item" id="bm-audit" role="menuitem"><span class="bm-ic">📊</span>Audit Log / Aktiviti</button>
             <button class="bm-item" id="bm-diag" role="menuitem"><span class="bm-ic">🩺</span>Diagnostik Sistem</button>
             <button class="bm-item" id="bm-update" role="menuitem"><span class="bm-ic">⚡</span>Kemas Kini Paksa</button>
+            <button class="bm-item" id="bm-office" role="menuitem"><span class="bm-ic">🏢</span>Pejabat Maya (Paparan)</button>
             <div class="bm-sep"></div>
             <button class="bm-item danger" id="bm-logout" role="menuitem"><span class="bm-ic">🚪</span>Log Keluar</button>
           </div>
@@ -6158,6 +6159,7 @@ function initBurgerMenu(){
   go('bm-profil',function(){openProfil();});
   go('bm-nyahaktif',function(){openNyahaktif();});
   go('bm-update',function(){forceUpdate();});
+  go('bm-office',function(){window.open('office.html','cbt-office','noopener');});
   go('bm-logout',function(){doLogout();});
 }
 function doLogout(){

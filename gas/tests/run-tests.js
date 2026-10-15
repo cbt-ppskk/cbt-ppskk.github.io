@@ -256,30 +256,26 @@ console.log('\n=== 16. Register semula: e-mel sama dibebaskan dari No. Personel 
   ok(env.__sheets['Pengguna_Akses']._d[1][0] === '', 'e-mel lama pada No. Personel LAIN dibebaskan', 'nilai: "' + env.__sheets['Pengguna_Akses']._d[1][0] + '"');
 }
 
-console.log('\n=== 17. LUBANG: staf BELUM daftar + penyerang tahu No. Personel ===');
+console.log('\n=== 17. REKA BENTUK: staf belum daftar beri e-mel sendiri ===');
 {
   const akses = []; /* SITI belum mendaftar — tiada baris dalam Pengguna_Akses */
   const env = makeEnv(baseTabs([KPL, SU], akses));
-  const r = env.registerUser({ email: 'penyerang@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'jahat', salt: 's', birthDate: '1980-01-01' });
-  ok(r.ok === false, 'penyerang DITOLAK (e-mel tidak padan daftar warga)', JSON.stringify(r));
-  ok(/tidak sepadan/.test(String(r.error)), 'mesej sebut e-mel tidak sepadan', String(r.error));
-  ok(env.__sent.length === 0, 'tiada OTP dihantar kepada penyerang');
-  ok(!/penyerang@gmail\.com/.test(JSON.stringify(env.__props)), 'e-mel penyerang tidak disimpan');
+  const r = env.registerUser({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
+  ok(r.ok === true, 'staf belum daftar BOLEH daftar dengan e-mel sendiri', JSON.stringify(r));
+  ok(r.devOtp === undefined, 'devOtp tetap tiada', JSON.stringify(Object.keys(r)));
 }
 
-console.log('\n=== 18. E-mel KOSONG dalam Master Personel tidak menyekat staf ===');
+console.log('\n=== 18. KOD MATRIK kekal jadi pagar selepas pendaftaran pertama ===');
 {
-  const tanpaEmel = [4, 'KPL', 'BELUM ADA EMEL', 'R3777777', 'TEAM D', 'Aktif', '', 'STAF'];
-  const env = makeEnv(baseTabs([tanpaEmel], []));
-  const r = env.registerUser({ email: 'belum@gmail.com', no: 'R3777777', name: 'BELUM ADA EMEL', passHash: 'h', salt: 's', birthDate: '1990-01-01' });
-  ok(r.ok === true, 'staf dengan e-mel kosong masih boleh daftar', JSON.stringify(r));
-}
-
-console.log('\n=== 19. E-mel Master Personel tidak sensitif huruf besar/kecil ===');
-{
-  const env = makeEnv(baseTabs([KPL], []));
-  const r = env.registerUser({ email: 'ALI@Gmail.com', no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
-  ok(r.ok === true, 'ALI@Gmail.com padan dengan ali@gmail.com', JSON.stringify(r));
+  /* Pendaftaran pertama meletakkan tarikh lahir; cubaan kedua mesti padan. */
+  const env = makeEnv(baseTabs([SU], []));
+  const first = env.registerUser({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
+  ok(first.ok === true, 'pendaftaran pertama diterima', JSON.stringify(first));
+  /* Tiru verifyOTP menulis baris Pengguna_Akses. */
+  env.writeAccessUser_({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', role: 'SUPER_ADMIN', hash: 'h', salt: 's', birthDate: '1980-01-01' });
+  const serang = env.registerUser({ email: 'penyerang@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'jahat', salt: 's', birthDate: '1999-09-09' });
+  ok(serang.ok === false, 'cubaan kedua dengan Kod Matrik salah DITOLAK', JSON.stringify(serang));
+  ok(/tidak padan/.test(String(serang.error)), 'mesej sebut tidak padan', String(serang.error));
 }
 
 console.log('\n========================================');

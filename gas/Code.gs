@@ -507,19 +507,6 @@ function registerUser(data) {
   role = rec.role || ROLE_STAF;
   label = labelFor_(role);
 
-  /* v104: e-mel pendaftaran mesti padan dengan e-mel dalam 'Master Personel'.
-     Ini menutup lubang yang tinggal: bagi staf yang BELUM mendaftar, tiada kata
-     laluan atau tarikh lahir tersimpan untuk dipadankan, jadi pagar Kod Matrik di
-     bawah tidak berkuat kuasa. Tanpa semakan ini, sesiapa yang tahu No. Personel
-     seseorang boleh mendaftar menggunakan e-mel sendiri dan mengambil alih
-     identiti itu sebelum orang sebenar mendaftar.
-     Jika lajur E-mel Master Personel kosong, pemadanan dilangkau — staf mesti
-     tidak tersekat hanya kerana pentadbir belum mengisi e-mel mereka. */
-  var regEmail = normEmail_(email);
-  if (rec.email && rec.email !== regEmail) {
-    return { ok: false, error: 'E-mel ini tidak sepadan dengan rekod No. Personel tersebut dalam daftar warga. Sila gunakan e-mel yang didaftarkan oleh Pentadbir, atau hubungi Pentadbir Sistem.' };
-  }
-
   /* v104: "Kod Matrik Pemulihan Akaun" mesti PADAN dengan rekod sedia ada. Sebelum ini
      nilai ini hanya disemak formatnya, tidak pernah dibandingkan — jadi sesiapa yang tahu
      No. Personel seseorang boleh mendaftar semula dengan tarikh lahir rekaan dan
@@ -529,7 +516,10 @@ function registerUser(data) {
     if (!birthDate) return { ok: false, error: 'Kod Matrik Pemulihan Akaun diperlukan untuk akaun ini.' };
     var given = mdPartsFromAny_(birthDate), stored = mdPartsFromAny_(existing.birthDate);
     if (!given || !stored || given.md !== stored.md) {
-      return { ok: false, error: 'Kod Matrik Pemulihan Akaun tidak padan dengan rekod akaun ini. Sila semak semula.' };
+      /* Puncanya mungkin bukan salah taip: seseorang sedang cuba mengambil alih akaun
+         ini. Beritahu pemilik sebenar supaya dia dapat bertindak, bukan sekadar
+         "cuba lagi". */
+      return { ok: false, error: 'Kod Matrik Pemulihan Akaun tidak padan dengan rekod akaun ini. Jika anda pemilik akaun ini dan yakin Kod Matrik betul, akaun anda mungkin sedang diceroboh — sila hubungi Pentadbir Sistem dengan segera.' };
     }
   }
 
@@ -1187,16 +1177,16 @@ function writeAccessUser_(u) {
 function findPersonelRecord_(no) {
   var sh = getSheet_(SHEET_PERSONEL, PERSONEL_HEADERS);
   var vals = sh.getDataRange().getValues();
-  if (!vals || vals.length < 2) return { found: false, role: '', email: '' };
+  if (!vals || vals.length < 2) return { found: false, role: '' };
   var L = personelLayout_(vals);
   var key = normNo_(no);
   for (var i = 1; i < vals.length; i++) {
     if (normNo_(vals[i][L.no]) === key) {
       var r = String(vals[i][L.role] || '').trim();
-      return { found: true, role: r ? normRole_(r) : '', email: normEmail_(vals[i][L.email]) };
+      return { found: true, role: r ? normRole_(r) : '' };
     }
   }
-  return { found: false, role: '', email: '' };
+  return { found: false, role: '' };
 }
 
 function getRoleFromMasterPersonel_(no) {

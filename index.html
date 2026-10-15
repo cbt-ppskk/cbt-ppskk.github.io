@@ -3375,6 +3375,8 @@ function initLogin(){
     const hash=await hashPass(pass,salt);
     PENDING={email,no,name,salt,hash,birthDate:_bd.val,otp:'',role:acc?acc.role:'staf',label:acc?acc.label:'Staf Berdaftar',av:acc?acc.av:'👤'};
     if(!gasConfigured()){
+      /* Mod luar talian sahaja (DEV_SHOW_OTP) — kod dijana setempat. */
+      PENDING.otp=genOtp();
       rerr.textContent='Sistem e-mel OTP belum dikonfigurasi. Sila tetapkan GAS_WEB_APP_URL.';
       return;
     }
@@ -3382,9 +3384,9 @@ function initLogin(){
     try{
       const r=await gasCall('registerUser',{email:email,no:no,name:name,passHash:hash,salt:salt,role:PENDING.role,label:PENDING.label,birthDate:_bd.val});
       if(!r||!r.ok){rerr.textContent=(r&&r.error)||'Gagal menghantar OTP. Sila cuba lagi.';return;}
-      PENDING.otp=r.devOtp||'';
+      /* v104: kod OTP TIDAK lagi dipulangkan oleh backend — hanya melalui e-mel.
+         Mod DEV_SHOW_OTP (luar talian) menjana kod setempat sebelum ini. */
       openOtp('📧 Kod OTP telah dihantar ke <b>'+esc(email)+'</b>. Sila semak peti masuk Gmail anda.');
-      if(DEV_SHOW_OTP&&r.devOtp){document.getElementById('otp-note').innerHTML+='<br><span style="color:var(--gold-lt)">[DEV] Kod: '+esc(r.devOtp)+'</span>';}
     }catch(err){
       rerr.textContent=(err&&err.message)||'Ralat rangkaian semasa menghantar OTP.';
     }finally{btn.disabled=false;btn.textContent=old;}

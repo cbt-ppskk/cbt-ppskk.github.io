@@ -205,6 +205,7 @@ const S = {
   lastOk:0, lastErr:'',
   counts:{log:null,belum:null,selesai:null,draf:null,personel:null,penyelia:null,audit:null},
   teams:[], teamOf:{},     /* nama(normal) -> team ; dan senarai team unik */
+  staffName:{},            /* no(normal)|nama(normal) -> nama(normal) ; identiti stabil */
   validated:{},            /* id -> {status,by,ts} */
   records:[],              /* rekod daripada fetchLogData */
   localAdded:[], localDraf:[],
@@ -337,11 +338,14 @@ function applyData(logs, counts, pers, val, draf, deleted){
     S.counts.personel = pers.data.length;
     const tset = {};
     S.teamOf = {};
+    S.staffName = {};
     pers.data.forEach(p => {
       const t = String(p.team || '').trim();
       if(t) tset[t] = 1;
-      S.teamOf[normName(p.nama)] = t;
-      if(p.no) S.teamOf[normName(p.no)] = t;
+      const nn = normName(p.nama);
+      S.teamOf[nn] = t;
+      S.staffName[nn] = nn;
+      if(p.no){ const no = normName(p.no); S.teamOf[no] = t; S.staffName[no] = nn; }
     });
     S.counts.penyelia = Object.keys(tset).length;
   }
@@ -419,6 +423,40 @@ function triggerBurst(){ S.burstUntil = Date.now() + CONFIG.burstFor; }
    Memetakan nama dalam petugas_detail rekod kepada team melalui senarai
    personel sebenar. Jika sesebuah rekod melibatkan >=2 team dan belum
    divalidasi, ejen team tersebut berkumpul di bilik mesyuarat. */
+/* Senarai NAMA personel yang benar-benar muncul dalam rekod penugasan.
+   Rekod dianggap "sudah dilogkan" apabila sekurang-kurangnya satu nama ini
+   padan dengan daftar personel sistem — bukan sekadar ada nama bebas. */
+function recordStaff(rec){
+  const out = {};
+  /* Setiap identiti dinormalkan kepada NAMA. Tanpa ini orang yang sama boleh
+     muncul dua kali (sekali melalui nombor, sekali melalui nama) dan mesyuarat
+     akan menunjukkan dua avatar bagi seorang personel. */
+  const idOf = k => S.staffName[k] || k;
+  const lines = String(rec.petugas_detail || '').split('\n');
+  const extra = [rec.petugas_admin, rec.petugas_pa, rec.petugas_foto, rec.petugas_video];
+  extra.forEach(s => String(s || '').split(',').forEach(x => lines.push(x)));
+  lines.forEach(line => {
+    let s = String(line || '').trim();
+    if(!s) return;
+    const m = s.match(/^([^(]+)\(([^)]+)\)\s*$/);
+    if(m){
+      const nm = normName(m[1]), no = normName(m[2]);
+      if(S.staffName[no] !== undefined){ out[idOf(no)] = 1; return; }
+      if(S.staffName[nm] !== undefined){ out[idOf(nm)] = 1; return; }
+      s = m[1];
+    }
+    s = s.replace(/\([^)]*\)\s*$/, '').trim();
+    const key = normName(s);
+    if(S.staffName[key] !== undefined){ out[idOf(key)] = 1; return; }
+    /* padan nama penuh tanpa pangkat di hadapan */
+    const keys = Object.keys(S.staffName);
+    for(let i = 0; i < keys.length; i++){
+      const k = keys[i];
+      if(k.length > 6 && key.indexOf(k) >= 0){ out[idOf(k)] = 1; return; }
+    }
+  });
+  return Object.keys(out);
+}
 function recordTeams(rec){
   const out = {};
   const lines = String(rec.petugas_detail || '').split('\n');
@@ -451,24 +489,27 @@ function isRecordValidated(rec){
   return !!(S.validated[id] || S.validated[rowKey] || S.validated[bilKey]);
 }
 function syncMeeting(){
-  /* Rekod setempat yang baru disimpan didahulukan: ia adalah entri terbaharu dan
-     belum tentu muncul dalam senarai pelayan. Tanpa ini mesyuarat hanya bermula
-     pada pusingan muat semula pelayan seterusnya. */
+  /* Mesyuarat bermula HANYA apabila rekod yang SUDAH DILOGKAN mengandungi nama
+     personel sebenar daripada >=2 team dan belum divalidasi. Rekod yang cuma
+     "sedang diproses" (tiada nama personel dikenali) tidak mencetuskan mesyuarat. */
   const source = (S.localAdded || []).slice().reverse().concat(S.records || []);
   let best = null;
   for(let i = 0; i < source.length && i < 120; i++){
     const r = source[i];
     if(!r) continue;
     if(isRecordValidated(r)) continue;
+    const staff = recordStaff(r);
+    if(!staff.length) continue;              /* tiada nama personel dikenali */
     const t = recordTeams(r);
-    if(t.length >= 2){ best = { rec:r, teams:t }; break; }
+    if(t.length >= 2){ best = { rec:r, teams:t, staff:staff }; break; }
   }
   const prev = S.focus;
   S.focus = best;
   if(best && (!prev || String(prev.rec.id) !== String(best.rec.id)))
-    pushEvent('mesyuarat-mula', 'BILIK MESYUARAT', 'Mesyuarat bermula: ' + best.teams.length + ' team · rekod #' + (best.rec.bil || '—'));
+    pushEvent('mesyuarat-mula', 'BILIK MESYUARAT',
+      'Mesyuarat bermula: ' + best.staff.length + ' personel · ' + best.teams.length + ' team · rekod #' + (best.rec.bil || '—'));
   if(!best && prev)
-    pushEvent('mesyuarat-tamat', 'BILIK MESYUARAT', 'Mesyuarat selesai — ejen kembali ke ruangan masing-masing');
+    pushEvent('mesyuarat-tamat', 'BILIK MESYUARAT', 'Mesyuarat selesai — personel kembali ke ruangan masing-masing');
 }
 
 /* ---------- 10. STATUS UI ---------- */
@@ -1264,35 +1305,51 @@ function stationToId(name){
   return m[name] || null;
 }
 
-/* --- ejen team untuk mesyuarat --- */
+/* --- ejen mesyuarat: SATU avatar bagi setiap PERSONEL sebenar --- */
+function palFor(key, i){
+  /* Warna stabil daripada nama, supaya orang yang sama sentiasa nampak sama. */
+  let h = 0;
+  for(let j = 0; j < key.length; j++) h = (h * 31 + key.charCodeAt(j)) & 0xffff;
+  return {
+    skin:SKIN[(h + i) % SKIN.length], hair:HAIR[(h >> 3) % HAIR.length],
+    shirt:SHIRT[(h >> 5) % SHIRT.length], pants:PANTS[(h >> 7) % PANTS.length],
+    glasses:((h >> 2) % 3 === 0), hijab:((h >> 4) % 4 === 2)
+  };
+}
+function displayName(key){
+  const p = (S.teams || []).filter(x => normName(x.nama) === key)[0];
+  return p ? String(p.nama) : key;
+}
 function syncTeamAgents(){
-  const want = S.focus ? S.focus.teams : [];
-  /* buang yang tidak diperlukan */
+  const want = S.focus ? S.focus.staff : [];
+  /* buang yang tidak diperlukan — keluar dari bilik dahulu */
   for(let i = AGENTS.length - 1; i >= 0; i--){
     const a = AGENTS[i];
-    if(a.kind === 'team' && want.indexOf(a.team) < 0){
-      /* Beredar keluar dari bilik mesyuarat (bukan kembali ke tempat duduk),
-         kemudian ejen dibuang. Ini gambaran "kembali ke ruangan masing-masing". */
+    if(a.kind === 'team' && want.indexOf(a.staffKey) < 0){
       a.kind = 'leaving'; a.returnHome = false; a.dead = Date.now() + 12000;
-      const exit = { x: MEETING.x - 90 - i * 70, y: corridorY() };
+      const exit = { x: MEETING.x - 90 - i * 60, y: corridorY() };
       walkTo(a, exit.x, exit.y, 240);
     }
   }
-  want.forEach((team, i) => {
-    if(AGENTS.some(a => a.kind === 'team' && a.team === team)) return;
-    const seat = [[160, 130], [230, 130], [300, 130], [160, 274], [230, 274], [300, 274], [360, 200], [110, 200]][i % 8];
+  want.forEach((key, i) => {
+    if(AGENTS.some(a => a.kind === 'team' && a.staffKey === key)) return;
+    const seat = seatAt(i);
     const t = { x:MEETING.x + seat[0], y:MEETING.y + seat[1] };
     const a = {
-      id:'team-' + team, station:null, label:team, kind:'team', team:team,
-      home: t, x: t.x - 40, y: MEETING.y + MEETING.h - 20,
-      pal:{ skin:SKIN[(i + 2) % SKIN.length], hair:HAIR[(i + 3) % HAIR.length],
-            shirt:SHIRT[(i + 5) % SHIRT.length], pants:PANTS[i % PANTS.length],
-            glasses:(i % 2 === 0), hijab:(i % 3 === 0) },
+      id:'staff-' + key, station:null, label:displayName(key), kind:'team', staffKey:key,
+      team:(S.teamOf[key] || ''), home:t, x:t.x - 40, y:MEETING.y + MEETING.h - 20,
+      pal:palFor(key, i),
       state:'walk', pose:'stand', dir:1, phase:i, anim:0, path:[], busy:0
     };
     AGENTS.push(a);
     walkTo(a, t.x, t.y, 190);
   });
+}
+/* Tempat duduk mengelilingi meja mesyuarat, dijarakkan supaya tidak bertindih. */
+function seatAt(i){
+  const around = [[130,96],[214,96],[298,96],[382,96],[130,252],[214,252],[298,252],[382,252]];
+  if(i < around.length) return around[i];
+  return [130 + ((i - around.length) % 6) * 56, 60 + Math.floor((i - around.length) / 6) * 40];
 }
 function updateTeamAgents(nowMs){
   for(let i = AGENTS.length - 1; i >= 0; i--){
@@ -1306,7 +1363,7 @@ function updateTeamAgents(nowMs){
 function drawTeamLabels(){
   g.textAlign = 'center'; g.font = '600 13px system-ui, sans-serif';
   AGENTS.filter(a => a.kind === 'team').forEach(a => {
-    const t = String(a.team || '');
+    const t = String(a.label || '');
     const w = g.measureText(t).width + 16;
     const lp = isoPt(a.x, a.y, 84);
     g.fillStyle = 'rgba(14,22,34,0.88)';

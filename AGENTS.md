@@ -201,6 +201,21 @@ Ia mesti berjalan **selepas** pemohon disahkan warga, jika tidak pemohon
 yang ditolak pun sudah mengubah data pengguna sedia ada. Begitu juga
 `killSessionsFor_` (memutuskan sesi orang lain).
 
+### Perangkap: staf yang BELUM mendaftar tiada pagar Kod Matrik
+
+Bagi staf yang belum mendaftar, tiada baris dalam `Pengguna_Akses` — jadi tiada
+kata laluan atau tarikh lahir untuk dipadankan, dan pagar Kod Matrik **tidak
+berkuat kuasa**. Sebelum v104 sesiapa yang tahu No. Personel seseorang boleh
+mendaftar dengan e-mel sendiri dan mengambil alih identiti itu sebelum orang
+sebenar mendaftar. v104 mengikat e-mel pendaftaran pada lajur E-mel
+`Master Personel`.
+
+**Jika lajur E-mel `Master Personel` kosong, pemadanan dilangkau** — staf tidak
+sepatutnya tersekat hanya kerana pentadbir belum mengisi e-mel mereka. Ini
+bermakna: mengisi lajur E-mel `Master Personel` **mengeratkan** pendaftaran.
+Jangan kosongkannya untuk "mudahkan" seseorang mendaftar — itu membuka semula
+lubang pengambilalihan.
+
 ### Perangkap: "Kod Matrik Pemulihan Akaun" mesti dipadankan, bukan hanya disemak format
 
 Medan `birthDate` disimpan dalam `Pengguna_Akses` (lajur 9) dan ditulis

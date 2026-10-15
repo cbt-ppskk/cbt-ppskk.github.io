@@ -98,3 +98,44 @@ Jangan sekali-kali tambah hook ujian ke `index.html` yang dihantar.
 - Elak `eval` / `new Function`. Guna `esc()` untuk sebarang data sebelum `innerHTML`.
 - Bungkus panggilan pilihan dengan `try{}catch(e){}`; corak sedia ada menggunakan
   `safe_()` / `safe()` pada but.
+
+## Pejabat Maya (`office.html`)
+
+Modul paparan tambahan, **satu fail**, **baca sahaja**. Tidak mengubah `index.html`.
+
+### Kontrak backend GAS (disahkan secara empirik)
+
+- `ping` — berfungsi **tanpa** sesi.
+- `fetchLogData`, `fetchLogCounts`, `getPersonnelList`, `getValidasiRekod`,
+  `getStagingPenugasan` — **memerlukan** token sesi; tanpa token balas
+  `{ok:false, error:"Sesi tidak sah atau telah tamat"}`.
+- **Tiada** endpoint audit. Jangan reka angka untuk AUDIT LOG.
+
+### Medan respons sebenar (jangan teka)
+
+- `fetchLogCounts` -> `{all, inPeriod, periodStart}`. Tiada `total`/`belum`/`selesai`.
+- `getValidasiRekod` -> peta kunci -> `{status, by, ts}`. Rekod divalidasi hanya
+  apabila `status` **mengandungi `SELESAI`** (rujuk `applyValidasiMap_`).
+- Kunci validasi sama seperti index.html: `id`, `r<row>`, `#<bil>`
+  (rujuk `v95RecId` / `v95RowKey` / `v95BilKey`).
+- `petugas_detail` = satu baris setiap orang, format `"PANGKAT NAMA (Peranan)"`.
+  Peranan ialah `Admin` / `PA System` / `Photographer` / `Juruvideo` — **bukan**
+  nombor personel. Nombor personel ada dalam `petugas` (array) sahaja.
+- Kunci storan setempat index.html: `cbt_records_v7` (`ADD_KEY`, ditulis oleh
+  `saveAdded`), `cbt_draf_local_v87`, `cbt_validated_v27`, `cbt_session_v7`.
+
+### Integrasi tanpa mengubah index.html
+
+`office.html` mengesan butang ditekan dengan **membaca** `cbt_records_v7` dan
+`cbt_draf_local_v87` (kitaran 700 ms), dan **membaca** `cbt_session_v7` untuk
+sesi. Ia tidak pernah menulis kunci tersebut — hanya `cbt_office_ui_v1`.
+
+### Perangkap
+
+- **Jangan campurkan `performance.now()` dengan `Date.now()`.** `frame()` menerima
+  masa rAF; semua perbandingan keadaan mesti guna `Date.now()`.
+- Jangan lapor `LIVE` apabila semua permintaan gagal. Bezakah sesi-tamat
+  (`NOAUTH`) daripada rangkaian-putus.
+- `syncMeeting` mesti memeriksa rekod setempat dahulu — rekod baharu hanya
+  muncul dalam senarai pelayan pada kitaran muat semula seterusnya.
+- Jangan ganti kiraan sah dengan `null` apabila respons cacat.

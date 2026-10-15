@@ -131,16 +131,28 @@ berubah".
      kerana ia lebih penting daripada cuba memadam sejarah.
    - Jika pemadaman sejarah perlu: `git filter-repo` + force-push, dan faham
      bahawa ia mengganggu sesiapa yang sudah meng-klon.
-3. **Kebenaran peranan (RBAC) tidak dapat diuji sepenuhnya.** Pengesahan token
-   disahkan kuat (lihat di bawah), tetapi sama ada `upsertPersonel`,
-   `adminUpdateUser`, `deleteLog` menyemak **peranan** selain token memerlukan
-   kelayakan akaun sebenar. Ini penting kerana sesi disimpan dalam
-   `localStorage` dan boleh disunting melalui DevTools: jika `Code.gs` hanya
-   menyemak "token sah" tanpa menyemak peranan, staf biasa boleh naik taraf
-   diri menjadi pentadbir kerana UI sahaja yang menyekat butang itu.
-   **Selesaikan dengan** `./gas/clasp.sh pull` untuk menarik `Code.gs` ke dalam
-   repo, kemudian semak bahawa setiap tindakan pentadbir menyemak peranan
-   (`admin`/`superadmin`), bukan token sahaja.
+3. **Kebenaran peranan (RBAC) — SUDAH DIAUDIT (v104).** `Code.gs` sudah ada
+   dalam repo (`gas/Code.gs`) dan setiap tindakan pentadbir disemak: ia
+   menggunakan `guardAdmin_`, bukan sekadar token sah. Sesi yang disunting
+   melalui DevTools **tidak** boleh menaikkan peranan, kerana peranan
+   diambil daripada `Pengguna_Akses`/`Master Personel` di sisi pelayan.
+   Peranan dari klien diabaikan sepenuhnya mulai v104.
+
+### Perkongsian Sheet — SUDAH DIKUNCI
+
+`Laporan Penugasan` (`1Vm3fWQzZeHOHHaBY1ZLYjz2KlwTx7M0dexIyJllIe-c`) dahulunya
+`anyone: reader`. Ia kini `restricted`: `/export` dan `/gviz/tq` memulangkan
+**401** (disahkan 2026-10-15).
+
+Jangan kelirukan dengan spreadsheet `testing` (`14fy3vzIscryufczcb4XBAjSu_v3owIrgNgkMRx8fTao`)
+— ia juga wujud dan juga sudah dikunci, tetapi **sistem tidak menggunakannya**.
+Semasa mengunci, sahkan `export?format=csv` memulangkan 401 untuk ID yang
+**betul**, bukan sekadar spreadsheet yang kelihatan serupa.
+
+Backend **tidak** terjejas oleh penguncian ini: `SpreadsheetApp.openById()`
+berjalan sebagai pemilik (lencana OAuth pemilik), bukan sebagai pemanggil
+`/exec`. Jadi mengunci Sheet menutup akses CSV awam tanpa memerlukan
+sebarang perubahan kod. Jangan "betulkan" dengan berkongsi semula Sheet.
 
 ### Pengesahan backend (disahkan secara empirik, 18 tindakan)
 
@@ -155,6 +167,54 @@ Diuji dengan token tiada/palsu — semua ditolak dengan
 Pra-log masuk (`loginUser`, `verifyOTP`, `registerUser`) tidak perlukan token
 sesi tetapi mengesahkan input sendiri. **Kesimpulan: pengesahan kuat; tindakan
 tulis tidak boleh dijalankan tanpa sesi sah.**
+
+### Audit v104 (6 tindakan berpengawal ditambah)
+
+Audit penuh `Code.gs` pada v104 mendapati 6 tindakan **tidak** berpengawal,
+walaupun senarai 18 tindakan di atas lulus. Semua kini berpengawal:
+`getProfileDates`, `getProfileDatesToday`, `getProfileDatesRange` (nama, No.
+Personel, tarikh lahir, e-mel), `getLeadershipData`, `setupSheets`
+(pentadbir — ia mencipta tab), `diagnoseSheet` (sesi sah; ID Sheet hanya
+untuk pentadbir).
+
+`ping` kekal awam dengan sengaja: `office.html` memanggilnya **sebelum**
+menyemak sesi, jadi ia mesti boleh dicapai tanpa token. Ia tidak lagi
+memulangkan `spreadsheetId` kepada pemanggil tanpa sesi — ID itu memberi
+pautan terus kepada `Pengguna_Akses` (hash+salt) dan `OTP_Requests`.
+
+**Pelajaran:** senarai tindakan yang "sudah diuji" tidak menggantikan
+semakan penuh router. Uji dengan mengira `guard_`/`guardAdmin_` dalam
+`doPost` berbanding jumlah `case`.
+
+### Perangkap: `getRoleFromMasterPersonel_` pulangkan `''` untuk tiga keadaan
+
+Tiada rekod, rekod ada tetapi lajur Peranan kosong, dan ralat Sheet —
+ketiga-tiganya `''`. Jangan sekali-kali guna fungsi itu sebagai semakan
+keahlian: staf sah yang peranannya belum diisi akan tersekat. Guna
+`findPersonelRecord_` (v104) yang membezakan ketiga-tiganya dan **dilempar**
+pada ralat Sheet supaya pemanggil boleh pulangkan ralat cuba-semula.
+
+### Perangkap: susunan semakan dalam `registerUser`
+
+`freeEmailForReuse_` **mengosongkan** lajur e-mel milik No. Personel LAIN.
+Ia mesti berjalan **selepas** pemohon disahkan warga, jika tidak pemohon
+yang ditolak pun sudah mengubah data pengguna sedia ada. Begitu juga
+`killSessionsFor_` (memutuskan sesi orang lain).
+
+### Perangkap: "Kod Matrik Pemulihan Akaun" mesti dipadankan, bukan hanya disemak format
+
+Medan `birthDate` disimpan dalam `Pengguna_Akses` (lajur 9) dan ditulis
+semula oleh `writeAccessUser_` setiap kali `verifyOTP` berjaya. Sebelum
+v104 ia **hanya** disemak format ISO — tidak pernah dibandingkan dengan
+rekod sedia ada. Akibatnya sesiapa yang tahu No. Personel seseorang boleh
+mendaftar semula dengan tarikh lahir rekaan dan **menimpa kata laluan**
+orang itu. v104 membandingkan `MM-DD` (guna `mdPartsFromAny_`) dengan
+rekod sedia ada; akaun yang belum wujud tiada apa untuk dipadankan.
+
+Nota: padanan hanya `MM-DD`, bukan tahun penuh, kerana `Hari Jadi` menyimpan
+`MM-DD` sahaja dan `normBirthdayForStore_` boleh menggugurkan tahun. Ini
+kekal bermakna dari segi keselamatan tetapi **bukan** pengesahan identiti
+yang kukuh — jangan bergantung padanya sebagai satu-satunya faktor.
 
 ## Perkara penting yang mudah tersalah
 

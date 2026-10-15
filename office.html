@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pejabat Maya CBT PPSKK</title>
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<style>
+:root{
+  --bg:#0b0f16; --bg2:#121926; --panel:#161f2e; --line:#26344a;
+  --txt:#e8eef7; --muted:#93a3ba; --accent:#5ea9ff; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+  --log:#1f3a5f; --belum:#6b7f3a; --selesai:#6fbf73; --draf:#e8c547; --personel:#e08b4a; --penyelia:#7f96ab; --dash:#4a7fb5; --audit:#4a4f57;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--txt);font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 10px;cursor:pointer}
+button:hover{background:#1d2940}
+button:disabled{opacity:.5;cursor:not-allowed}
+input[type=range]{width:100%;accent-color:var(--accent)}
+
+/* ---------- bar atas ---------- */
+#top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--line);position:relative;z-index:30}
+#top h1{font-size:14px;margin:0 8px 0 0;font-weight:650;letter-spacing:.2px;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:#0e1622;font-size:11.5px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.live{background:var(--ok);box-shadow:0 0 7px var(--ok)}
+.dot.stale{background:var(--warn)}
+.dot.off{background:var(--bad)}
+.sep{width:1px;height:22px;background:var(--line);margin:0 3px}
+#top .right{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ---------- pentas ---------- */
+#stage{position:absolute;inset:0;top:0;overflow:hidden;cursor:grab}
+#stage.drag{cursor:grabbing}
+#wrap{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#scene{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:#0e131c}
+
+/* ---------- kad maklumat ---------- */
+#card{position:absolute;z-index:40;width:290px;max-width:calc(100vw - 24px);background:rgba(14,22,34,.97);border:1px solid var(--line);border-radius:11px;padding:12px;box-shadow:0 18px 44px rgba(0,0,0,.6);display:none}
+#card.show{display:block}
+#card .ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#card .swatch{width:12px;height:12px;border-radius:3px;flex:none}
+#card h3{margin:0;font-size:13.5px;flex:1}
+#card .x{background:none;border:0;padding:2px 6px;font-size:15px;color:var(--muted);line-height:1}
+#card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px}
+#card dt{color:var(--muted)}
+#card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+#card .note{margin-top:8px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:7px}
+
+/* ---------- panel sisi ---------- */
+.side{position:absolute;right:12px;z-index:35;width:296px;max-width:calc(100vw - 24px);background:rgba(14,22,34,.97);border:1px solid var(--line);border-radius:11px;padding:12px;box-shadow:0 18px 44px rgba(0,0,0,.55);display:none}
+.side.show{display:block}
+#audioPanel{bottom:12px}
+#cfgPanel{bottom:12px}
+.side h3{margin:0 0 9px;font-size:12.5px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:12px}
+.row label{flex:1;color:var(--muted)}
+.row output{width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.chk{display:flex;align-items:center;gap:7px;margin:7px 0;font-size:12px;color:var(--muted);cursor:pointer}
+.chk input{accent-color:var(--accent)}
+.side .full{width:100%;margin-top:6px}
+
+/* ---------- legenda ---------- */
+#legend{position:absolute;left:12px;bottom:12px;z-index:35;background:rgba(14,22,34,.94);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:11.5px;color:var(--muted);max-width:330px}
+#legend b{color:var(--txt);font-weight:600}
+#legend .k{display:flex;gap:7px;align-items:flex-start;margin-top:5px}
+#legend .k i{font-style:normal}
+
+/* ---------- bar status ---------- */
+#status{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:34;background:rgba(14,22,34,.94);border:1px solid var(--line);border-radius:9px;padding:6px 13px;font-size:12px;color:var(--muted);text-align:center;max-width:min(620px,calc(100vw - 24px))}
+#status b{color:var(--txt);font-weight:600}
+#status.err{border-color:#5b2b2b}
+#status.err b{color:var(--warn)}
+
+/* ---------- telefon ---------- */
+#phone{display:none;position:absolute;inset:0;z-index:90;background:var(--bg);align-items:center;justify-content:center;padding:24px;text-align:center}
+#phone div{max-width:340px}
+#phone h2{font-size:17px;margin:0 0 10px}
+#phone p{color:var(--muted);margin:0}
+@media (max-width:820px){#phone{display:flex}}
+
+/* ---------- toast ---------- */
+#toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);z-index:60;background:rgba(14,22,34,.97);border:1px solid var(--line);border-radius:9px;padding:8px 14px;font-size:12.5px;display:none}
+#toast.show{display:block}
+</style>
+</head>
+<body>
+
+<div id="top">
+  <h1>🏢 Pejabat Maya CBT PPSKK</h1>
+  <span class="pill" id="pillConn"><span class="dot off" id="dotConn"></span><span id="txtConn">Memulakan…</span></span>
+  <span class="pill" id="pillRole"><span id="txtRole">Sesi belum disahkan</span></span>
+  <span class="sep"></span>
+  <span class="pill" id="pillUpd"><span id="txtUpd">Belum dikemas kini</span></span>
+
+  <span class="right">
+    <button id="btnSound" title="Hidupkan/matikan bunyi">🔇 HIDUPKAN BUNYI</button>
+    <button id="btnAudioCfg" title="Tetapan audio">🎚 Audio</button>
+    <button id="btnJourney" title="Paparkan aliran kerja">🧭 Aliran Kerja</button>
+    <span class="sep"></span>
+    <button id="btnZoomOut" title="Zum keluar">−</button>
+    <button id="btnZoomIn" title="Zum masuk">+</button>
+    <button id="btnZoomFit" title="Kembalikan pandangan">⤢ Muat</button>
+    <span class="sep"></span>
+    <button id="btnFull" title="Skrin penuh">⛶ Fullscreen</button>
+    <button id="btnNewWin" title="Buka dalam tetingkap baharu">🗗 Tetingkap</button>
+    <button id="btnCfg" title="Konfigurasi sambungan">⚙️</button>
+    <a href="index.html"><button title="Kembali ke sistem penugasan">📋 MOD SENARAI</button></a>
+  </span>
+</div>
+
+<div id="stage">
+  <div id="wrap"><canvas id="scene" width="1600" height="1000"></canvas></div>
+</div>
+
+<div id="card" role="dialog" aria-modal="false" aria-labelledby="cardTitle">
+  <div class="ch"><span class="swatch" id="cardSw"></span><h3 id="cardTitle">—</h3><button class="x" id="cardX" aria-label="Tutup">✕</button></div>
+  <dl id="cardBody"></dl>
+  <div class="note" id="cardNote"></div>
+</div>
+
+<div class="side" id="audioPanel">
+  <h3>Kawalan Audio</h3>
+  <div class="row"><label for="volM">Master</label><input type="range" id="volM" min="0" max="100" value="70"><output id="outM">70</output></div>
+  <div class="row"><label for="volA">Ambient</label><input type="range" id="volA" min="0" max="100" value="55"><output id="outA">55</output></div>
+  <div class="row"><label for="volS">SFX</label><input type="range" id="volS" min="0" max="100" value="65"><output id="outS">65</output></div>
+  <label class="chk"><input type="checkbox" id="chkAmbOnly"> Ambient sahaja</label>
+  <label class="chk"><input type="checkbox" id="chkMute"> Senyapkan semua</label>
+  <div class="row" style="color:var(--muted)"><span id="txtAudio">Audio tidak aktif</span></div>
+  <button class="full" id="btnAudioOff">Matikan audio</button>
+</div>
+
+<div class="side" id="cfgPanel">
+  <h3>Konfigurasi Sambungan</h3>
+  <div class="row" style="align-items:flex-start">
+    <label for="cfgUrl" style="flex:none;width:100%">URL Web App (GAS) — baca sahaja</label>
+  </div>
+  <input id="cfgUrl" style="width:100%;background:#0e1622;border:1px solid var(--line);border-radius:7px;padding:7px;color:var(--txt);font-size:11.5px" spellcheck="false">
+  <label class="chk"><input type="checkbox" id="cfgReuse"> Hantar token sesi sedia ada (baca sahaja)</label>
+  <div class="row" style="color:var(--muted);font-size:11px">Token sesi digunakan dalam memori sahaja — tidak disimpan atau dipaparkan oleh halaman ini.</div>
+  <button class="full" id="cfgSave">Simpan &amp; sambung semula</button>
+  <div class="row" style="color:var(--muted);font-size:11px" id="cfgState"></div>
+</div>
+
+<div id="legend">
+  <b>Status data</b>
+  <div class="k"><i>🟢</i><span><b>LIVE</b> — diambil daripada sistem CBT (jumlah rekod, validasi, team)</span></div>
+  <div class="k"><i>⚪</i><span><b>HIASAN</b> — gerakan ejen, tumbuhan, jam. Bukan bukti kerja sebenar.</span></div>
+  <div class="k"><i>🔵</i><span><b>ACARA</b> — gerakan yang dicetuskan oleh perubahan data sebenar.</span></div>
+</div>
+
+<div id="status"><b>Memulakan…</b></div>
+<div id="toast"></div>
+
+<div id="phone"><div>
+  <h2>🖥️ Mod pejabat</h2>
+  <p>Gunakan paparan komputer untuk mod pejabat.</p>
+</div></div>
+
+<script>
+"use strict";
+/* ============================================================================
+   PEJABAT MAYA CBT PPSKK — modul paparan tambahan (BACA SAHAJA)
+   ----------------------------------------------------------------------------
+   Fail ini TIDAK menulis, mengubah atau memadam sebarang data. Semua panggilan
+   rangkaian melalui senarai putih tindakan baca sahaja (READ_ONLY_ACTIONS) dan
+   sebarang tindakan lain akan ditolak sebelum permintaan dihantar.
+
+   Sumber data: Web App Google Apps Script sedia ada (endpoint yang sama seperti
+   index.html). Token sesi diambil daripada sesi log masuk sedia ada dan
+   digunakan DALAM MEMORI sahaja — tidak disimpan, tidak dipaparkan, tidak
+   dihantar ke mana-mana selain endpoint rasmi tersebut.
+   ========================================================================== */
+
+/* ---------- 1. KONFIGURASI ---------- */
+const CONFIG = {
+  /* Endpoint sebenar sistem CBT PPSKK (sama seperti index.html). */
+  gasUrl: 'https://script.google.com/macros/s/AKfycbxPR1L7RUFKZCKaTdk4lArc2nST4L1gLfJSvTY-ZKK9AAjYgK2-alN54muOF15OvVKkiQ/exec',
+  reuseSession: true,
+  listHref: 'index.html',
+  refreshMs: 30000,        /* selang segar semula biasa (spesifikasi: 30 saat) */
+  burstMs: 3000,           /* selang pantas selepas kesan tindakan dikesan */
+  burstFor: 45000,         /* tempoh mod pantas */
+  localPollMs: 700,        /* pemantauan storan setempat (tanpa rangkaian) */
+  staleAfterMs: 90000
+};
+
+/* Tindakan backend yang DIBENARKAN — semuanya baca sahaja. */
+const READ_ONLY_ACTIONS = ['ping','fetchLogData','fetchLogCounts','getPersonnelList','getValidasiRekod','getStagingPenugasan'];
+function assertReadOnly(action){
+  if(READ_ONLY_ACTIONS.indexOf(action) < 0) throw new Error('Tindakan ditolak (bukan baca sahaja): ' + action);
+}
+
+const UI_KEY = 'cbt_office_ui_v1';   /* hanya keutamaan UI — tiada data kerja */
+const SESS_KEY = 'cbt_session_v7';   /* dibaca daripada sistem sedia ada */
+const ADD_KEY = 'cbt_records_v7';
+const DRAF_KEY = 'cbt_draf_local_v87';
+
+/* ---------- 2. KEADAAN ---------- */
+const S = {
+  session:null, roleKnown:false, isAdmin:false,
+  status:'init',           /* init|no-endpoint|no-session|live|stale|offline|error */
+  lastOk:0, lastErr:'',
+  counts:{log:null,belum:null,selesai:null,draf:null,personel:null,penyelia:null,audit:null},
+  teams:[], teamOf:{},     /* nama(normal) -> team ; dan senarai team unik */
+  validated:{},            /* id -> {status,by,ts} */
+  records:[],              /* rekod daripada fetchLogData */
+  localAdded:[], localDraf:[],
+  focus:null,              /* rekod yang sedang "dimesyuaratkan" */
+  events:[],               /* acara sebenar yang dikesan */
+  burstUntil:0,
+  loading:false, abort:null, lastTry:0
+};
+
+/* ---------- 3. UTILITI ---------- */
+const $ = id => document.getElementById(id);
+function readJSON(k, dflt){ try{ const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? dflt : v; }catch(e){ return dflt; } }
+function normName(v){ return String(v == null ? '' : v).replace(/\s+/g,' ').trim().toUpperCase(); }
+function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(ts){ if(!ts) return '—'; try{ return new Date(ts).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch(e){ return '—'; } }
+function num(v){ return (v == null || v === '' || isNaN(Number(v))) ? null : Number(v); }
+let toastT = 0;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+
+/* ---------- 4. SESI (baca sahaja) ---------- */
+function loadSession(){
+  const s = readJSON(SESS_KEY, null);
+  if(!s || !s.id){ S.session = null; S.roleKnown = false; S.isAdmin = false; return false; }
+  const role = String(s.role || '');
+  S.session = { id:String(s.id), name:String(s.name || ''), role:role, token:String(s.token || '') };
+  S.roleKnown = !!role;
+  S.isAdmin = (role === 'admin' || role === 'superadmin');
+  return !!S.session.token;
+}
+
+/* ---------- 5. LAPISAN RANGKAIAN (baca sahaja, satu penerbangan) ---------- */
+async function callRead(action, payload){
+  assertReadOnly(action);
+  if(!CONFIG.gasUrl) throw new Error('Endpoint belum dikonfigurasikan.');
+  const ctrl = new AbortController();
+  S.abort = ctrl;
+  const to = setTimeout(() => ctrl.abort(), 20000);
+  try{
+    const body = Object.assign({ action:action, _cb:Date.now() }, payload || {});
+    /* Token dihantar hanya apabila pengguna membenarkannya, dan hanya dalam memori. */
+    if(CONFIG.reuseSession && S.session && S.session.token) body.token = S.session.token;
+    const res = await fetch(CONFIG.gasUrl, {
+      method:'POST', cache:'no-store', redirect:'follow', signal:ctrl.signal,
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const txt = await res.text();
+    let data;
+    try{ data = JSON.parse(txt); }
+    catch(e){ throw new Error('Respons bukan JSON yang sah.'); }
+    if(data && data.ok === false && /Sesi tidak sah|log masuk/i.test(String(data.error || '')))
+      throw Object.assign(new Error('Sesi tidak sah atau telah tamat.'), { code:'NOAUTH' });
+    return data;
+  } finally {
+    clearTimeout(to);
+    if(S.abort === ctrl) S.abort = null;
+  }
+}
+
+/* ---------- 6. SEGAR SEMULA ---------- */
+async function refreshAll(manual){
+  if(S.loading) return;                     /* elak permintaan bertindih */
+  if(!CONFIG.gasUrl){ setStatus('no-endpoint'); return; }
+  S.loading = true;
+  S.lastTry = Date.now();
+  try{
+    /* ping dahulu — sahkan endpoint tanpa memerlukan sesi */
+    let pong = null;
+    try{ pong = await callRead('ping', {}); }catch(e){ pong = null; }
+
+    loadSession();
+    if(!S.session || !CONFIG.reuseSession){
+      S.status = 'no-session';
+      setStatus('no-session');
+      S.lastOk = Date.now();
+      return;
+    }
+
+    const settled = await Promise.all([
+      callRead('fetchLogData', {}).then(v => ({ v })).catch(e => ({ e })),
+      callRead('fetchLogCounts', {}).then(v => ({ v })).catch(e => ({ e })),
+      callRead('getPersonnelList', {}).then(v => ({ v })).catch(e => ({ e })),
+      callRead('getValidasiRekod', {}).then(v => ({ v })).catch(e => ({ e })),
+      callRead('getStagingPenugasan', {}).then(v => ({ v })).catch(e => ({ e }))
+    ]);
+
+    /* Jika SEMUA panggilan gagal, ini bukan "LIVE" — jangan mengaku sebaliknya.
+       Sebab kegagalan dikekalkan supaya mesej kepada pengguna tepat:
+       sesi tamat BERBEZA daripada rangkaian terputus. */
+    if(!settled.some(s => s.v && s.v.ok)){
+      const auth = settled.some(s => s.e && s.e.code === 'NOAUTH');
+      const err = new Error(auth ? 'Sesi tidak sah atau telah tamat.' : 'Semua permintaan data gagal.');
+      err.code = auth ? 'NOAUTH' : 'NETWORK';
+      throw err;
+    }
+
+    const before = snapshotCounts();
+    applyData(settled[0].v, settled[1].v, settled[2].v, settled[3].v, settled[4].v);
+    S.lastOk = Date.now(); S.lastErr = ''; S.status = 'live';
+    setStatus('live');
+    detectBackendEvents(before);
+  }catch(e){
+    S.lastErr = String((e && e.message) || e);
+    if(e && e.code === 'NOAUTH'){ S.status = 'no-session'; setStatus('no-session'); }
+    else { S.status = S.lastOk ? 'stale' : 'offline'; setStatus(S.status); }
+  }finally{
+    S.loading = false;
+  }
+}
+
+function snapshotCounts(){ return Object.assign({}, S.counts); }
+
+function applyData(logs, counts, pers, val, draf){
+  if(logs && logs.ok && Array.isArray(logs.data)){
+    S.records = logs.data.filter(r => !/^OPS/i.test(String(r.jenis || '')));
+  }
+  if(counts && counts.ok && counts.data && typeof counts.data === 'object' && !Array.isArray(counts.data)){
+    const d = counts.data;
+    /* Medan sebenar yang disahkan daripada index.html: all, inPeriod, periodStart.
+       Rekod dalam tempoh laporan digunakan kerana itu yang dipaparkan sistem asal.
+       Nilai hanya diganti apabila ia benar-benar nombor — respons cacat tidak
+       boleh memadamkan kiraan sah yang sudah dipaparkan. */
+    const v = num(d.inPeriod != null ? d.inPeriod : d.all);
+    if(v != null) S.counts.log = v;
+  }
+  if(pers && pers.ok && Array.isArray(pers.data) && pers.data.length){
+    S.teams = pers.data;
+    S.counts.personel = pers.data.length;
+    const tset = {};
+    S.teamOf = {};
+    pers.data.forEach(p => {
+      const t = String(p.team || '').trim();
+      if(t) tset[t] = 1;
+      S.teamOf[normName(p.nama)] = t;
+      if(p.no) S.teamOf[normName(p.no)] = t;
+    });
+    S.counts.penyelia = Object.keys(tset).length;
+  }
+  if(val && val.ok && val.data && typeof val.data === 'object'){
+    S.validated = {};
+    Object.keys(val.data).forEach(k => {
+      const v = val.data[k] || {};
+      /* Hanya status yang mengandungi "SELESAI" bermakna rekod telah divalidasi —
+         sama seperti penapis dalam index.html (applyValidasiMap_). */
+      if(/SELESAI/i.test(String(v.status || ''))) S.validated[String(k)] = v;
+    });
+  }
+  if(draf && draf.ok && Array.isArray(draf.data)) S.counts.draf = draf.data.length;
+  S.counts.audit = null;   /* tiada endpoint audit — jangan reka nilai */
+
+  /* Belum / selesai dikira daripada senarai rekod SEBENAR + peta validasi yang
+     baru dimuatkan di atas. Ini mesti berlaku SELEPAS peta validasi diset,
+     jika tidak setiap rekod akan dikira sebagai belum divalidasi. */
+  if(S.records.length){
+    let belum = 0, selesai = 0;
+    S.records.forEach(r => { if(isRecordValidated(r)) selesai++; else belum++; });
+    S.counts.belum = belum; S.counts.selesai = selesai;
+  }
+}
+
+/* ---------- 7. ACARA SEBENAR (dijana daripada perubahan data) ---------- */
+function detectBackendEvents(before){
+  const n = S.counts.log, b = before.log;
+  if(n != null && b != null && n > b) pushEvent('log-baru', 'LOG PENUH', (n - b) + ' rekod baharu diterima daripada sistem');
+  const v = S.counts.selesai, vb = before.selesai;
+  if(v != null && vb != null && v > vb) pushEvent('validasi', 'SELESAI VALIDASI', (v - vb) + ' rekod selesai divalidasi');
+  const d = S.counts.draf, db = before.draf;
+  if(d != null && db != null && d > db) pushEvent('draf', 'DRAF', (d - db) + ' draf baharu');
+  syncMeeting();
+}
+function pushEvent(kind, station, text){
+  S.events.push({ kind, station, text, ts:Date.now() });
+  if(S.events.length > 40) S.events.shift();
+  office.onEvent(kind, station, text);
+}
+
+/* ---------- 8. PEMANTAUAN STORAN SETEMPAT (tanpa rangkaian) ----------
+   index.html menyimpan rekod key-in dan draf dalam localStorage pada asal yang
+   sama. Kita hanya MEMBACA kunci tersebut untuk mengesan tindakan butang
+   dengan segera (tanpa mengubah index.html). */
+let lastAddLen = -1, lastDrafLen = -1, localInit = false;
+function pollLocal(){
+  const add = readJSON(ADD_KEY, []);
+  const draf = readJSON(DRAF_KEY, []);
+  const aL = Array.isArray(add) ? add.length : 0;
+  const dL = Array.isArray(draf) ? draf.length : 0;
+  S.localAdded = Array.isArray(add) ? add : [];
+  S.localDraf = Array.isArray(draf) ? draf : [];
+  if(localInit){
+    if(aL > lastAddLen){
+      pushEvent('simpan', 'LOG PENUH', 'Rekod penugasan disimpan (' + (aL - lastAddLen) + ')');
+      triggerBurst();
+    }
+    if(dL > lastDrafLen){
+      pushEvent('draf', 'DRAF', 'Draf disimpan (' + (dL - lastDrafLen) + ')');
+      triggerBurst();
+    }
+  }
+  lastAddLen = aL; lastDrafLen = dL; localInit = true;
+}
+function triggerBurst(){ S.burstUntil = Date.now() + CONFIG.burstFor; }
+
+/* ---------- 9. MESYUARAT (berdasarkan team sebenar) ----------
+   Memetakan nama dalam petugas_detail rekod kepada team melalui senarai
+   personel sebenar. Jika sesebuah rekod melibatkan >=2 team dan belum
+   divalidasi, ejen team tersebut berkumpul di bilik mesyuarat. */
+function recordTeams(rec){
+  const out = {};
+  const lines = String(rec.petugas_detail || '').split('\n');
+  const extra = [rec.petugas_admin, rec.petugas_pa, rec.petugas_foto, rec.petugas_video];
+  extra.forEach(s => String(s || '').split(',').forEach(x => lines.push(x)));
+  lines.forEach(line => {
+    let s = String(line || '').trim();
+    if(!s) return;
+    const m = s.match(/\(([^)]+)\)\s*$/);
+    if(m && S.teamOf[normName(m[1])]) { out[S.teamOf[normName(m[1])]] = 1; return; }
+    s = s.replace(/\([^)]*\)\s*$/,'').trim();
+    const noCode = normName(s);
+    if(S.teamOf[noCode]) { out[S.teamOf[noCode]] = 1; return; }
+    /* padan mengikut nama penuh (buang pangkat di hadapan) */
+    const keys = Object.keys(S.teamOf);
+    for(let i = 0; i < keys.length; i++){
+      const k = keys[i];
+      if(k.length > 6 && noCode.indexOf(k) >= 0){ out[S.teamOf[k]] = 1; return; }
+    }
+  });
+  return Object.keys(out);
+}
+/* Kunci yang sama seperti index.html: v95RecId / v95RowKey / v95BilKey. */
+function isRecordValidated(rec){
+  if(!rec) return false;
+  const id = String(rec.id || '').trim() || ('LEG-' + String(rec.bil != null ? rec.bil : ''));
+  const row = Number(rec.row) || 0;
+  const rowKey = row > 0 ? ('r' + row) : ('#' + String(rec.bil != null ? rec.bil : ''));
+  const bilKey = '#' + String(rec.bil != null ? rec.bil : '');
+  return !!(S.validated[id] || S.validated[rowKey] || S.validated[bilKey]);
+}
+function syncMeeting(){
+  /* rekod terkini yang belum divalidasi dan melibatkan >=2 team */
+  let best = null;
+  for(let i = S.records.length - 1; i >= 0 && i > S.records.length - 120; i--){
+    const r = S.records[i];
+    if(isRecordValidated(r)) continue;
+    const t = recordTeams(r);
+    if(t.length >= 2){ best = { rec:r, teams:t }; break; }
+  }
+  const prev = S.focus;
+  S.focus = best;
+  if(best && (!prev || String(prev.rec.id) !== String(best.rec.id)))
+    pushEvent('mesyuarat-mula', 'BILIK MESYUARAT', 'Mesyuarat bermula: ' + best.teams.length + ' team · rekod #' + (best.rec.bil || '—'));
+  if(!best && prev)
+    pushEvent('mesyuarat-tamat', 'BILIK MESYUARAT', 'Mesyuarat selesai — ejen kembali ke ruangan masing-masing');
+}
+
+/* ---------- 10. STATUS UI ---------- */
+const STATUS_TEXT = {
+  init:['off','Memulakan…'], live:['live','LIVE'],
+  stale:['stale','STALE — data lama'], offline:['off','OFFLINE'],
+  'no-session':['stale','Sesi tidak tersedia — log masuk dalam Sistem CBT'],
+  'no-endpoint':['off','Endpoint belum dikonfigurasikan']
+};
+function setStatus(k){
+  const t = STATUS_TEXT[k] || STATUS_TEXT.init;
+  const d = $('dotConn'); d.className = 'dot ' + t[0];
+  $('txtConn').textContent = t[1];
+  $('txtUpd').textContent = S.lastOk ? ('Kemas kini ' + fmtTime(S.lastOk)) : 'Belum dikemas kini';
+
+  const st = $('status'); const body = st.querySelector('b') || st;
+  let msg, err = false;
+  if(k === 'live'){
+    msg = 'Data live daripada sistem CBT · dikemas kini ' + fmtTime(S.lastOk);
+  } else if(k === 'no-endpoint'){
+    msg = 'Endpoint belum dikonfigurasikan. Paparan pejabat masih tersedia.';
+  } else if(k === 'no-session'){
+    msg = 'Sesi log masuk tidak ditemui. Log masuk dalam Sistem CBT, kemudian buka semula halaman ini. Paparan pejabat masih tersedia.';
+  } else if(k === 'stale' || k === 'offline'){
+    err = true;
+    msg = 'Data tidak dapat dimuatkan. Paparan pejabat masih tersedia.' + (S.lastOk ? ' Kemas kini terakhir ' + fmtTime(S.lastOk) + '.' : '');
+  } else msg = 'Memulakan…';
+  st.classList.toggle('err', err);
+  if(st.querySelector('b')) st.querySelector('b').textContent = msg; else st.textContent = msg;
+
+  $('txtRole').textContent = S.roleKnown
+    ? (S.isAdmin ? 'Admin — Audit Log dibenarkan' : 'Peranan: ' + (S.session.role || 'staf'))
+    : 'Sesi belum disahkan';
+}
+
+/* ============================================================================
+   11. ENJIN PEPEJABAT (kanvas pixel-art)
+   ========================================================================== */
+const PX = 4;
+const W = 1600, H = 1000;
+const cv = $('scene'), g = cv.getContext('2d');
+g.imageSmoothingEnabled = false;
+
+function px(x, y, w, h, c){ g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+
+const C = {
+  floor1:'#d9d2c5', floor2:'#cfc7b8', wall:'#efe9dd', wallTop:'#e2dbcd',
+  deskTop:'#e0b483', deskEdge:'#b98a55', deskLeg:'#9c7443',
+  chair:'#37474f', chairSeat:'#2b3843', mon:'#2b3440', monScreen:'#7fd3e8',
+  cab:'#b0a79a', cabDark:'#948b7e', plant:'#4e8f4a', pot:'#b5651d',
+  glass:'rgba(150,200,220,0.26)', glassEdge:'#8aa0ad',
+  paper:'#fdfaf3', paperEdge:'#e6dfd0', wood:'#c9a06a', dark:'#1b2430',
+  rug:'#c8bda9'
+};
+
+/* --- susun atur lapan workstation dalam SATU ruang --- */
+const STATIONS = [
+  { id:'log',       name:'LOG PENUH',       fn:'Log penuh penugasan',       acc:'--log',      x:120,  y:170, w:300, h:130, agent:'Ejen Log' },
+  { id:'belum',     name:'BELUM VALIDASI',  fn:'Menunggu validasi',         acc:'--belum',    x:470,  y:170, w:300, h:130, agent:'Ejen Validasi' },
+  { id:'selesai',   name:'SELESAI VALIDASI',fn:'Selesai divalidasi',        acc:'--selesai',  x:820,  y:170, w:300, h:130, agent:'Ejen Arkib' },
+  { id:'personel',  name:'PERSONEL',        fn:'Daftar personel & team',    acc:'--personel', x:1170, y:170, w:300, h:130, agent:'Ejen Personel' },
+  { id:'draf',      name:'DRAF',            fn:'Draf belum dihantar',       acc:'--draf',     x:120,  y:420, w:300, h:130, agent:'Ejen Draf' },
+  { id:'penyelia',  name:'PENYELIA',        fn:'Penyelia & semakan',        acc:'--penyelia', x:470,  y:420, w:300, h:130, agent:'Ejen Penyelia' },
+  { id:'dashboard', name:'DASHBOARD',       fn:'Ringkasan & statistik',     acc:'--dash',     x:820,  y:420, w:300, h:130, agent:'Ejen Dashboard' },
+  { id:'audit',     name:'AUDIT LOG',       fn:'Jejak perubahan (Admin)',   acc:'--audit',    x:1170, y:420, w:300, h:130, agent:'Ejen Audit' }
+];
+const MEETING = { x:1120, y:620, w:440, h:330 };
+const PANTRY  = { x:80,   y:700, w:320, h:250 };
+const PRINT   = { x:470,  y:700, w:280, h:110 };
+const CABINET = { x:800,  y:700, w:240, h:110 };
+
+/* Warna aksen dibaca SEKALI sahaja — getComputedStyle setiap bingkai akan
+   menjejaskan prestasi (60 bingkai/saat × 16 panggilan). */
+const ACCENT_CACHE = {};
+function accent(st){
+  if(ACCENT_CACHE[st.acc]) return ACCENT_CACHE[st.acc];
+  let c = '#888';
+  try{ c = getComputedStyle(document.documentElement).getPropertyValue(st.acc).trim() || '#888'; }catch(e){}
+  ACCENT_CACHE[st.acc] = c;
+  return c;
+}
+function stationById(id){ return STATIONS.filter(s => s.id === id)[0]; }
+
+/* --- ejen --- */
+const SKIN = ['#f0c9a0','#e3b58a','#d09a6c','#b87c4e','#8d5a34'];
+const HAIR = ['#241a12','#3a2718','#5a3a1e','#14100c','#6b4a2a'];
+const SHIRT = ['#6f8fd0','#b8714f','#6aa88a','#a9a2c9','#c9a05a','#5f7f8f','#8f6f9f','#7f9f6f'];
+const PANTS = ['#3b4a5a','#4a4038','#2f3b47','#514a5c'];
+const AGENTS = [];
+function buildAgents(){
+  AGENTS.length = 0;
+  STATIONS.forEach((st, i) => {
+    AGENTS.push({
+      id: st.id, station: st.id, label: st.agent, kind: 'desk',
+      home: { x: st.x + st.w / 2, y: st.y - 34 },
+      x: st.x + st.w / 2, y: st.y - 34,
+      pal: { skin:SKIN[i % SKIN.length], hair:HAIR[i % HAIR.length], shirt:SHIRT[i % SHIRT.length],
+             pants:PANTS[i % PANTS.length], glasses:(i % 3 === 0), hijab:(i % 4 === 2) },
+      state:'idle', pose:'sit', dir:1, phase: i * 0.7, anim:0,
+      path:[], target:null, busy:0
+    });
+  });
+}
+function drawAgent(a, t){
+  const s = PX;
+  const bx = Math.round(a.x / s) * s, by = Math.round(a.y / s) * s;
+  const p = a.pal;
+  const walk = a.state === 'walk';
+  const step = walk ? (Math.floor(t / 220) % 2) : 0;
+  const sit = a.pose === 'sit';
+
+  px(bx - 3 * s, by + (sit ? 13 : 17) * s, 6 * s, s, 'rgba(0,0,0,0.15)');
+
+  /* kaki */
+  const legTop = by + (sit ? 9 : 11) * s;
+  px(bx - 2 * s, legTop, 2 * s, (sit ? 4 : 6) * s, p.pants);
+  px(bx + 0 * s, legTop, 2 * s, (sit ? 4 : 6) * s, p.pants);
+  if(!sit){
+    px(bx - 2 * s, legTop + 6 * s + step * s, 2 * s, s, C.dark);
+    px(bx + 0 * s, legTop + 6 * s + (1 - step) * s, 2 * s, s, C.dark);
+  }
+
+  /* badan */
+  px(bx - 3 * s, by + 5 * s, 6 * s, 6 * s, p.shirt);
+  px(bx - 3 * s, by + 5 * s, 6 * s, s, 'rgba(255,255,255,0.12)');
+
+  /* lengan */
+  const typing = (a.state === 'type');
+  const armY = by + (typing ? 7 * s : 6 * s) + (typing ? (Math.floor(t / 170) % 2) * s : 0);
+  px(bx - 4 * s, armY, s, 3 * s, p.shirt);
+  px(bx + 3 * s, armY, s, 3 * s, p.shirt);
+  px(bx - 4 * s, armY + 3 * s, s, s, p.skin);
+  px(bx + 3 * s, armY + 3 * s, s, s, p.skin);
+
+  /* kepala */
+  px(bx - 2 * s, by - 2 * s, 4 * s, 5 * s, p.skin);
+  if(p.hijab){ px(bx - 3 * s, by - 3 * s, 6 * s, 6 * s, p.hair); px(bx - 2 * s, by - 1 * s, 4 * s, 4 * s, p.skin); }
+  else { px(bx - 2 * s, by - 3 * s, 4 * s, 2 * s, p.hair); px(bx - 2 * s, by - 2 * s, s, s, p.hair); }
+  /* mata / cermin mata */
+  px(bx - s, by + 1 * s, s, s, '#20242b');
+  if(p.glasses) px(bx + 0 * s, by + 1 * s, 2 * s, s, '#c8d2de');
+
+  /* fail di tangan semasa acara */
+  if(a.busy > Date.now()){
+    px(bx + 4 * s, by + 7 * s, 3 * s, 4 * s, C.paper);
+    px(bx + 4 * s, by + 7 * s, 3 * s, s, C.paperEdge);
+  }
+}
+
+/* --- perabot --- */
+function drawFloor(){
+  for(let y = 90; y < H; y += 40) for(let x = 0; x < W; x += 40){
+    px(x, y, 40, 40, ((x / 40 + y / 40) % 2) ? C.floor1 : C.floor2);
+  }
+  /* permaidani zon kerja */
+  px(90, 140, 1410, 440, 'rgba(200,189,169,0.35)');
+}
+function drawWalls(){
+  px(0, 0, W, 90, C.wall);
+  px(0, 78, W, 12, C.wallTop);
+  /* tingkap */
+  for(let i = 0; i < 7; i++){
+    const x = 60 + i * 215;
+    px(x, 16, 150, 54, '#bcd9e8'); px(x, 16, 150, 6, '#9dc0d4');
+    px(x + 72, 16, 6, 54, '#e8eef4');
+    px(x, 16, 6, 54, '#cfe3ee'); px(x + 144, 16, 6, 54, '#cfe3ee');
+  }
+  /* pintu masuk */
+  px(1470, 20, 90, 70, '#c9b79a'); px(1470, 20, 90, 6, '#a99577'); px(1548, 48, 8, 8, '#8a7a60');
+}
+function drawDesk(st){
+  const { x, y, w, h } = st;
+  px(x, y, w, h, C.deskTop);
+  px(x, y + h - 10, w, 10, C.deskEdge);
+  px(x, y, w, 6, 'rgba(255,255,255,0.22)');
+  px(x + 8, y + h, 10, 26, C.deskLeg);
+  px(x + w - 18, y + h, 10, 26, C.deskLeg);
+  /* monitor */
+  px(x + w / 2 - 40, y + 20, 80, 46, C.mon);
+  px(x + w / 2 - 34, y + 26, 68, 34, C.monScreen);
+  px(x + w / 2 - 6, y + 66, 12, 10, C.mon);
+  px(x + w / 2 - 26, y + 76, 52, 6, C.mon);
+  /* papan tanda warna workstation */
+  const a = accent(st);
+  px(x + 10, y - 26, w - 20, 22, 'rgba(14,22,34,0.88)');
+  px(x + 10, y - 26, 6, 22, a);
+  /* kerusi */
+  px(x + w / 2 - 22, y - 62, 44, 12, C.chairSeat);
+  px(x + w / 2 - 22, y - 50, 44, 8, C.chair);
+}
+function drawFiles(st){
+  const n = fileCountFor(st.id);
+  if(n == null || n <= 0) return;
+  const stack = Math.min(14, Math.max(1, Math.round(Math.sqrt(n) / 1.6)));
+  const { x, y, w } = st;
+  for(let i = 0; i < stack; i++){
+    px(x + w - 92, y + 12 - i * 3, 34, 6, i % 2 ? C.paper : C.paperEdge);
+  }
+  px(x + w - 96, y + 6, 42, 2, accent(st));
+}
+function drawFurniture(){
+  /* kabinet fail */
+  for(let i = 0; i < 3; i++){
+    const cx = CABINET.x + i * 78;
+    px(cx, CABINET.y, 70, 100, C.cab);
+    px(cx, CABINET.y, 70, 6, C.cabDark);
+    px(cx + 6, CABINET.y + 14, 58, 30, C.cabDark);
+    px(cx + 6, CABINET.y + 54, 58, 30, C.cabDark);
+    px(cx + 28, CABINET.y + 28, 14, 4, '#6f6659');
+    px(cx + 28, CABINET.y + 68, 14, 4, '#6f6659');
+  }
+  /* pencetak */
+  px(PRINT.x, PRINT.y, 120, 84, '#c3cad3');
+  px(PRINT.x, PRINT.y, 120, 10, '#9aa5b1');
+  px(PRINT.x + 18, PRINT.y + 16, 84, 26, '#e9eef4');
+  px(PRINT.x + 40, PRINT.y + 50, 40, 12, C.paper);
+  px(PRINT.x + 96, PRINT.y + 16, 12, 12, printerOn() ? '#4ade80' : '#6b7280');
+  /* rak dokumen */
+  px(PRINT.x + 150, PRINT.y - 20, 110, 104, '#bdb3a4');
+  for(let r = 0; r < 3; r++){
+    px(PRINT.x + 156, PRINT.y - 8 + r * 32, 98, 6, '#9d9384');
+    for(let b = 0; b < 4; b++) px(PRINT.x + 160 + b * 24, PRINT.y - 16 + r * 32, 16, 10, b % 2 ? '#d9d2c5' : '#c8bfae');
+  }
+  /* pantry */
+  px(PANTRY.x, PANTRY.y, PANTRY.w, 90, '#cbb79a');
+  px(PANTRY.x, PANTRY.y, PANTRY.w, 8, '#a9906f');
+  px(PANTRY.x + 20, PANTRY.y + 20, 60, 54, '#e9eef4');
+  px(PANTRY.x + 30, PANTRY.y + 30, 40, 34, '#8fb8cf');
+  px(PANTRY.x + 110, PANTRY.y + 30, 40, 44, '#a9b3bd');
+  px(PANTRY.x + 130, PANTRY.y + 74, 4, 4, '#4a5158');
+  px(PANTRY.x + 200, PANTRY.y + 24, 44, 50, '#7a6a55');
+  px(PANTRY.x + 240, PANTRY.y + 40, 14, 8, '#5d5040');
+  px(PANTRY.x + 60, PANTRY.y + 130, 150, 70, C.wood);
+  px(PANTRY.x + 60, PANTRY.y + 130, 150, 6, '#a9834f');
+  /* tumbuhan */
+  const pots = [[60, 640], [1560, 640], [1560, 300], [60, 940], [430, 950]];
+  pots.forEach(([x, y]) => {
+    px(x, y + 40, 34, 30, C.pot);
+    px(x + 4, y + 8, 26, 34, C.plant);
+    px(x - 6, y + 18, 18, 12, C.plant);
+    px(x + 22, y + 14, 18, 14, C.plant);
+  });
+  /* whiteboard */
+  px(1420, 92, 150, 96, '#f7f7f2'); px(1420, 92, 150, 6, '#c9ccd2');
+  px(1434, 108, 60, 4, '#7f8b99'); px(1434, 122, 110, 4, '#7f8b99'); px(1434, 136, 84, 4, '#7f8b99');
+  px(1434, 156, 40, 4, '#c0392b');
+  /* papan notis */
+  px(120, 92, 150, 92, '#b99a6b'); px(120, 92, 150, 6, '#8f7550');
+  for(let i = 0; i < 6; i++) px(134 + (i % 3) * 44, 108 + Math.floor(i / 3) * 40, 30, 30, i % 2 ? '#fdfaf3' : '#f0e6cf');
+  /* jam dinding */
+  px(660, 20, 76, 52, '#f2efe6'); px(660, 20, 76, 6, '#c9c2b2');
+  const d = new Date();
+  const hx = 698 + Math.sin((d.getHours() % 12) / 12 * Math.PI * 2) * 18;
+  const hy = 46 - Math.cos((d.getHours() % 12) / 12 * Math.PI * 2) * 12;
+  px(696, 44, hx - 696, 4, '#2b3440');
+  px(696, 30, 4, hy - 30, '#2b3440');
+  /* tong sampah */
+  [[900, 640], [1050, 640]].forEach(([x, y]) => { px(x, y, 26, 34, '#7f8b99'); px(x, y, 26, 6, '#5f6b79'); });
+  /* mesin air */
+  px(1500, 700, 60, 110, '#dbe3ea'); px(1506, 712, 48, 30, '#8fb8cf'); px(1506, 752, 48, 40, '#c7d2dc');
+}
+function printerOn(){ return S.events.some(e => e.kind === 'simpan' && Date.now() - e.ts < 4000); }
+function fileCountFor(id){
+  const c = S.counts;
+  if(id === 'log') return c.log;
+  if(id === 'belum') return c.belum;
+  if(id === 'selesai') return c.selesai;
+  if(id === 'draf') return c.draf;
+  if(id === 'personel') return c.personel;
+  if(id === 'penyelia') return c.penyelia;
+  if(id === 'dashboard') return c.log;
+  if(id === 'audit') return null;   /* tiada endpoint audit dalam sistem CBT */
+  return null;
+}
+function drawMeeting(){
+  const { x, y, w, h } = MEETING;
+  /* lantai bilik */
+  px(x, y, w, h, '#cdd8dd');
+  /* dinding kaca */
+  g.fillStyle = C.glass; g.fillRect(x, y, w, h);
+  px(x, y, w, 6, C.glassEdge); px(x, y + h - 6, w, 6, C.glassEdge);
+  px(x, y, 6, h, C.glassEdge); px(x + w - 6, y, 6, h, C.glassEdge);
+  px(x + w / 2 - 3, y, 6, h, C.glassEdge);
+  /* meja mesyuarat */
+  px(x + 90, y + 120, 260, 110, C.wood);
+  px(x + 90, y + 120, 260, 8, '#a9834f');
+  /* kerusi */
+  const seats = [[130, 100], [200, 100], [270, 100], [130, 244], [200, 244], [270, 244], [330, 172]];
+  seats.forEach(([sx, sy]) => { px(x + sx, y + sy, 30, 10, C.chair); px(x + sx + 6, y + sy + 10, 18, 12, C.chairSeat); });
+  /* monitor + dokumen (di atas permukaan meja) */
+  px(x + 210, y + 126, 60, 34, C.mon); px(x + 215, y + 130, 50, 24, C.monScreen);
+  for(let i = 0; i < 6; i++) px(x + 140 + i * 26, y + 176, 22, 5, i % 2 ? C.paper : C.paperEdge);
+  /* whiteboard dalam bilik */
+  px(x + 14, y + 18, 120, 74, '#f7f7f2'); px(x + 24, y + 34, 70, 4, '#7f8b99'); px(x + 24, y + 50, 96, 4, '#7f8b99'); px(x + 24, y + 66, 50, 4, '#c0392b');
+  /* label bilik */
+  px(x + 10, y + h - 40, 250, 26, 'rgba(14,22,34,0.9)');
+  px(x + 10, y + h - 40, 6, 26, '#5ea9ff');
+  g.font = '600 15px system-ui, sans-serif'; g.fillStyle = '#e8eef7'; g.textAlign = 'left';
+  g.fillText('BILIK MESYUARAT', x + 26, y + h - 21);
+}
+function drawStationLabels(){
+  g.textAlign = 'center';
+  STATIONS.forEach(st => {
+    const c = fileCountFor(st.id);
+    const txt = st.name + (c == null ? '' : '  ·  ' + c);
+    g.font = '600 16px system-ui, sans-serif';
+    const wd = g.measureText(txt).width + 26;
+    px(st.x + st.w / 2 - wd / 2, st.y - 26, wd, 22, 'rgba(14,22,34,0.88)');
+    px(st.x + st.w / 2 - wd / 2, st.y - 26, 5, 22, accent(st));
+    g.fillStyle = '#e8eef7';
+    g.fillText(txt, st.x + st.w / 2, st.y - 10);
+  });
+  g.textAlign = 'left';
+}
+function drawAmbient(t){
+  if(reduceMotion()) return;
+  /* sedikit denyutan cahaya pada skrin monitor */
+  const k = (Math.sin(t / 900) + 1) / 2;
+  g.fillStyle = 'rgba(127,211,232,' + (0.05 + k * 0.05) + ')';
+  STATIONS.forEach(st => g.fillRect(st.x + st.w / 2 - 34, st.y + 26, 68, 34));
+}
+
+/* --- laluan ejen ---
+   Laluan disimpan sebagai senarai titik dengan panjang terkumpul, kemudian
+   diinterpolasi mengikut masa. Versi awal mengira segmen secara salah dan
+   menyebabkan ejen melompat. */
+function corridorY(){ return 620; }
+function buildPath(a, tx, ty){
+  const pts = [{ x:a.x, y:a.y }];
+  const cy = corridorY();
+  if(Math.abs(a.y - cy) > 8) pts.push({ x:a.x, y:cy });
+  if(Math.abs(a.x - tx) > 8) pts.push({ x:tx, y:cy });
+  pts.push({ x:tx, y:ty });
+  const segs = [];
+  let total = 0;
+  for(let i = 1; i < pts.length; i++){
+    const dx = pts[i].x - pts[i - 1].x, dy = pts[i].y - pts[i - 1].y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if(len < 1) continue;
+    segs.push({ x0:pts[i - 1].x, y0:pts[i - 1].y, x1:pts[i].x, y1:pts[i].y, len, start:total });
+    total += len;
+  }
+  return { segs, total };
+}
+function walkTo(a, tx, ty, speedPxPerSec){
+  const path = buildPath(a, tx, ty);
+  if(!path.segs.length){ a.state = 'idle'; a.pose = 'sit'; return; }
+  a.walkPath = path;
+  a.walkSpeed = speedPxPerSec || 210;
+  a.walkPos = 0;
+  a.state = 'walk';
+  a.pose = 'stand';
+}
+function updateAgents(dt){
+  AGENTS.forEach(a => {
+    if(a.state !== 'walk' || !a.walkPath) return;
+    a.walkPos += (a.walkSpeed * dt) / 1000;
+    const p = a.walkPath;
+    if(a.walkPos >= p.total){
+      const last = p.segs[p.segs.length - 1];
+      a.x = last.x1; a.y = last.y1;
+      a.walkPath = null; a.walkPos = 0;
+      onArrive(a);
+      return;
+    }
+    let s = p.segs[0];
+    for(let i = 0; i < p.segs.length; i++){ if(a.walkPos >= p.segs[i].start) s = p.segs[i]; }
+    const local = (a.walkPos - s.start) / s.len;
+    const nx = s.x0 + (s.x1 - s.x0) * local;
+    const ny = s.y0 + (s.y1 - s.y0) * local;
+    if(Math.abs(nx - a.x) > 0.5) a.dir = nx > a.x ? 1 : -1;
+    a.x = nx; a.y = ny;
+  });
+}
+function onArrive(a){
+  if(a.kind === 'team'){ a.state = 'meet'; a.pose = 'sit'; return; }
+  if(a.kind === 'leaving'){ a.state = 'idle'; a.pose = 'stand'; return; }
+  a.state = 'idle'; a.pose = 'sit';
+  if(a.kind === 'deco'){ a.next = Date.now() + 900; }
+}
+function updateDecorative(t){
+  if(reduceMotion() || document.hidden) return;
+  if(t < office.nextDeco) return;
+  office.nextDeco = t + 2600 + Math.random() * 4200;
+  const busy = AGENTS.filter(a => a.state === 'walk').length;
+  if(busy >= 6) return;
+  const a = AGENTS[Math.floor(Math.random() * AGENTS.length)];
+  if(a.state === 'walk' || a.kind === 'team' || a.kind === 'leaving') return;
+  const r = Math.random();
+  if(r < 0.45){
+    /* berjalan ke kabinet / pencetak / pantry — HIASAN (bukan bukti kerja) */
+    const spots = [{ x:CABINET.x + 100, y:CABINET.y - 30 }, { x:PRINT.x + 60, y:PRINT.y - 30 }, { x:PANTRY.x + 130, y:PANTRY.y - 20 }];
+    const s = spots[Math.floor(Math.random() * spots.length)];
+    a.kind = 'deco'; a.returnHome = true;
+    walkTo(a, s.x, s.y, 170 + Math.random() * 70);
+    office.sfx('step');
+  } else if(r < 0.75){
+    a.state = 'type'; a.pose = 'sit';
+    a.typingUntil = Date.now() + 2200 + Math.random() * 2600;
+    office.sfx('keyboard');
+  } else {
+    a.state = 'idle'; a.pose = 'sit';
+    office.sfx('chair');
+  }
+}
+function agentDecoReturn(a){
+  if(a.returnHome){ a.returnHome = false; walkTo(a, a.home.x, a.home.y, 200); }
+  else { a.kind = 'desk'; }
+}
+
+/* ============================================================================
+   12. KAWALAN PAPARAN (zum / geser / klik)
+   ========================================================================== */
+const view = { s:1, tx:0, ty:0, min:0.35, max:3 };
+function fitView(){
+  const st = $('stage');
+  const sw = st.clientWidth, sh = st.clientHeight;
+  const s = Math.min(sw / W, sh / H) * 0.98;
+  view.s = s; view.min = s * 0.6; view.max = s * 3.4;
+  view.tx = (sw - W * s) / 2; view.ty = (sh - H * s) / 2;
+  applyView();
+}
+function applyView(){
+  $('wrap').style.transform = 'translate(' + view.tx + 'px,' + view.ty + 'px) scale(' + view.s + ')';
+  if(cardOpen) positionCard();
+}
+function zoomAt(cx, cy, factor){
+  const ns = Math.max(view.min, Math.min(view.max, view.s * factor));
+  const k = ns / view.s;
+  view.tx = cx - (cx - view.tx) * k;
+  view.ty = cy - (cy - view.ty) * k;
+  view.s = ns; applyView();
+}
+function stageToScene(clientX, clientY){
+  const r = $('stage').getBoundingClientRect();
+  return { x:(clientX - r.left - view.tx) / view.s, y:(clientY - r.top - view.ty) / view.s };
+}
+function hitTest(sc){
+  const ms = STATIONS.filter(s => sc.x >= s.x - 10 && sc.x <= s.x + s.w + 10 && sc.y >= s.y - 70 && sc.y <= s.y + s.h + 40);
+  if(ms.length) return { type:'station', st:ms[0] };
+  if(sc.x >= MEETING.x && sc.x <= MEETING.x + MEETING.w && sc.y >= MEETING.y && sc.y <= MEETING.y + MEETING.h) return { type:'meeting' };
+  return null;
+}
+
+/* ============================================================================
+   13. KAD MAKLUMAT
+   ========================================================================== */
+let cardOpen = null;
+function openCard(hit){
+  const card = $('card');
+  const rows = [];
+  let title = '', note = '', sw = '#888';
+
+  if(hit.type === 'station'){
+    const st = hit.st;
+    sw = accent(st);
+    title = st.name;
+    const c = fileCountFor(st.id);
+    rows.push(['Fungsi', st.fn]);
+    if(st.id === 'audit' && !S.isAdmin){
+      rows.push(['Jumlah rekod', 'Akses belum disahkan']);
+      note = 'Audit Log hanya dipaparkan kepada Pentadbir Sistem. Sesi semasa tidak disahkan sebagai Admin.';
+    } else if(c == null){
+      rows.push(['Jumlah rekod', 'Data belum tersedia']);
+      note = st.id === 'audit'
+        ? 'Tiada endpoint audit dalam sistem CBT — nilai tidak dipaparkan supaya tidak mengelirukan.'
+        : 'Endpoint tidak menyediakan nilai ini.';
+    } else {
+      rows.push(['Jumlah rekod', String(c)]);
+      note = 'Longgokan fail pada meja ialah visual mampatan (√ skala), bukan 1 fail = 1 rekod.';
+    }
+    rows.push(['Status data', statusLabel()]);
+    rows.push(['Kemas kini terakhir', S.lastOk ? fmtTime(S.lastOk) : '—']);
+    rows.push(['Ejen', st.agent]);
+  } else {
+    sw = '#5ea9ff';
+    title = 'BILIK MESYUARAT';
+    rows.push(['Fungsi', 'Perbincangan merentas team']);
+    if(S.focus){
+      const r = S.focus.rec;
+      rows.push(['Rekod', '#' + (r.bil || '—') + ' · ' + String(r.tajuk || '').slice(0, 40)]);
+      rows.push(['Team terlibat', String(S.focus.teams.length) + ' team']);
+      rows.push(['Team', S.focus.teams.join(', ')]);
+      rows.push(['Status', 'Belum divalidasi — mesyuarat aktif']);
+      note = 'Ejen di sini mewakili team sebenar yang dinamakan dalam rekod penugasan tersebut (data live). Nama individu tidak dipaparkan.';
+    } else {
+      rows.push(['Status', 'Tiada rekod pelbagai team']);
+      note = 'Bilik mesyuarat berfungsi sebagai elemen hiasan kerana tiada rekod belum divalidasi yang melibatkan 2 team atau lebih.';
+    }
+  }
+
+  $('cardSw').style.background = sw;
+  $('cardTitle').textContent = title;
+  $('cardBody').innerHTML = rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
+  $('cardNote').textContent = note;
+  card.classList.add('show');
+  cardOpen = hit;
+  positionCard();
+}
+function statusLabel(){
+  return ({ live:'LIVE', stale:'STALE', offline:'OFFLINE', 'no-session':'Sesi tidak tersedia', 'no-endpoint':'Endpoint belum dikonfigurasikan', init:'Memulakan' })[S.status] || '—';
+}
+function positionCard(){
+  const card = $('card');
+  const r = card.getBoundingClientRect();
+  let x = office.lastClick.x + 16, y = office.lastClick.y + 16;
+  if(x + r.width > window.innerWidth - 12) x = office.lastClick.x - r.width - 16;
+  if(y + r.height > window.innerHeight - 12) y = window.innerHeight - r.height - 12;
+  card.style.left = Math.max(12, x) + 'px';
+  card.style.top = Math.max(60, y) + 'px';
+}
+function closeCard(){ $('card').classList.remove('show'); cardOpen = null; }
+
+/* ============================================================================
+   14. AUDIO (Web Audio sintetik sahaja — tiada fail luaran, tiada autoplay)
+   ========================================================================== */
+const Audio2 = {
+  ctx:null, master:null, gAmb:null, gSfx:null, hum:null, on:false,
+  prefs:{ m:70, a:55, s:65, ambOnly:false, mute:false },
+  load(){ try{ const p = readJSON(UI_KEY, {}); if(p && p.audio) Object.assign(this.prefs, p.audio); }catch(e){} },
+  save(){ const p = readJSON(UI_KEY, {}) || {}; p.audio = this.prefs; try{ localStorage.setItem(UI_KEY, JSON.stringify(p)); }catch(e){} },
+  init(){
+    if(this.ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    this.ctx = new AC();
+    this.master = this.ctx.createGain();
+    this.gAmb = this.ctx.createGain();
+    this.gSfx = this.ctx.createGain();
+    this.gAmb.connect(this.master); this.gSfx.connect(this.master); this.master.connect(this.ctx.destination);
+    this.applyGains();
+    this.startHum();
+  },
+  applyGains(){
+    if(!this.ctx) return;
+    const m = this.prefs.mute ? 0 : this.prefs.m / 100;
+    this.master.gain.value = m;
+    this.gAmb.gain.value = (this.prefs.a / 100) * 0.5;
+    this.gSfx.gain.value = this.prefs.ambOnly ? 0 : (this.prefs.s / 100) * 0.6;
+  },
+  startHum(){
+    const ctx = this.ctx, len = ctx.sampleRate * 3;
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    let last = 0;
+    for(let i = 0; i < len; i++){ const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320; lp.Q.value = 0.4;
+    src.connect(lp); lp.connect(this.gAmb); src.start();
+    this.hum = src;
+  },
+  blip(type){
+    if(!this.on || !this.ctx || document.hidden) return;
+    if(this.prefs.ambOnly || this.prefs.mute) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const dur = type === 'printer' ? 0.07 : (type === 'paper' ? 0.16 : 0.06);
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, type === 'paper' ? 2.2 : 4);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = type === 'chair' || type === 'step' ? 'lowpass' : 'bandpass';
+    f.frequency.value = type === 'keyboard' ? 2100 : type === 'paper' ? 1500 : type === 'step' ? 220 : type === 'chair' ? 380 : 900;
+    const gn = ctx.createGain(); gn.gain.value = type === 'printer' ? 0.35 : 0.5;
+    src.connect(f); f.connect(gn); gn.connect(this.gSfx); src.start();
+  },
+  suspend(){ try{ if(this.ctx && this.ctx.state === 'running') this.ctx.suspend(); }catch(e){} },
+  resume(){ try{ if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); }catch(e){} },
+  async toggle(){
+    if(this.on){ this.on = false; this.suspend(); return false; }
+    this.init();
+    if(!this.ctx) { toast('Audio tidak disokong oleh pelayar ini.'); return false; }
+    this.on = true; this.resume(); this.applyGains();
+    return true;
+  }
+};
+
+/* ============================================================================
+   15. ENJIN UTAMA
+   ========================================================================== */
+const office = {
+  nextDeco:0, lastClick:{ x:0, y:0 }, raf:0, localTimer:0, tickTimer:0, lastFrame:0, started:false,
+
+  sfx(type){ Audio2.blip(type); },
+
+  onEvent(kind, station, text){
+    /* acara sebenar -> gerakan ejen di workstation berkenaan */
+    const a = AGENTS.filter(x => x.station === stationToId(station))[0];
+    if(a){
+      a.busy = Date.now() + 2600;
+      if(a.state !== 'walk'){ a.state = 'type'; a.pose = 'sit'; }
+      if(kind === 'simpan'){ this.sfx('paper'); }
+      if(kind === 'validasi'){ this.sfx('chair'); }
+    }
+    if(kind === 'simpan' || kind === 'log-baru') this.sfx('printer');
+    syncTeamAgents();
+  },
+
+  frame(rafNow){
+    /* dt daripada masa rAF (untuk gerakan); nowMs daripada Date.now()
+       (untuk semua perbandingan masa keadaan). Jangan campurkan kedua-duanya. */
+    const dt = Math.min(64, rafNow - (this.lastFrame || rafNow)); this.lastFrame = rafNow;
+    const nowMs = Date.now();
+    if(!document.hidden){
+      draw(rafNow);
+      updateAgents(dt);
+      updateDecorative(rafNow);
+      AGENTS.forEach(a => {
+        if(a.state === 'type' && a.typingUntil && nowMs > a.typingUntil){ a.state = 'idle'; a.typingUntil = 0; }
+        if(a.state === 'idle' && a.next && nowMs > a.next && a.kind === 'deco' && !a.walkPath){ a.next = 0; agentDecoReturn(a); }
+      });
+      updateTeamAgents(nowMs);
+    }
+    this.raf = requestAnimationFrame(t => this.frame(t));
+  },
+
+  start(){
+    if(this.started) return;
+    this.started = true;
+    buildAgents();
+    fitView();
+    this.raf = requestAnimationFrame(t => this.frame(t));
+    pollLocal();
+    this.localTimer = setInterval(() => pollLocal(), CONFIG.localPollMs);
+    refreshAll();
+    /* Satu pemasa memutuskan bila untuk menyegarkan: 3s dalam tetingkap pantas
+       selepas kesan tindakan dikesan, 30s selebihnya. Ini mengelak permintaan
+       berulang tanpa kawalan terhadap Apps Script. */
+    this.tickTimer = setInterval(() => {
+      const now = Date.now();
+      if(S.loading) return;
+      if(document.hidden) return;
+      const due = now < S.burstUntil ? CONFIG.burstMs : CONFIG.refreshMs;
+      if(now - (S.lastTry || 0) >= due){ S.lastTry = now; refreshAll(); }
+    }, 1000);
+  },
+
+  stop(){
+    cancelAnimationFrame(this.raf);
+    clearInterval(this.localTimer); clearInterval(this.tickTimer);
+    if(S.abort) try{ S.abort.abort(); }catch(e){}
+    Audio2.suspend();
+  }
+};
+
+function stationToId(name){
+  const m = { 'LOG PENUH':'log', 'BELUM VALIDASI':'belum', 'SELESAI VALIDASI':'selesai', 'DRAF':'draf',
+              'PERSONEL':'personel', 'PENYELIA':'penyelia', 'DASHBOARD':'dashboard', 'AUDIT LOG':'audit' };
+  return m[name] || null;
+}
+
+/* --- ejen team untuk mesyuarat --- */
+function syncTeamAgents(){
+  const want = S.focus ? S.focus.teams : [];
+  /* buang yang tidak diperlukan */
+  for(let i = AGENTS.length - 1; i >= 0; i--){
+    const a = AGENTS[i];
+    if(a.kind === 'team' && want.indexOf(a.team) < 0){
+      /* Beredar keluar dari bilik mesyuarat (bukan kembali ke tempat duduk),
+         kemudian ejen dibuang. Ini gambaran "kembali ke ruangan masing-masing". */
+      a.kind = 'leaving'; a.returnHome = false; a.dead = Date.now() + 12000;
+      const exit = { x: MEETING.x - 90 - i * 70, y: corridorY() };
+      walkTo(a, exit.x, exit.y, 240);
+    }
+  }
+  want.forEach((team, i) => {
+    if(AGENTS.some(a => a.kind === 'team' && a.team === team)) return;
+    const seat = [[160, 130], [230, 130], [300, 130], [160, 274], [230, 274], [300, 274], [360, 200], [110, 200]][i % 8];
+    const t = { x:MEETING.x + seat[0], y:MEETING.y + seat[1] };
+    const a = {
+      id:'team-' + team, station:null, label:team, kind:'team', team:team,
+      home: t, x: t.x - 40, y: MEETING.y + MEETING.h - 20,
+      pal:{ skin:SKIN[(i + 2) % SKIN.length], hair:HAIR[(i + 3) % HAIR.length],
+            shirt:SHIRT[(i + 5) % SHIRT.length], pants:PANTS[i % PANTS.length],
+            glasses:(i % 2 === 0), hijab:(i % 3 === 0) },
+      state:'walk', pose:'stand', dir:1, phase:i, anim:0, path:[], busy:0
+    };
+    AGENTS.push(a);
+    walkTo(a, t.x, t.y, 190);
+  });
+}
+function updateTeamAgents(nowMs){
+  for(let i = AGENTS.length - 1; i >= 0; i--){
+    const a = AGENTS[i];
+    /* Ejen yang telah keluar dari bilik dan berhenti berjalan dibuang selepas
+       jeda pendek supaya ia tidak kekal di koridor sebagai objek tersangkut. */
+    if(a.kind === 'leaving' && !a.walkPath && !a.exitDone){ a.exitDone = true; a.dead = nowMs + 500; }
+    if(a.dead && nowMs > a.dead) AGENTS.splice(i, 1);
+  }
+}
+function drawTeamLabels(){
+  g.textAlign = 'center'; g.font = '600 13px system-ui, sans-serif';
+  AGENTS.filter(a => a.kind === 'team').forEach(a => {
+    const t = String(a.team || '');
+    const w = g.measureText(t).width + 16;
+    px(a.x - w / 2, a.y - 46, w, 18, 'rgba(14,22,34,0.85)');
+    g.fillStyle = '#bfe0ff';
+    g.fillText(t, a.x, a.y - 33);
+  });
+  g.textAlign = 'left';
+}
+
+/* --- lukis satu bingkai --- */
+function draw(t){
+  g.clearRect(0, 0, W, H);
+  drawFloor();
+  drawWalls();
+  drawFurniture();
+  drawMeeting();
+  STATIONS.forEach(st => { drawDesk(st); drawFiles(st); });
+  drawStationLabels();
+  drawAmbient(t);
+  AGENTS.forEach(a => drawAgent(a, t));
+  drawTeamLabels();
+  drawJourney();
+}
+function reduceMotion(){ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+
+/* ============================================================================
+   16. ALIRAN KERJA (ilustrasi + status sebenar)
+   ========================================================================== */
+const journey = { on:false };
+const STEPS = [
+  { k:'input',   t:'Sumber input (WhatsApp)',     ids:['draf'] },
+  { k:'proses',  t:'Pemprosesan maklumat',        ids:['draf'] },
+  { k:'semak',   t:'Semakan / verifikasi',        ids:['belum'] },
+  { k:'rekod',   t:'Rekod penugasan',             ids:['log'] },
+  { k:'validasi',t:'Validasi',                    ids:['belum','selesai'] },
+  { k:'arkib',   t:'Arkib / selesai',             ids:['selesai'] }
+];
+function drawJourney(){
+  if(!journey.on) return;
+  const x = 470, y = 830, w = 620, h = 140;
+  px(x - 10, y - 34, w + 20, h + 44, 'rgba(14,22,34,0.93)');
+  px(x - 10, y - 34, 6, h + 44, '#5ea9ff');
+  g.font = '600 14px system-ui, sans-serif'; g.fillStyle = '#e8eef7'; g.textAlign = 'left';
+  g.fillText('ALIRAN KERJA — ILUSTRASI + STATUS SEBENAR', x + 4, y - 14);
+  const bw = (w - 5 * 12) / 6;
+  STEPS.forEach((s, i) => {
+    const bx = x + i * (bw + 12);
+    const live = liveForStep(s);
+    px(bx, y, bw, 62, live ? 'rgba(94,169,255,0.16)' : 'rgba(255,255,255,0.05)');
+    px(bx, y, bw, 4, live ? '#5ea9ff' : '#3a4657');
+    g.font = '600 11px system-ui, sans-serif'; g.fillStyle = live ? '#bfe0ff' : '#93a3ba';
+    wrapText(s.t, bx + 6, y + 22, bw - 12, 13);
+    g.font = '11px system-ui, sans-serif'; g.fillStyle = live ? '#4ade80' : '#6b7a8d';
+    g.fillText(live ? '● data' : '○ ilustrasi', bx + 6, y + 54);
+    if(i < 5){ px(bx + bw + 2, y + 30, 8, 3, '#3a4657'); }
+  });
+  g.font = '11px system-ui, sans-serif'; g.fillStyle = '#93a3ba';
+  g.fillText('Kotak biru = disokong data sebenar. Kelabu = ilustrasi aliran (bukan aktiviti live).', x + 4, y + h + 2);
+  g.textAlign = 'left';
+}
+function liveForStep(s){
+  if(s.k === 'draf' || s.k === 'input' || s.k === 'proses') return S.counts.draf != null;
+  if(s.k === 'semak' || s.k === 'validasi') return S.counts.belum != null || S.counts.selesai != null;
+  return S.counts.log != null;
+}
+function wrapText(text, x, y, maxW, lh){
+  const words = String(text).split(' ');
+  let line = '', yy = y;
+  words.forEach(w => {
+    const test = line ? line + ' ' + w : w;
+    if(g.measureText(test).width > maxW && line){ g.fillText(line, x, yy); line = w; yy += lh; }
+    else line = test;
+  });
+  if(line) g.fillText(line, x, yy);
+}
+
+/* ============================================================================
+   17. PENGIKATAN UI
+   ========================================================================== */
+function bindUI(){
+  const stage = $('stage');
+
+  stage.addEventListener('pointerdown', e => {
+    if(e.target !== cv) return;
+    office.lastClick = { x:e.clientX, y:e.clientY };
+    const sc = stageToScene(e.clientX, e.clientY);
+    const hit = hitTest(sc);
+    if(hit){ openCard(hit); return; }
+    closeCard();
+    stage.classList.add('drag');
+    const sx = e.clientX, sy = e.clientY, tx = view.tx, ty = view.ty;
+    let moved = false;
+    const move = ev => {
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      if(Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      view.tx = tx + dx; view.ty = ty + dy; applyView();
+    };
+    const up = () => {
+      stage.classList.remove('drag');
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  });
+
+  stage.addEventListener('wheel', e => {
+    e.preventDefault();
+    zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+  }, { passive:false });
+
+  window.addEventListener('resize', () => { fitView(); if(cardOpen) positionCard(); });
+  window.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeCard();
+    if(e.key === '+' || e.key === '=') zoomAt(window.innerWidth / 2, window.innerHeight / 2, 1.15);
+    if(e.key === '-') zoomAt(window.innerWidth / 2, window.innerHeight / 2, 1 / 1.15);
+    if(e.key === '0') fitView();
+  });
+
+  /* klik pada kanvas — elak kad ditutup oleh pointerdown di atas */
+  cv.addEventListener('click', e => e.stopPropagation());
+
+  $('cardX').addEventListener('click', closeCard);
+  document.addEventListener('pointerdown', e => {
+    const c = $('card');
+    if(cardOpen && !c.contains(e.target) && e.target !== cv) closeCard();
+  });
+
+  $('btnZoomIn').addEventListener('click', () => zoomAt(window.innerWidth / 2, window.innerHeight / 2, 1.2));
+  $('btnZoomOut').addEventListener('click', () => zoomAt(window.innerWidth / 2, window.innerHeight / 2, 1 / 1.2));
+  $('btnZoomFit').addEventListener('click', () => { fitView(); toast('Pandangan dikembalikan'); });
+
+  $('btnFull').addEventListener('click', () => {
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => toast('Fullscreen tidak dibenarkan.'));
+    else toast('Fullscreen tidak disokong.');
+  });
+  document.addEventListener('fullscreenchange', () => {
+    $('btnFull').textContent = document.fullscreenElement ? '⛶ Keluar' : '⛶ Fullscreen';
+  });
+
+  $('btnNewWin').addEventListener('click', () => window.open(location.href, '_blank', 'noopener'));
+
+  $('btnJourney').addEventListener('click', () => {
+    journey.on = !journey.on;
+    $('btnJourney').textContent = journey.on ? '🧭 Tutup Aliran' : '🧭 Aliran Kerja';
+    toast(journey.on ? 'Aliran kerja dipaparkan' : 'Aliran kerja ditutup');
+  });
+
+  /* audio */
+  $('btnSound').addEventListener('click', async () => {
+    const on = await Audio2.toggle();
+    syncAudioUI();
+    if(on) toast('Bunyi dihidupkan');
+  });
+  $('btnAudioCfg').addEventListener('click', () => $('audioPanel').classList.toggle('show'));
+  $('btnAudioOff').addEventListener('click', () => { Audio2.on = false; Audio2.suspend(); syncAudioUI(); });
+  ['volM', 'volA', 'volS'].forEach((id, i) => {
+    $(id).addEventListener('input', () => {
+      const v = Number($(id).value);
+      Audio2.prefs[['m','a','s'][i]] = v;
+      $('out' + ['M','A','S'][i]).textContent = v;
+      Audio2.applyGains(); Audio2.save();
+    });
+  });
+  $('chkAmbOnly').addEventListener('change', () => { Audio2.prefs.ambOnly = $('chkAmbOnly').checked; Audio2.applyGains(); Audio2.save(); });
+  $('chkMute').addEventListener('change', () => { Audio2.prefs.mute = $('chkMute').checked; Audio2.applyGains(); Audio2.save(); syncAudioUI(); });
+
+  /* konfigurasi */
+  $('btnCfg').addEventListener('click', () => {
+    $('cfgUrl').value = CONFIG.gasUrl;
+    $('cfgReuse').checked = CONFIG.reuseSession;
+    $('cfgState').textContent = 'Status: ' + statusLabel();
+    $('cfgPanel').classList.toggle('show');
+  });
+  $('cfgSave').addEventListener('click', () => {
+    const u = String($('cfgUrl').value || '').trim();
+    CONFIG.gasUrl = /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(u) ? u : '';
+    CONFIG.reuseSession = $('cfgReuse').checked;
+    const p = readJSON(UI_KEY, {}) || {}; p.gasUrl = CONFIG.gasUrl; p.reuseSession = CONFIG.reuseSession;
+    try{ localStorage.setItem(UI_KEY, JSON.stringify(p)); }catch(e){}
+    $('cfgPanel').classList.remove('show');
+    toast('Konfigurasi disimpan — menyambung semula…');
+    S.lastOk = 0; S.status = 'init'; setStatus('init');
+    refreshAll();
+  });
+
+  /* tab tersembunyi: kurangkan aktiviti audio & rangkaian */
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden){ Audio2.suspend(); }
+    else { if(Audio2.on) Audio2.resume(); refreshAll(); }
+  });
+
+  /* perubahan storan dari tab lain -> segera siasat */
+  window.addEventListener('storage', e => {
+    if(e.key === ADD_KEY || e.key === DRAF_KEY || e.key === SESS_KEY){ pollLocal(); triggerBurst(); refreshAll(); }
+  });
+
+  window.addEventListener('beforeunload', () => office.stop());
+}
+function syncAudioUI(){
+  $('btnSound').textContent = Audio2.on ? '🔊 MATIKAN BUNYI' : '🔇 HIDUPKAN BUNYI';
+  $('txtAudio').textContent = Audio2.on ? ('Audio aktif' + (Audio2.prefs.ambOnly ? ' (ambient sahaja)' : '') + (Audio2.prefs.mute ? ' — senyap' : '')) : 'Audio tidak aktif';
+  $('volM').value = Audio2.prefs.m; $('outM').textContent = Audio2.prefs.m;
+  $('volA').value = Audio2.prefs.a; $('outA').textContent = Audio2.prefs.a;
+  $('volS').value = Audio2.prefs.s; $('outS').textContent = Audio2.prefs.s;
+  $('chkAmbOnly').checked = !!Audio2.prefs.ambOnly;
+  $('chkMute').checked = !!Audio2.prefs.mute;
+}
+
+/* ============================================================================
+   18. MULAKAN
+   ========================================================================== */
+function loadUIPrefs(){
+  const p = readJSON(UI_KEY, {}) || {};
+  if(p.gasUrl) CONFIG.gasUrl = p.gasUrl;
+  if(typeof p.reuseSession === 'boolean') CONFIG.reuseSession = p.reuseSession;
+  Audio2.load();
+}
+function boot(){
+  loadUIPrefs();
+  if(CONFIG.reuseSession) loadSession();
+  bindUI();
+  syncAudioUI();
+  setStatus('init');
+  office.start();
+  window.addEventListener('pagehide', () => office.stop());
+}
+boot();
+</script>
+</body>
+</html>

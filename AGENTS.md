@@ -273,6 +273,28 @@ Polisi tidak membenarkan `'unsafe-eval'` — jangan perkenalkan `eval()` atau
 
 ## Cara menguji
 
+### Suite backend (pantas, tiada pelayar)
+
+```bash
+node gas/tests/run-tests.js
+```
+
+Logik `Code.gs` dijalankan **sebenar** di bawah `vm` Node; hanya lapisan Google
+(`SpreadsheetApp`, `MailApp`, `PropertiesService`, `ContentService`,
+`LockService`, `Utilities`, `CacheService`) dipalsukan. Uji versi lain dengan
+`CODE_GS=<fail> node gas/tests/run-tests.js`.
+
+Suite ini **tidak** membuktikan kod lama baik-baik saja: terhadap `Code.gs`
+v103 asal ia melaporkan 20 gagal, termasuk pendaftaran penyerang diterima,
+`devOtp` dipulangkan, dan e-mel pengguna lain dikosongkan. Bila menambah
+ujian, sahkan ia gagal dahulu terhadap kod yang belum dibetulkan — ujian yang
+tidak pernah gagal tidak menguji apa-apa.
+
+Titik yang mudah terlepas: `doPost` mengembalikan objek `ContentService`, jadi
+palsu mesti menyediakan `_text` dan `setMimeType()`.
+
+### Ujian frontend (Chromium tanpa kepala)
+
 Tiada rangka kerja ujian dalam repo. Ujian dijalankan dengan Chromium tanpa kepala
 dan `puppeteer-core` (perkhidmatan HTTP setempat):
 

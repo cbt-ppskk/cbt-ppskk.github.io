@@ -15,10 +15,74 @@ Google Sheets  (sumber kebenaran tunggal: Log_Penugasan, Master_Personel,
 ```
 
 - Frontend dihoskan oleh GitHub Pages daripada cawangan `main` (build_type: legacy).
-- Semua data rasmi datang dari backend. `const DATA = {...}` dalam `index.html`
-  hanyalah **sandaran luar talian** dan diganti sebaik `fetchLogData` menjawab.
+  **Repo ini AWAM** — apa sahaja yang di-commit boleh dibaca sesiapa.
+- Semua data rasmi datang dari backend. `const DATA` dalam `index.html` kini
+  **objek kosong** (`{"log":[],...}`). Sebelum ini ia ialah snapshot ~1 juta
+  aksara (2/3 saiz fail) yang mengandungi nama, nombor personel, e-mel akaun,
+  tarikh lahir dan 1113 baris audit — semuanya terbaca oleh sesiapa di repo awam.
+  Snapshot itu dibuang (lihat "Pembersihan PII"). `LOG_BASE` / `PER` diisi dari
+  backend (`fetchLogData`, `getPersonnelList`) pada setiap muat; aplikasi disahkan
+  berfungsi penuh tanpa snapshot (12/12 ujian daya maju).
+- `PROF_DATES` (tarikh lahir) juga dikosongkan; `getProfileDates`/`Range` mengisinya.
+- **Kesan luar talian:** snapshot juga berfungsi sebagai cache luar talian. Kini
+  pengguna luar talian melihat rekod sendiri (`cbt_records_v7`) + draf, tetapi
+  **bukan** log penuh server. `mergeServerIntoLocal` hanya menyimpan rekod yang
+  belum sync; rekod server tidak dicache. Ini pertukaran privasi vs kemudahan
+  yang disengajakan — jangan tambah cache log server ke localStorage.
 - Kebergantungan CDN: Chart.js, jsPDF, jspdf-autotable (kini dengan SRI), dan
   Tesseract.js (dimuatkan secara dinamik semasa OCR).
+
+## Pembersihan PII (audit keselamatan)
+
+Repo ini **awam** dan laman **hidup**. `index.html` dahulunya membawa snapshot
+data sebenar dalam fail yang boleh dimuat turun sesiapa. Yang dibuang:
+
+| Item | Isi | Cara diperbetulkan |
+|---|---|---|
+| `const DATA` | 282 log, 17 personel, 16 akaun, 1113 baris audit (129 e-mel), 19 penyelia | Objek kosong; diisi oleh `fetchLogData` / `getPersonnelList` |
+| `const PROF_DATES` | Tarikh lahir 17 warga | Objek kosong; diisi oleh `getProfileDatesRange` |
+| Placeholder UI | E-mel sebenar, nama penuh sebenar, nombor personel sebenar | Nilai sintetik jelas palsu |
+
+Guna `python3 tools/scrub-pii.py` untuk menyemak, `--write` untuk membetulkan.
+Alat ini mengimbas `DATA`, `PROF_DATES` dan senarai `REPLACEMENTS`; ia **tidak**
+pernah menulis nilai asal ke fail lain (rollback melalui `git revert`).
+
+### Baki risiko (perlu tindakan pemilik sistem)
+
+1. **`SALT` masih dalam repo.** `const SALT='cbt_mpdrmkl_2026'` ialah pepper
+   kata laluan, bukan data peribadi, jadi alat scrub **tidak** menyentuhnya.
+   Risiko: dengan `SALT` awam, penyerang yang memperoleh `passHash` boleh mencuba
+   kamus dengan lebih murah. Mitigasi tanpa menukar SALT: pastikan kata laluan
+   kukuh (min 8 aksara) dan kekalkan had kadar OTP.
+   **JANGAN tukar nilai SALT** tanpa mengesahkan `Code.gs` membandingkan
+   `passHash` sahaja (bukan mengira semula salt) — menukarnya menjadikan SEMUA
+   kata laluan sedia ada tidak sah.
+2. **PII kekal dalam sejarah git.** Membuang dari commit terbaharu TIDAK
+   memadamnya daripada commit lama. Repo awam yang di-klon selepas ini masih
+   mengandungi snapshot penuh. Tindakan perlu:
+   - **Putarkan semula** kredensial yang terjejas (kata laluan akaun sistem),
+     kerana ia lebih penting daripada cuba memadam sejarah.
+   - Jika pemadaman sejarah perlu: `git filter-repo` + force-push, dan faham
+     bahawa ia mengganggu sesiapa yang sudah meng-klon.
+3. **Kebenaran peranan (RBAC) tidak dapat diuji sepenuhnya.** Pengesahan token
+   disahkan kuat (lihat di bawah), tetapi sama ada `upsertPersonel`,
+   `adminUpdateUser`, `deleteLog` menyemak **peranan** selain token memerlukan
+   kelayakan akaun sebenar. Semak `Code.gs` untuk pengesahan peranan
+   (`admin`/`superadmin` sahaja untuk tindakan pentadbir).
+
+### Pengesahan backend (disahkan secara empirik, 18 tindakan)
+
+Diuji dengan token tiada/palsu — semua ditolak dengan
+`"Sesi tidak sah atau telah tamat"`:
+`fetchLogData`, `fetchLogCounts`, `getPersonnelList`, `getValidasiRekod`,
+`getStagingPenugasan`, `getDeletedLogs`, `getMasterPersonel`, `getSettings`,
+`adminListUsers`, `findDuplicates`, `deleteLog`, `restoreLog`,
+`updateStatusValidasi`, `saveSetting`, `upsertPersonel`, `adminResetAccess`,
+`adminUpdateUser`. `ping` sahaja awam (sengaja).
+
+Pra-log masuk (`loginUser`, `verifyOTP`, `registerUser`) tidak perlukan token
+sesi tetapi mengesahkan input sendiri. **Kesimpulan: pengesahan kuat; tindakan
+tulis tidak boleh dijalankan tanpa sesi sah.**
 
 ## Perkara penting yang mudah tersalah
 
@@ -31,13 +95,18 @@ Google Sheets  (sumber kebenaran tunggal: Log_Penugasan, Master_Personel,
    kali aset berubah, dan `register('sw.js?v=<ver>')` dalam `index.html` mesti
    sepadan. Jika tidak, pelanggan akan terus menerima aset lama.
 3. **`Code.gs` tiada dalam repo.** Perubahan yang memerlukan sokongan backend tidak
-   boleh diuji sepenuhnya di sini. Jangan anggap backend menguatkuasakan kebenaran —
-   sahkan dengan pemilik sistem.
-4. **Data peribadi tertanam**: `DATA` mengandungi nama pegawai, no. personel dan
-   e-mel (termasuk akaun admin). Ini repo **awam**. Jangan tambah lagi data sebenar;
-   idealnya data ini dipindahkan ke backend sepenuhnya.
+   boleh diuji sepenuhnya di sini. Pengesahan token **sudah disahkan** kuat
+   (rujuk "Pengesahan backend"), tetapi kebenaran **peranan** belum disahkan —
+   semak `Code.gs` dengan pemilik sistem.
+4. **Jangan tambah semula data peribadi tertanam.** `DATA` dan `PROF_DATES` kini
+   kosong dan diisi dari backend. Jangan pulihkan snapshot sebenar (nama, no.
+   personel, e-mel, tarikh lahir) ke dalam `index.html` — repo ini **awam**.
+   Guna `tools/scrub-pii.py` untuk menyemak.
 5. **RBAC dikuatkuasa di klien.** `SESSION` disimpan di `localStorage` dan boleh
-   disunting melalui DevTools. Kebenaran sebenar mesti disahkan di `Code.gs`.
+   disunting melalui DevTools. Token sesi disahkan di backend, tetapi UI
+   (butang admin, tab super-admin) hanya disekat di klien — jangan anggap UI
+   sebagai kawalan keselamatan. Pastikan `Code.gs` menyemak peranan untuk
+   `upsertPersonel`, `adminUpdateUser`, `deleteLog`.
 
 ## Content-Security-Policy (v103b)
 
@@ -91,6 +160,21 @@ window.__tGetSession=function(){return SESSION;};
 ```
 
 Jangan sekali-kali tambah hook ujian ke `index.html` yang dihantar.
+
+### Ujian yang bergantung pada snapshot tertanam
+
+Beberapa ujian lama menganggap `DATA.log.length > 0`. Itu tidak lagi benar —
+snapshot PII telah dibuang. Ujian tersebut mesti menuntut sebaliknya:
+
+```js
+DATA.log.length === 0            // tiada snapshot tertanam
+typeof LOG_BASE !== 'undefined'  // lapisan data wujud untuk diisi backend
+```
+
+Untuk ujian yang memerlukan data, tiru respons backend (`fetchLogData`,
+`getPersonnelList`, ...) dalam `evaluateOnNewDocument`. Ingat `gasCall` menggunakan
+`res.json()`, jadi tiruan `fetch` mesti menyediakan `json()`, bukan hanya `text()`.
+Jangan sekali-kali memulihkan snapshot sebenar ke dalam repo untuk memenuhi ujian.
 
 ## Konvensyen kod
 

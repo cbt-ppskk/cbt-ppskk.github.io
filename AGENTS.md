@@ -39,6 +39,28 @@ Google Sheets  (sumber kebenaran tunggal: Log_Penugasan, Master_Personel,
 5. **RBAC dikuatkuasa di klien.** `SESSION` disimpan di `localStorage` dan boleh
    disunting melalui DevTools. Kebenaran sebenar mesti disahkan di `Code.gs`.
 
+## Content-Security-Policy (v103b)
+
+`index.html` mempunyai `<meta http-equiv="Content-Security-Policy">`. Kerana beberapa
+skrip adalah **inline**, polisi menggunakan **hash SHA-256**, bukan `'unsafe-inline'`.
+
+**Jika anda mengubah mana-mana blok `<script>` inline, hash akan rosak dan skrip
+tersebut akan disekat (app akan pecah separuh).** Selepas sebarang perubahan pada
+skrip inline, WAJIB jalankan:
+
+```bash
+python3 tools/csp-hash.py --write     # kira semula hash + kemas kini meta
+python3 tools/csp-hash.py --check     # sahkan meta sepadan (gagal = hash basi)
+python3 tools/csp-hash.py             # paparkan polisi sahaja
+```
+
+Dua pengendali inline telah dibuang supaya `'unsafe-inline'` tidak diperlukan:
+`onsubmit` pada `#ki-form` dan `onerror` pada logo splash. Kedua-duanya kini
+diikat melalui `initV103bGuard()`.
+
+Polisi tidak membenarkan `'unsafe-eval'` — jangan perkenalkan `eval()` atau
+`new Function()`.
+
 ## Aliran auto-logout (v103b)
 
 - `cbt_sess_token_v103b` dalam **sessionStorage** (skop tab). Pelayar memadamnya

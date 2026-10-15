@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ms" data-app-version="v103b">
-<head><script data-tmly-media-guard="1">(function(){"use strict";
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vBcprMvCN3GbeuOvD7o01RFWKyFVMsEGo8py4yFFRPY=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vBcprMvCN3GbeuOvD7o01RFWKyFVMsEGo8py4yFFRPY=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
 if(n.slice(0,5)==="tmly:"){n.slice(5).split("&").forEach(function(kv){
@@ -52,7 +55,6 @@ if(n instanceof HTMLMediaElement){harden(n)}else{sweep(n)}}}})
 .observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener("DOMContentLoaded",function(){sweep(document)});
 sweep(document)})();</script>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
 <meta name="color-scheme" content="dark">
@@ -1524,7 +1526,7 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
         <h2 class="sec">📝 Submodul 2: Isi Penugasan Manual</h2>
         <p class="sec-sub">Halaman <b>input manual</b> penugasan. Isi Tajuk, Jenis, Tarikh, Masa, Fasa, Tempat &amp; Petugas → sistem kira <b>Jam Tugas</b>, <b>Bilangan Petugas</b> &amp; <b>Jam-Orang</b> → <b>Sahkan &amp; Masuk Log Utama</b>. Halaman ini <b>khusus untuk Admin</b>.</p>
 
-        <form class="ki-sub glass" id="ki-form" autocomplete="off" onsubmit="return false">
+        <form class="ki-sub glass" id="ki-form" autocomplete="off">
           <div class="ki-sub-head"><h3>📝 Maklumat Penugasan</h3><span class="ki-sub-tag">Sub Modul 2</span></div>
           <div class="ki-sub-desc">Input <b>manual</b> bagi penugasan. Selepas isi, sistem mengira <b>Jam Tugas</b>, <b>Bilangan Petugas</b> dan <b>Jam-Orang</b> (Jam-Orang = Jam Tugas × Bilangan Petugas).</div>
           <div class="ki-sec">
@@ -7206,6 +7208,26 @@ function initV103b(){
 }
 try{ initV103b(); }catch(e){}
 
+/* ---- (C) Persediaan untuk Content-Security-Policy (CSP) ----
+   index.html menggunakan beberapa skrip inline. Nilai hash di bawah dikira daripada
+   kandungan sebenar setiap blok <script>. Jika anda mengubah mana-mana blok tersebut,
+   hash CSP dalam <meta http-equiv="Content-Security-Policy"> MESTI dikemas kini,
+   jika tidak skrip akan disekat. Gunakan tools/csp-hash.py untuk menjana semula. */
+function initV103bGuard(){
+  /* Borang key-in: gantikan onsubmit="return false" (dibuang untuk CSP). Butang dalam
+     borang ini semuanya type="button", jadi tingkah laku kekal sama. */
+  try{
+    var f=document.getElementById('ki-form');
+    if(f && !f.dataset.nosubmit){ f.dataset.nosubmit='1'; f.addEventListener('submit',function(e){e.preventDefault();}); }
+  }catch(e){}
+  /* Logo splash: gantikan onerror="this.style.display='none'" (dibuang untuk CSP). */
+  try{
+    var img=document.getElementById('sp-logo');
+    if(img && !img.dataset.errbound){ img.dataset.errbound='1'; img.addEventListener('error',function(){ img.style.display='none'; }); }
+  }catch(e){}
+}
+try{ initV103bGuard(); }catch(e){}
+
 try{ initV68(); }catch(e){}
 try{ initV67(); }catch(e){}
 </script>
@@ -7234,7 +7256,7 @@ try{ initV67(); }catch(e){}
 <!-- ===== v81: F3.10 / F3.11 SPLASH LOG MASUK & KELUAR ===== -->
 <div id="splash">
   <div class="sp-card">
-    <img class="sp-logo" src="icons/logo-cbt-v54.png" alt="Logo CBT" onerror="this.style.display='none'">
+    <img class="sp-logo" id="sp-logo" src="icons/logo-cbt-v54.png" alt="Logo CBT">
     <h3 id="splash-title">Log masuk berjaya</h3>
     <div class="sp-sub" id="splash-sub">Selamat datang</div>
     <div class="loadbar"><i></i></div>

@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103b">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-IWUeHlHTDZrhZF+osIi3DTydb0bNH3ZbMFNRsy8IzQs=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-IWUeHlHTDZrhZF+osIi3DTydb0bNH3ZbMFNRsy8IzQs=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-ghlLgfkbY3eTvEesOlhv2c4Xr2zt1g0/BHn7N3YE/yU=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-ghlLgfkbY3eTvEesOlhv2c4Xr2zt1g0/BHn7N3YE/yU=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-X3YwznGCrTwSR8oRFHuKghKicDSjZ0LV3mdtX+F++Bk=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -6843,7 +6843,7 @@ if(SESSION) setTimeout(function(){ LAST_SYNC_TS=Date.now(); renderSyncStatus(fal
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
       /* v103b: daftar dengan ?v=103b untuk paksa muat turun sw.js BAHARU (elak cache lama) */
-      navigator.serviceWorker.register('sw.js?v=103b').then(function(reg){
+      navigator.serviceWorker.register('sw.js?v=103c').then(function(reg){
         try{
           reg.addEventListener('updatefound',function(){
             var nw=reg.installing;
@@ -6988,7 +6988,7 @@ function initV67(){
          backend) -> hanya AMARAN kuat supaya admin terbit versi baharu.
      (c) Tempoh rasmi tidak dipaparkan -> label tempoh kini datang dari backend
          (fetchLogCounts.periodStart / fetchLogCounts_) pada SETIAP peranti. */
-var APP_VER = 'v103c';
+var APP_VER = 'v103b';
 var _BACKEND_VER = null, _VER_MISMATCH = false, _OFFICIAL_PERIOD = null, _VER_GUARD_RUN = 0;
 function effectivePeriodStart(){
   try{ if(_OFFICIAL_PERIOD && String(_OFFICIAL_PERIOD).length>=10) return String(_OFFICIAL_PERIOD).slice(0,10); }catch(e){}

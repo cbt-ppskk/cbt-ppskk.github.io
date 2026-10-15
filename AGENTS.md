@@ -101,7 +101,12 @@ Jangan sekali-kali tambah hook ujian ke `index.html` yang dihantar.
 
 ## Pejabat Maya (`office.html`)
 
-Modul paparan tambahan, **satu fail**, **baca sahaja**. Tidak mengubah `index.html`.
+Modul paparan tambahan, **satu fail**. `office.html` sendiri **baca sahaja** —
+ia tidak pernah menulis data kerja.
+
+Satu-satunya perubahan dalam `index.html` bagi menyokongnya ialah satu baris
+dalam `switchTab()` yang menulis isyarat tab (`cbt_office_tab_v1`), dibungkus
+dalam `try{}catch(e){}`. Jangan tambah tulisan lain dari `office.html`.
 
 ### Kontrak backend GAS (disahkan secara empirik)
 
@@ -124,14 +129,35 @@ Modul paparan tambahan, **satu fail**, **baca sahaja**. Tidak mengubah `index.ht
 - Kunci storan setempat index.html: `cbt_records_v7` (`ADD_KEY`, ditulis oleh
   `saveAdded`), `cbt_draf_local_v87`, `cbt_validated_v27`, `cbt_session_v7`.
 
-### Integrasi tanpa mengubah index.html
+### Integrasi dengan index.html
 
 `office.html` mengesan butang ditekan dengan **membaca** `cbt_records_v7` dan
 `cbt_draf_local_v87` (kitaran 700 ms), dan **membaca** `cbt_session_v7` untuk
 sesi. Ia tidak pernah menulis kunci tersebut — hanya `cbt_office_ui_v1`.
 
+**Isyarat tab** (`cbt_office_tab_v1`): ditulis oleh `switchTab()` dalam
+`index.html` sebagai `"<namaTab>|<capMasa>"`. `office.html` memetakannya melalui
+`TAB_TO_STATION` dan memanggil `activateModule()`, yang menyebabkan ejen modul
+itu berdiri, berjalan ke ruang kongsi dan memaparkan peranannya selama 9 saat.
+Cap masa wajib ada: peristiwa `storage` tidak berlaku apabila nilai tidak berubah,
+jadi menekan tab yang sama dua kali memerlukan nilai baharu. Huraikan dengan
+`String(signal).split('|')[0]`.
+
+Setiap workstation mempunyai peranan modul sendiri dalam `MODULE_ROLES`; avatar
+meja memainkannya. Tab `admin-only` (valbelum/valselesai/draf) disekat oleh
+RBAC `switchTab()` sebelum tulisan berlaku — jadi tiada isyarat dihantar tanpa
+sesi yang berhak. Ini betul, bukan pepijat.
+
 ### Perangkap
 
+- **CSP berasaskan hash**: mengedit mana-mana blok `<script>` inline dalam
+  `index.html` (termasuk menambah satu baris dalam `switchTab()`) akan
+  menyebabkan pelayar menyekat skrip itu **sepenuhnya** — halaman nampak
+  separuh mati (`safe is not defined`). Selepas setiap suntingan skrip inline,
+  jalankan `python3 tools/csp-hash.py --write` dan sahkan dengan `--check`.
+- **Jangan naikkan `APP_VER`** untuk perubahan frontend sahaja (rujuk peraturan 1
+  di atas). Untuk memaksa peranti memuat aset baharu, naikkan cache `sw.js`
+  **dan** `register('sw.js?v=<ver>')` bersama-sama, kekalkan `APP_VER`.
 - **Jangan campurkan `performance.now()` dengan `Date.now()`.** `frame()` menerima
   masa rAF; semua perbandingan keadaan mesti guna `Date.now()`.
 - Jangan lapor `LIVE` apabila semua permintaan gagal. Bezakah sesi-tamat

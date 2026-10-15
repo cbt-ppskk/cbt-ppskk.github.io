@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ms" data-app-version="v103">
+<html lang="ms" data-app-version="v103b">
 <head><script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -66,9 +66,10 @@ sweep(document)})();</script>
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Sistem Pengurusan Penugasan — Cawangan Bantuan Teknik PPSKK</title>
   <!-- v25: penetapan petugas ditapis mengikut lajur Team (Master Personel) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<!-- v103b: Subresource Integrity (SRI) — jika CDN diceroboh atau DNS dihijack, kod tidak akan dimuatkan. -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" integrity="sha384-fCAW/rDWORTbQXSiB7mOg0QtQ5c+r0f544y6XoKjuVva0nMBlCpNUjiFeG5iMdS3" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 :root{
   --bg:#030712; --bg2:#0f172a; --bg3:#090d16;
@@ -1886,6 +1887,8 @@ const ADD_KEY='cbt_records_v7';
 function loadAdded(){try{const a=JSON.parse(localStorage.getItem(ADD_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
 function saveAdded(a){try{localStorage.setItem(ADD_KEY,JSON.stringify(a));}catch(e){}}
 let ADDED=loadAdded();
+/* v103b: buang kunci sesi LAMA yang tidak digunakan lagi (kemas kini storan peranti). */
+try{ ['cbt_session_v7_backup','cbt_session_backup'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
 /* ===== v74: SOFT DELETE LOG (setempat) + DRAF OFFLINE =====
    DELETED_KEYS = kunci rekod yang di-soft-delete (rekod asal KEKAL dalam Sheet,
    hanya disembunyikan dari UI). Draf = rekod key-in dalam ADDED yang BELUM ada
@@ -2463,7 +2466,7 @@ function flushLocalPending(){
         }).catch(function(){});
     });
   });
-  return chain.then(function(){if(done){try{refreshAfterEdit();}catch(e){}}return {sent:done};});
+  return chain.then(function(){if(done){try{refreshAfterEdit();}catch(e){}try{ syncNowAfterSave_(); }catch(e){}}return {sent:done};});
 }
 
 /* ---- segarkan UI selepas edit ---- */
@@ -2960,8 +2963,10 @@ function buildAksesAccounts(){
     if(!em)return;
     if(String(a.status||'').toLowerCase().indexOf('aktif')<0)return;
     const r=String(a.role||'').toUpperCase();
-    const role=(r==='ADMIN'||r==='SUPERVISOR')?'admin':'staf';
-    map[em]={name:a.nama||em,role:role,label:role==='admin'?(r==='SUPERVISOR'?'Penyelia':'Pentadbir Sistem'):'Staf Berdaftar',av:role==='admin'?'👮':'👤'};
+    /* v103b: SUPERVISOR = 'penyelia', BUKAN 'admin'. Sebelum ini ia dipetakan kepada
+       'admin' — bercanggah dengan normRole() dan memberi hak pentadbir kepada Penyelia. */
+    const role=(r==='ADMIN')?'admin':((r==='SUPERVISOR'||r==='PENYELIA')?'penyelia':'staf');
+    map[em]={name:a.nama||em,role:role,label:roleLabel(role),av:role==='staf'?'👤':'👮'};
   });
   return map;
 }
@@ -2992,6 +2997,10 @@ let SESSION=null;
 function loadSession(){try{const s=localStorage.getItem('cbt_session_v7');if(s)return JSON.parse(s);}catch(e){}return null;}
 function saveSession(s){try{localStorage.setItem('cbt_session_v7',JSON.stringify(s));}catch(e){}}
 function clearSession(){try{localStorage.removeItem('cbt_session_v7');}catch(e){}}
+/* v103b: tandakan reload yang DISENGAJA (kemas kini versi / buang cache) supaya ia
+   TIDAK disalah anggap sebagai "sistem ditutup" oleh auto-logout. */
+function markIntentionalReload_(){try{window.__cbtIntentionalReload=true;}catch(e){}}
+try{window.markIntentionalReload_=markIntentionalReload_;}catch(e){}
 const ROLES={SUPER_ADMIN:'superadmin',SUPERADMIN:'superadmin',SUPER:'superadmin',ADMIN:'admin',PENTADBIR:'admin',SUPERVISOR:'penyelia',PENYELIA:'penyelia',STAF:'staf'};
 function normRole(v){var s=String(v==null?'':v).trim().toUpperCase().replace(/[\s\-]+/g,'_');return ROLES[s]||'staf';}
 function roleLabel(r){r=String(r||'');if(r==='superadmin')return 'Super Admin';if(r==='admin')return 'Pentadbir Sistem';if(r==='penyelia')return 'Penyelia';return 'Staf Berdaftar';}
@@ -5053,6 +5062,8 @@ function saveStageAll(){
           showToast('✅ '+toSend.length+' dihantar · '+okIds.length+' berjaya · 0 gagal'+skipTxt+' — DISAHKAN pada pelayan.');
         }
         try{ rebuildLog(); refreshDashboardFromLog(); kiRenderRecent(); }catch(e){}
+        /* v103b: selaras SEGERA selepas simpan berjaya (bukan tunggu auto-refresh 90s). */
+        try{ syncNowAfterSave_(); }catch(e){}
         return;
       }
       /* backend menolak / respons tidak sepadan -> rekod KEKAL dalam STAGE (tiada pendua) */
@@ -5354,6 +5365,7 @@ function approveDraf(i){
       DRAF.splice(i,1);renderDraf();
       showToast('✅ Draf #'+d.bil+' diluluskan ke Log Penugasan.');
       loadLogFromServer();
+      try{ syncNowAfterSave_(); }catch(e){}   /* v103b: selaras segera */
     }else{showToast('❌ Gagal luluskan: '+((r&&r.error)||'pelayan menolak'));}
   }).catch(function(e){showToast('❌ Gagal luluskan: '+((e&&e.message)||''));});
 }
@@ -6148,6 +6160,7 @@ function initBurgerMenu(){
 }
 function doLogout(){
   clearSession();SESSION=null;applyAuthUI();
+  try{ broadcastLogout_(); }catch(e){}   /* v103b: beritahu tab lain supaya turut log keluar */
   const li=document.getElementById('login-id'),lp=document.getElementById('login-pass'),le=document.getElementById('login-err');
   if(li)li.value='';if(lp)lp.value='';if(le)le.textContent='';
   const cp=document.getElementById('chat-panel');if(cp)cp.classList.remove('show');
@@ -6155,6 +6168,7 @@ function doLogout(){
 }
 function forceUpdate(){
   showToast('⚡ Memuat semula versi terkini…');
+  markIntentionalReload_();
   try{if('caches' in window){caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));}).then(function(){location.reload(true);});}else{location.reload(true);}}catch(e){location.reload(true);}
 }
 
@@ -6270,6 +6284,7 @@ function initDiagnostik(){
   });
   const cl=document.getElementById('diag-clear');if(cl)cl.addEventListener('click',function(){
     if(!confirm('Kosongkan cache PWA dan set semula aplikasi?'))return;
+    markIntentionalReload_();
     try{if('caches' in window){caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));}).then(function(){location.reload(true);});}else{location.reload(true);}}catch(e){location.reload(true);}
   });
   /* v53: papar versi frontend + butang muat semula paksa */
@@ -6285,6 +6300,7 @@ function paintFrontendVersion_(){
 }
 /* v54: muat semula paksa — buang cache PWA + unregister SW + reload tanpa cache */
 function forceReloadV54_(){
+  markIntentionalReload_();
   try{
     if('serviceWorker' in navigator){
       navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}).catch(function(){});
@@ -6819,8 +6835,8 @@ if(SESSION) setTimeout(function(){ LAST_SYNC_TS=Date.now(); renderSyncStatus(fal
 (function(){
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
-      /* v54: daftar dengan ?v=54 untuk paksa muat turun sw.js BAHARU (elak cache immutable lama) */
-      navigator.serviceWorker.register('sw.js?v=103').then(function(reg){
+      /* v103b: daftar dengan ?v=103b untuk paksa muat turun sw.js BAHARU (elak cache lama) */
+      navigator.serviceWorker.register('sw.js?v=103b').then(function(reg){
         try{
           reg.addEventListener('updatefound',function(){
             var nw=reg.installing;
@@ -6837,6 +6853,7 @@ if(SESSION) setTimeout(function(){ LAST_SYNC_TS=Date.now(); renderSyncStatus(fal
       var _reloaded=false;
       navigator.serviceWorker.addEventListener('controllerchange',function(){
         if(_reloaded)return;_reloaded=true;
+        markIntentionalReload_();
         try{location.reload();}catch(e){}
       });
     });
@@ -6964,7 +6981,7 @@ function initV67(){
          backend) -> hanya AMARAN kuat supaya admin terbit versi baharu.
      (c) Tempoh rasmi tidak dipaparkan -> label tempoh kini datang dari backend
          (fetchLogCounts.periodStart / fetchLogCounts_) pada SETIAP peranti. */
-var APP_VER = 'v103';
+var APP_VER = 'v103b';
 var _BACKEND_VER = null, _VER_MISMATCH = false, _OFFICIAL_PERIOD = null, _VER_GUARD_RUN = 0;
 function effectivePeriodStart(){
   try{ if(_OFFICIAL_PERIOD && String(_OFFICIAL_PERIOD).length>=10) return String(_OFFICIAL_PERIOD).slice(0,10); }catch(e){}
@@ -7016,6 +7033,7 @@ function _guardOverlay(on,front,back){
   }catch(e){}
 }
 async function forceReloadV68(){
+  markIntentionalReload_();
   try{ if(window.caches && caches.keys){ var ks=await caches.keys(); await Promise.all(ks.map(function(k){return caches.delete(k);})); } }catch(e){}
   try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ var rs=await navigator.serviceWorker.getRegistrations(); rs.forEach(function(r){ try{r.unregister();}catch(e){} }); } }catch(e){}
   try{ location.reload(true); }catch(e){ location.reload(); }
@@ -7048,6 +7066,145 @@ function initV68(){
   setInterval(function(){ try{ renderDiagnostics(); }catch(e){} }, 5000);
   document.addEventListener('visibilitychange',function(){ if(!document.hidden){ try{ bootVersionGuard(); }catch(e){} } });
 }
+
+/* =====================================================================
+   v103b — (A) SEGERA: selaras log selepas simpan
+          (B) AUTO LOGOUT bila sistem/aplikasi ditutup (PC + telefon)
+   ===================================================================== */
+
+/* ---- (A) SEGERA: kemas kini pangkalan data + semua paparan SEJURUS selepas simpan ----
+   Sebelum ini paparan Log/KPI hanya menunggu auto-refresh berkala (90s) atau muat semula
+   manual. Fungsi ini mengeluarkan gelung semak pantas sehingga rekod baharu benar-benar
+   kelihatan dari Google Sheet, jadi pengguna nampak kemas kini dalam ~1 saat. */
+var _SYNC_BURST = null;
+function syncNowAfterSave_(){
+  try{ flushPendingAdded(); }catch(e){}
+  Promise.resolve(loadLogFromServer()).then(function(ok){
+    var p = 0;
+    try{ p = (typeof localPendingCount === 'function') ? localPendingCount() : 0; }catch(e){}
+    if(ok && p === 0) return;         /* sudah selaras — tiada gelung diperlukan */
+    if(_SYNC_BURST) return;           /* gelung semak sudah berjalan */
+    var tries = 0;
+    _SYNC_BURST = setInterval(function(){
+      tries++;
+      try{ flushPendingAdded(); }catch(e){}
+      loadLogFromServer().then(function(ok2){
+        var q = 0;
+        try{ q = (typeof localPendingCount === 'function') ? localPendingCount() : 0; }catch(e){}
+        if((ok2 && q === 0) || tries >= 8){ clearInterval(_SYNC_BURST); _SYNC_BURST = null; }
+      }).catch(function(){ if(tries >= 8){ clearInterval(_SYNC_BURST); _SYNC_BURST = null; } });
+    }, 1500);
+  }).catch(function(){});
+}
+
+/* ---- (B) AUTO LOGOUT bila sistem/aplikasi ditutup ----
+   Kaedah: token sesi disimpan dalam sessionStorage, iaitu storan BER-SKOP TAB.
+   Pelayar sendiri memadam sessionStorage apabila TAB atau APLIKASI ditutup, jadi:
+     · Muat semula (F5)      -> token KEKAL   -> tidak log keluar.
+     · Tutup tab / tutup app -> token HILANG  -> log keluar pada pembukaan berikutnya.
+   Tiada heuristik masa, jadi ia tepat dan berkuat kuasa pada PC dan telefon (PWA).
+   Berbilang tab dikendalikan: tab baharu hanya mewarisi sesi jika bendera keluar
+   TIDAK ditetapkan, iaitu bukti tab lain masih hidup. */
+var SESS_TOKEN_KEY = 'cbt_sess_token_v103b';
+
+/* Bendera keluar: ditetapkan semasa tab/aplikasi ditutup. Ia HANYA menentukan sama ada
+   tab baharu boleh mewarisi sesi — bukan arahan log keluar secara terus. */
+function markLogoutNext_(){ try{ localStorage.setItem('cbt_logout_next','1'); }catch(e){} }
+function cancelLogoutNext_(){ try{ localStorage.removeItem('cbt_logout_next'); }catch(e){} }
+function readLogoutNext_(){ try{ return localStorage.getItem('cbt_logout_next') === '1'; }catch(e){ return false; } }
+
+/* Token diikat pada id sesi supaya token milik pengguna lama tidak mengekalkan
+   log masuk pengguna baharu. */
+function sessTokenWant_(){ try{ return String((SESSION && SESSION.id) || '') + '|'; }catch(e){ return '|'; } }
+function readSessToken_(){ try{ return sessionStorage.getItem(SESS_TOKEN_KEY); }catch(e){ return null; } }
+function writeSessToken_(){
+  try{ sessionStorage.setItem(SESS_TOKEN_KEY, sessTokenWant_() + Math.random().toString(36).slice(2) + Date.now().toString(36)); }catch(e){}
+}
+function clearSessToken_(){ try{ sessionStorage.removeItem(SESS_TOKEN_KEY); }catch(e){} }
+
+/* Tentukan sama ada tab ini memiliki token sesi sah. Dijalankan SEBELUM semakan boot.
+   Menetapkan _TOKEN_ANOMALY bila token yang ada milik SESI LAIN — kes itu mesti
+   log keluar, bukan dipulihkan secara senyap. */
+var _TOKEN_ANOMALY = false;
+function bindSessionToken_(){
+  var haveSession = false;
+  try{ haveSession = !!(typeof SESSION !== 'undefined' && SESSION); }catch(e){}
+  var tok = readSessToken_();
+  if(tok && tok.indexOf(sessTokenWant_()) !== 0){ clearSessToken_(); tok = null; _TOKEN_ANOMALY = true; }
+  if(!haveSession){ clearSessToken_(); return; }
+  /* Tab baharu semasa aplikasi masih hidup (tiada bendera keluar) -> warisi sesi. */
+  if(!tok && !readLogoutNext_()) writeSessToken_();
+}
+
+/* Semakan pada but: sesi lama tanpa token = aplikasi telah ditutup -> log keluar. */
+function bootAliveGuard_(){
+  var haveSession = false;
+  try{ haveSession = !!(typeof SESSION !== 'undefined' && SESSION); }catch(e){}
+  if(!haveSession){ cancelLogoutNext_(); clearSessToken_(); _TOKEN_ANOMALY = false; return; }
+  var tok = readSessToken_();
+  if(_TOKEN_ANOMALY || !tok || tok.indexOf(sessTokenWant_()) !== 0){
+    _TOKEN_ANOMALY = false;
+    performAutoLogout_();
+    return;
+  }
+  cancelLogoutNext_();
+}
+
+function performAutoLogout_(){
+  try{
+    try{ clearSession(); }catch(e){}
+    try{ clearSessToken_(); }catch(e){}
+    try{ cancelLogoutNext_(); }catch(e){}
+    try{ if(typeof SESSION !== 'undefined') SESSION = null; }catch(e){}
+    try{ if(typeof applyAuthUI === 'function') applyAuthUI(); }catch(e){}
+    try{ document.body.classList.add('not-authed'); }catch(e){}
+    try{ if(typeof showToast === 'function') showToast('\u{1F510} Sesi tamat \u2014 sistem telah ditutup. Sila log masuk semula.'); }catch(e){}
+  }catch(e){}
+}
+
+/* Isyarat log keluar kepada tab LAIN — hanya untuk log keluar yang DISENGAJAKAN
+   (butang Log Keluar). Penutupan tab TIDAK disiarkan, kerana aplikasi mungkin masih
+   terbuka di tab lain. */
+function broadcastLogout_(){ try{ localStorage.setItem('cbt_logout_signal', String(Date.now())); }catch(e){} }
+function bindLogoutBroadcast_(){
+  try{
+    window.addEventListener('storage', function(ev){
+      try{
+        if(!ev || ev.key !== 'cbt_logout_signal') return;
+        if(typeof SESSION !== 'undefined' && SESSION) performAutoLogout_();
+      }catch(e){}
+    });
+  }catch(e){}
+}
+
+function initV103b(){
+  bindSessionToken_();     /* tentukan token SEBELUM semakan boot */
+  bootAliveGuard_();
+  bindLogoutBroadcast_();
+  /* Tab/aplikasi ditutup: tandakan keluar. Boot berikutnya akan BATALKAN tanda ini
+     jika token masih ada (kes muat semula / tab lain masih hidup). */
+  try{
+    window.addEventListener('pagehide', function(){
+      if(window.__cbtIntentionalReload) return;
+      try{ if(typeof SESSION === 'undefined' || !SESSION) return; }catch(e){ return; }
+      markLogoutNext_();
+    });
+  }catch(e){}
+  /* Selepas log masuk, pastikan token wujud supaya muat semula berikutnya tidak
+     disalah anggap sebagai "sistem ditutup". */
+  try{
+    var _prevApply = window.applyAuthUI;
+    if(typeof _prevApply === 'function' && !_prevApply.__v103bwrapped){
+      var _wrapped = function(){
+        _prevApply.apply(this, arguments);
+        try{ if(typeof SESSION !== 'undefined' && SESSION){ writeSessToken_(); cancelLogoutNext_(); } }catch(e){}
+      };
+      _wrapped.__v103bwrapped = true;
+      window.applyAuthUI = _wrapped;
+    }
+  }catch(e){}
+}
+try{ initV103b(); }catch(e){}
 
 try{ initV68(); }catch(e){}
 try{ initV67(); }catch(e){}

@@ -19,7 +19,13 @@ INDEX = ROOT / "index.html"
 
 # Sumber yang dibenarkan (lihat AGENTS.md untuk justifikasi setiap satu).
 CDN_JS = "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com"
-GOOGLE = "https://script.google.com https://docs.google.com"
+# Apps Script MEMBALAS melalui ubah hala ke *.googleusercontent.com. Hos ubah
+# hala itu mesti dibenarkan dalam connect-src, jika tidak SEMUA panggilan data
+# gagal dengan "Failed to fetch" walaupun script.google.com dibenarkan.
+GAS = "https://script.google.com"
+GAS_REDIRECT = "https://script.googleusercontent.com"
+GOOGLE_DOCS = "https://docs.google.com"
+CONNECT = " ".join([GAS, GAS_REDIRECT, GOOGLE_DOCS])
 MEDIA = "blob: data:"
 
 
@@ -47,7 +53,7 @@ def build_policy(html: str) -> str:
         f"img-src 'self' {MEDIA}",
         f"font-src 'self' {MEDIA}",
         f"media-src 'self' {MEDIA}",
-        f"connect-src 'self' {GOOGLE}",
+        f"connect-src 'self' {CONNECT}",
         f"worker-src 'self' {MEDIA}",
         f"frame-src 'self' {MEDIA}",
         "object-src 'none'",

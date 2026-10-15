@@ -47,6 +47,73 @@ Guna `python3 tools/scrub-pii.py` untuk menyemak, `--write` untuk membetulkan.
 Alat ini mengimbas `DATA`, `PROF_DATES` dan senarai `REPLACEMENTS`; ia **tidak**
 pernah menulis nilai asal ke fail lain (rollback melalui `git revert`).
 
+## Backend GAS (`gas/`) — kawalan versi
+
+Kod backend (`Code.gs`) kini dijejak dalam folder `gas/`. Sebelum ini ia hanya
+wujud dalam editor Apps Script: tiada sejarah, tiada cara kembali ke versi
+lama, dan tiada cara menyemak keselamatan kod itu.
+
+Aliran kerja penuh: `gas/README.md`. Ringkasnya:
+
+```bash
+./gas/clasp.sh login     # sekali sahaja — buka pelayar (langkah MANUAL)
+# isi scriptId dalam gas/.clasp.json
+./gas/clasp.sh pull      # tarik Code.gs dari editor Apps Script
+./gas/clasp.sh scan      # imbas rahsia SEBELUM commit
+./gas/clasp.sh push      # hantar ke editor Apps Script
+./gas/clasp.sh deploy "nota"   # deploy semula supaya frontend nampak perubahan
+```
+
+`clasp` dipasang setempat dalam `/tmp/clasptool` (pemasangan global disekat
+dalam persekitaran ini). `gas/clasp.sh` menyelesaikan laluan binari itu.
+
+### Pengawal dalam `clasp.sh`
+
+- `push` **berhenti** jika tiada fail `.gs` dalam `gas/`. Tanpanya,
+  `clasp push` akan **memadam** fail dalam projek Apps Script — ini berlaku
+  jika `pull` belum dijalankan.
+- `push` menjalankan `scan-secrets.py` dan gagal jika ada rahsia tahap tinggi.
+- `pull` menjalankan pengimbas secara automatik selepas menarik kod, kerana
+  kod sedia ada mungkin mengandungi rahsia yang belum pernah dilihat git.
+
+### `.claspignore`
+
+clasp 3.x guna **micromatch**, bukan semantik gitignore. Corak yang disahkan
+menghantar hanya `appsscript.json` + `*.gs`, dan mengabaikan `README.md`,
+`*.py`, `hooks/`, `.clasp.json`, `.claspignore`:
+
+```
+**/**
+!appsscript.json
+!**/*.gs
+```
+
+Disahkan dengan enjin sebenar clasp (`micromatch.not`), bukan diandaikan.
+
+### Rahsia dalam `Code.gs`
+
+Repo ini **AWAM**. Jangan commit ID spreadsheet, e-mel pengguna, `SALT`,
+kunci API atau kata laluan. Guna `PropertiesService`:
+
+```javascript
+PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', '...');
+```
+
+`scan-secrets.py` menangkap: kunci Google/AWS/Slack/Stripe, token GitHub,
+kunci persendirian, ID Spreadsheet, `SALT`, kata laluan dikod keras, e-mel,
+no. telefon, no. kad pengenalan. Nilai ditemui dipaparkan **terpotong** supaya
+output skrip sendiri tidak bocor.
+
+`~/.clasprc.json` mengandungi token penyegar OAuth clasp — sudah disenaraikan
+dalam `.gitignore`. **Jangan** commit.
+
+### `push` != deploy
+
+`clasp push` menulis ke **draf** projek. Frontend memanggil URL `/exec` yang
+terikat pada **deployment**. Tanpa `clasp deploy`, perubahan tidak berkuat
+kuasa untuk pengguna. Ini punca biasa "kod sudah diubah tetapi sistem tidak
+berubah".
+
 ### Baki risiko (perlu tindakan pemilik sistem)
 
 1. **`SALT` masih dalam repo.** `const SALT='cbt_mpdrmkl_2026'` ialah pepper
@@ -67,8 +134,13 @@ pernah menulis nilai asal ke fail lain (rollback melalui `git revert`).
 3. **Kebenaran peranan (RBAC) tidak dapat diuji sepenuhnya.** Pengesahan token
    disahkan kuat (lihat di bawah), tetapi sama ada `upsertPersonel`,
    `adminUpdateUser`, `deleteLog` menyemak **peranan** selain token memerlukan
-   kelayakan akaun sebenar. Semak `Code.gs` untuk pengesahan peranan
-   (`admin`/`superadmin` sahaja untuk tindakan pentadbir).
+   kelayakan akaun sebenar. Ini penting kerana sesi disimpan dalam
+   `localStorage` dan boleh disunting melalui DevTools: jika `Code.gs` hanya
+   menyemak "token sah" tanpa menyemak peranan, staf biasa boleh naik taraf
+   diri menjadi pentadbir kerana UI sahaja yang menyekat butang itu.
+   **Selesaikan dengan** `./gas/clasp.sh pull` untuk menarik `Code.gs` ke dalam
+   repo, kemudian semak bahawa setiap tindakan pentadbir menyemak peranan
+   (`admin`/`superadmin`), bukan token sahaja.
 
 ### Pengesahan backend (disahkan secara empirik, 18 tindakan)
 

@@ -1,0 +1,6 @@
+# Senarai putih: hanya fail ini dihantar ke Apps Script.
+# Selebihnya (README.md, *.py, hooks/, .clasp.json) diabaikan supaya
+# fail sampingan repo tidak bocor ke projek GAS.
+**/**
+!appsscript.json
+!**/*.gs

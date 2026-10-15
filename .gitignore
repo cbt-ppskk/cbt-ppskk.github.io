@@ -1,3 +1,15 @@
 __pycache__/
 *.pyc
 node_modules/
+
+# --- Kredensial clasp: mengandungi token OAuth penyegar. JANGAN commit. ---
+.clasprc.json
+gas/.clasprc.json
+
+# Sandaran kod GAS
+gas/*.bak
+gas/*.gs.bak
+gas/*.backup
+
+# Output pengimbas rahsia
+gas/scan-report.txt

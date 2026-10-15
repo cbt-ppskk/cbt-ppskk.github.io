@@ -1,0 +1,14 @@
+#!/bin/sh
+# Cangkuk pre-commit: halang rahsia masuk repo AWAM.
+# Pasang: cp gas/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# Langkau: git commit --no-verify
+set -e
+REPO=$(git rev-parse --show-toplevel)
+if [ -f "$REPO/gas/scan-secrets.py" ]; then
+  python3 "$REPO/gas/scan-secrets.py" "$REPO/gas" --fail-on high || {
+    echo ""
+    echo "Commit dibatalkan: rahsia dikesan dalam gas/."
+    echo "Betulkan dahulu, atau guna: git commit --no-verify"
+    exit 1
+  }
+fi

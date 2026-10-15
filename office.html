@@ -194,6 +194,7 @@ function assertReadOnly(action){
 }
 
 const UI_KEY = 'cbt_office_ui_v1';   /* hanya keutamaan UI — tiada data kerja */
+const TAB_KEY = 'cbt_office_tab_v1';  /* isyarat tab daripada index.html (nama tab sahaja) */
 const SESS_KEY = 'cbt_session_v7';   /* dibaca daripada sistem sedia ada */
 const ADD_KEY = 'cbt_records_v7';
 const DRAF_KEY = 'cbt_draf_local_v87';
@@ -581,6 +582,21 @@ const PANTRY  = { x:80,   y:760, w:340, h:100 };
 const PRINT   = { x:560,  y:800, w:130, h:90 };
 const CABINET = { x:870,  y:850, w:240, h:100 };
 const PLANTS  = [[40,300],[40,940],[1520,300],[1520,940],[600,690],[880,710]];
+
+/* Peranan bagi setiap modul. Avatar meja bagi setiap workstation memainkan
+   peranan ini, jadi setiap tab/modul mempunyai ejen dengan kerjanya sendiri. */
+const MODULE_ROLES = {
+  log:'Pendaftar Penugasan', belum:'Pegawai Validasi', selesai:'Pegawai Arkib',
+  draf:'Penyedia Draf', personel:'Pegawai Personel', penyelia:'Penyelia',
+  dashboard:'Penganalisis Data', audit:'Auditor'
+};
+/* Nama tab dalam index.html -> id workstation di sini. Tab yang tiada kaitan
+   kerja (bantuan, tetapan) tidak menggerakkan mana-mana ejen. */
+const TAB_TO_STATION = {
+  dashboard:'dashboard', log:'log', valbelum:'belum', valselesai:'selesai',
+  draf:'draf', personel:'personel', penyelia:'penyelia', audit:'audit',
+  'keyin-wa':'log', 'keyin-manual':'log'
+};
 const BINS    = [[480,650],[760,650]];
 
 /* ===== ENJIN ISOMETRIK (Habbo-style 2.5D) =====
@@ -682,6 +698,7 @@ function buildAgents(){
   STATIONS.forEach((st, i) => {
     AGENTS.push({
       id: st.id, station: st.id, label: st.agent, kind: 'desk',
+      role: MODULE_ROLES[st.id] || st.fn, focusUntil: 0,
       home: { x: st.x + st.w / 2, y: st.y + st.h + 8 },
       x: st.x + st.w / 2, y: st.y + st.h + 8,
       pal: { skin:SKIN[i % SKIN.length], hair:HAIR[i % HAIR.length], shirt:SHIRT[i % SHIRT.length],
@@ -749,6 +766,27 @@ function drawAgent(a, t){
   /* fail di tangan semasa acara */
   if(a.busy > Date.now()){
     isoBox(cx + bw + 2, cy + 2, 14, 18, 20, C.paper, 0.05);
+  }
+  /* Modul yang sedang dibuka: gelang berdenyut + papan tanda peranan. */
+  if(a.kind === 'desk' && a.focusUntil > Date.now() && a.role){
+    const pulse = 0.35 + 0.5 * Math.abs(Math.sin(t / 240));
+    g.strokeStyle = 'rgba(94,169,255,' + pulse.toFixed(2) + ')';
+    g.lineWidth = 3;
+    g.beginPath();
+    g.ellipse(sp.X, sp.Y, 34 * ISO.s * 1.7, 18 * ISO.s * 1.7, 0, 0, Math.PI * 2);
+    g.stroke();
+    g.textAlign = 'center';
+    g.font = '600 12px system-ui, sans-serif';
+    const rt = a.label + ' · ' + a.role;
+    const rw = g.measureText(rt).width + 20;
+    const bp = isoPt(a.x, a.y, 112);
+    g.fillStyle = 'rgba(12,32,58,0.94)';
+    g.fillRect(bp.X - rw / 2, bp.Y - 15, rw, 20);
+    g.fillStyle = '#8fd0ff';
+    g.fillRect(bp.X - rw / 2, bp.Y - 15, 4, 20);
+    g.fillStyle = '#dff0ff';
+    g.fillText(rt, bp.X + 2, bp.Y - 1);
+    g.textAlign = 'left';
   }
 }
 
@@ -1015,6 +1053,33 @@ function updateAgents(dt){
     a.x = nx; a.y = ny;
   });
 }
+/* Modul/tab dibuka -> ejen modul itu berdiri dan bergerak. Dipanggil apabila
+   tab ditekan dalam index.html (isyarat storan) atau workstation diklik di sini. */
+function activateModule(stationId){
+  const a = AGENTS.filter(x => x.kind === 'desk' && x.station === stationId)[0];
+  if(!a) return false;
+  a.focusUntil = Date.now() + 9000;
+  a.returnHome = true;
+  a.kind = 'deco';
+  const spots = [{ x:CABINET.x + 100, y:CABINET.y - 30 },
+                 { x:PRINT.x + 60, y:PRINT.y - 30 },
+                 { x:PANTRY.x + 130, y:PANTRY.y - 20 }];
+  const s = spots[Math.floor(Math.random() * spots.length)];
+  walkTo(a, s.x, s.y, 185);
+  office.sfx('step');
+  return true;
+}
+function onTabSignal(signal){
+  /* Isyarat ditulis sebagai "namaTab|capMasa" supaya setiap penekanan tab
+     menghasilkan nilai baharu (peristiwa storan tidak berlaku untuk nilai
+     yang sama). Nama tab sahaja yang digunakan di sini. */
+  const name = String(signal == null ? '' : signal).split('|')[0].trim();
+  const id = TAB_TO_STATION[name];
+  if(!id) return;
+  const st = STATIONS.filter(s => s.id === id)[0];
+  activateModule(id);
+  if(st) toast('🗂 Modul dibuka: ' + st.name + ' — ' + (MODULE_ROLES[id] || st.fn));
+}
 function onArrive(a){
   if(a.kind === 'team'){ a.state = 'meet'; a.pose = 'sit'; return; }
   if(a.kind === 'leaving'){ a.state = 'idle'; a.pose = 'stand'; return; }
@@ -1024,10 +1089,12 @@ function onArrive(a){
 function updateDecorative(t){
   if(reduceMotion() || document.hidden) return;
   if(t < office.nextDeco) return;
-  office.nextDeco = t + 2600 + Math.random() * 4200;
+  office.nextDeco = t + 1100 + Math.random() * 2100;
   const busy = AGENTS.filter(a => a.state === 'walk').length;
-  if(busy >= 6) return;
-  const a = AGENTS[Math.floor(Math.random() * AGENTS.length)];
+  if(busy >= 12) return;
+  const pool = AGENTS.filter(x => !(x.focusUntil > Date.now()));
+  if(!pool.length) return;
+  const a = pool[Math.floor(Math.random() * pool.length)];
   if(a.state === 'walk' || a.kind === 'team' || a.kind === 'leaving') return;
   const r = Math.random();
   if(r < 0.45){
@@ -1128,6 +1195,7 @@ function openCard(hit){
     rows.push(['Status data', statusLabel()]);
     rows.push(['Kemas kini terakhir', S.lastOk ? fmtTime(S.lastOk) : '—']);
     rows.push(['Ejen', st.agent]);
+    rows.push(['Peranan modul', MODULE_ROLES[st.id] || '—']);
   } else {
     sw = '#5ea9ff';
     title = 'BILIK MESYUARAT';
@@ -1138,7 +1206,8 @@ function openCard(hit){
       rows.push(['Team terlibat', String(S.focus.teams.length) + ' team']);
       rows.push(['Team', S.focus.teams.join(', ')]);
       rows.push(['Status', 'Belum divalidasi — mesyuarat aktif']);
-      note = 'Ejen di sini mewakili team sebenar yang dinamakan dalam rekod penugasan tersebut (data live). Nama individu tidak dipaparkan.';
+      rows.push(['Personel hadir', String((S.focus.staff || []).length) + ' orang']);
+      note = 'Avatar di bilik mesyuarat mewakili personel sebenar yang dinamakan dalam rekod penugasan. Kad ini memaparkan ringkasan sahaja.';
     } else {
       rows.push(['Status', 'Tiada rekod pelbagai team']);
       note = 'Bilik mesyuarat berfungsi sebagai elemen hiasan kerana tiada rekod belum divalidasi yang melibatkan 2 team atau lebih.';
@@ -1277,6 +1346,8 @@ const office = {
     fitView();
     this.raf = requestAnimationFrame(t => this.frame(t));
     pollLocal();
+    /* Jika office.html dibuka selepas tab ditekan, ambil isyarat terakhir. */
+    try{ const lastTab = localStorage.getItem(TAB_KEY); if(lastTab) onTabSignal(lastTab); }catch(e){}
     this.localTimer = setInterval(() => pollLocal(), CONFIG.localPollMs);
     refreshAll();
     /* Satu pemasa memutuskan bila untuk menyegarkan: 3s dalam tetingkap pantas
@@ -1463,7 +1534,12 @@ function bindUI(){
     office.lastClick = { x:e.clientX, y:e.clientY };
     const sc = stageToScene(e.clientX, e.clientY);
     const hit = hitTest(sc);
-    if(hit){ openCard(hit); return; }
+    if(hit){
+      openCard(hit);
+      /* Klik workstation = buka modul itu: ejennya bergerak ke ruang kongsi. */
+      if(hit.type === 'station') activateModule(hit.st.id);
+      return;
+    }
     closeCard();
     stage.classList.add('drag');
     const sx = e.clientX, sy = e.clientY, tx = view.tx, ty = view.ty;
@@ -1572,6 +1648,8 @@ function bindUI(){
   /* perubahan storan dari tab lain -> segera siasat */
   window.addEventListener('storage', e => {
     if(e.key === ADD_KEY || e.key === DRAF_KEY || e.key === SESS_KEY){ pollLocal(); triggerBurst(); refreshAll(); }
+    /* index.html menulis TAB_KEY setiap kali tab ditekan -> avatar modul bergerak. */
+    if(e.key === TAB_KEY && e.newValue){ onTabSignal(e.newValue); }
   });
 
   window.addEventListener('beforeunload', () => office.stop());

@@ -768,7 +768,7 @@ function drawAgent(a, t){
     isoBox(cx + bw + 2, cy + 2, 14, 18, 20, C.paper, 0.05);
   }
   /* Modul yang sedang dibuka: gelang berdenyut + papan tanda peranan. */
-  if(a.kind === 'desk' && a.focusUntil > Date.now() && a.role){
+  if(a.role && a.kind !== 'team' && a.focusUntil > Date.now()){
     const pulse = 0.35 + 0.5 * Math.abs(Math.sin(t / 240));
     g.strokeStyle = 'rgba(94,169,255,' + pulse.toFixed(2) + ')';
     g.lineWidth = 3;

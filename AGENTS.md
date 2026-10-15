@@ -139,3 +139,41 @@ sesi. Ia tidak pernah menulis kunci tersebut — hanya `cbt_office_ui_v1`.
 - `syncMeeting` mesti memeriksa rekod setempat dahulu — rekod baharu hanya
   muncul dalam senarai pelayan pada kitaran muat semula seterusnya.
 - Jangan ganti kiraan sah dengan `null` apabila respons cacat.
+
+## CSP dan backend GAS — perangkap kritikal
+
+`index.html` memakai CSP berasaskan hash (`tools/csp-hash.py`). Jangan edit
+`<meta Content-Security-Policy>` dengan tangan; jalankan
+`python3 tools/csp-hash.py --write` selepas mengubah mana-mana blok `<script>`
+inline, dan sahkan dengan `--check`.
+
+**Apps Script membalas melalui ubah hala.** Permintaan ke `script.google.com`
+dijawab melalui `script.googleusercontent.com`. Oleh itu `connect-src` **mesti**
+menyenaraikan kedua-dua hos. Jika hanya `script.google.com` disenaraikan,
+pelayar menghalang ubah hala dan **setiap** panggilan backend gagal dengan
+`Failed to fetch` — termasuk `ping`. Ralat ini senyap dan hanya kelihatan di
+konsol sebagai pelanggaran CSP.
+
+Sumber yang dibenarkan dan sebabnya:
+
+| Hos | Arahan | Sebab |
+|---|---|---|
+| `script.google.com` | `connect-src` | endpoint GAS |
+| `script.googleusercontent.com` | `connect-src` | hos ubah hala GAS — wajib |
+| `docs.google.com` | `connect-src` | eksport |
+| `cdn.jsdelivr.net`, `cdnjs.cloudflare.com` | `script-src` | Chart.js, jspdf |
+| `'unsafe-inline'` | `style-src` sahaja | gaya dalam talian; **jangan** tambah ke `script-src` |
+
+### Ujian CSP mesti guna rangkaian sebenar
+
+Suite integrasi menggantikan `window.fetch` dengan stub. Stub itu memintas
+pelayar sepenuhnya, jadi **CSP tidak pernah diuji** — satu CSP yang menyekat
+semua trafik boleh lulus 132 ujian. Sentiasa tambah satu ujian yang memanggil
+`gasCall('ping')` sebenar melalui pelayar dan mengira pelanggaran CSP.
+
+### Service worker
+
+`sw.js` menggunakan strategi **rangkaian-dahulu** untuk HTML. Pembetulan HTML
+sampai pada muat seterusnya tanpa naikkan `APP_VER`. Jangan naikkan `APP_VER`
+untuk pembetulan semata-mata — ia mencetuskan amaran ketidakpadanan versi
+frontend/backend yang mengelirukan pengguna.

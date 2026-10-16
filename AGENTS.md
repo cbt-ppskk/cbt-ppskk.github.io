@@ -470,3 +470,17 @@ semua trafik boleh lulus 132 ujian. Sentiasa tambah satu ujian yang memanggil
 sampai pada muat seterusnya tanpa naikkan `APP_VER`. Jangan naikkan `APP_VER`
 untuk pembetulan semata-mata — ia mencetuskan amaran ketidakpadanan versi
 frontend/backend yang mengelirukan pengguna.
+
+### Avatar ejen: bentuk licin, bukan blok piksel
+
+`drawAgent()` dalam `office.html` melukis setiap ejen dengan bentuk licin
+(`arc`/`ellipse`/`roundRect`) — kepala bulat, mata besar berkilau, kening,
+senyuman, leher, bahu dan tangan bulat. Jangan kembali kepada blok
+`fillRect` berasaskan grid: pada saiz skrin sebenar kepala 4x5 piksel
+(16x20px) kelihatan seperti **kotak**, bukan orang.
+
+Cara mengesahkan bentuk tanpa meneka: tangkap skrin, tandakan piksel kulit
+(palet `SKIN`), kemudian kira nisbah isi dalam kotak sempadan.
+Bulatan isi ~66% (atau kurang bila rambut menutupi sisi); segi empat isi
+~100%. Warna meja (`deskTop #e0b483`) hampir sama dengan kulit (`#e3b58a`) —
+tolak piksel meja dahulu atau ukuran akan tersalah.

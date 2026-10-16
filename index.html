@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103b">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-/EZO0DslGWvi1P7lXts8+96aTpp3OcnRQ4TfWzLDd0I=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-/EZO0DslGWvi1P7lXts8+96aTpp3OcnRQ4TfWzLDd0I=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-6r01xyNB80rz0wjHsPLO3pVBjXHka84/dqvCQQgkeYU=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-0E2VwE1MwVvAMxSau50wdHgBuB1EwLIqp8O2mLJwz4E=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-6r01xyNB80rz0wjHsPLO3pVBjXHka84/dqvCQQgkeYU=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-0E2VwE1MwVvAMxSau50wdHgBuB1EwLIqp8O2mLJwz4E=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -1195,6 +1195,7 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
           <div class="navdrop-menu" role="menu">
             <button class="tab-btn admin-only" data-tab="keyin-wa">📥 Submodul 1: Tampal Laporan WhatsApp</button>
             <button class="tab-btn admin-only" data-tab="keyin-manual">📝 Submodul 2: Isi Penugasan Manual</button>
+            <button class="tab-btn admin-only" data-tab="keyin-email">✉️ Submodul 3: Tampal E-mel</button>
           </div>
         </div>
       </nav>
@@ -1593,6 +1594,41 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
         <div class="card glass">
           <h3><span class="dot"></span>Rekod Baharu Disimpan <span class="badge-team" id="ki-recent-count">0 rekod</span></h3>
           <div id="ki-recent" style="font-size:12.5px;color:var(--muted)">Belum ada rekod baharu.</div>
+        </div>
+      </section>
+
+      <!-- KEY IN — SUBMODUL 3: TAMPAL E-MEL (HALAMAN SENDIRI) -->
+      <section class="tab" id="tab-keyin-email">
+        <h2 class="sec">✉️ Submodul 3: Tampal E-mel</h2>
+        <p class="sec-sub">Halaman untuk penugasan yang diterima melalui <b>e-mel</b> — termasuk tugasan <b>2–3 minggu lebih awal</b>. Tampal teks e-mel → <b>🔍 Analisis E-mel</b> → semak kad → <b>Simpan</b>. Penugasan bertarikh <b>masa hadapan</b> ditanda <b>Akan Datang</b> dan <b>tidak</b> dikira dalam KPI sehingga tarikhnya tiba. Halaman ini <b>khusus untuk Admin</b>.</p>
+
+        <div class="ki-sub glass" id="ki-sub-email">
+          <div class="ki-sub-head"><h3>✉️ Tampal Teks E-mel</h3><span class="ki-sub-tag">Sub Modul 3</span></div>
+          <div class="ki-sub-desc">Buka e-mel tugasan → <b>salin</b> teks (Ctrl+A, Ctrl+C) → tampal di bawah (Ctrl+V). Sistem membuang baris sejarah balasan (From:/Sent:/&gt;), mengambil <b>Subject:</b> sebagai cadangan Tajuk, kemudian mengesan <b>Tarikh, Masa, Tempat &amp; Petugas</b> dengan enjin yang sama seperti Submodul 1 (termasuk OCR &amp; kiraan jam).</div>
+          <div class="ki-2col">
+            <div class="ki-col ki-col-ocr" id="ki-email-ocr-wrap">
+              <div class="ki-col-h">🖼️ OCR Screenshot E-mel</div>
+              <input type="file" id="ki-email-ocr-file" accept="image/*" style="font-size:11.5px;color:var(--muted);width:100%">
+              <button type="button" class="btn sm" id="ki-email-ocr-run">📷 Imbas Screenshot</button>
+              <span id="ki-email-ocr-msg">Pilih gambar screenshot e-mel → teks akan masuk ke kotak di sebelah. <b>OCR hanya membantu — wajib semak sebelum simpan.</b></span>
+            </div>
+            <div class="ki-col ki-col-wa">
+              <div class="ki-col-h">✉️ Tampal Teks E-mel</div>
+              <textarea id="ki-email-text" placeholder="Subject: MAJLIS PENUTUPAN PROGRAM&#10;From: pengirim@contoh.gov.my&#10;Date: Mon, 5 Oct 2026&#10;&#10;Sukacita dimaklumkan majlis akan diadakan pada 15 November 2026,&#10;pukul 8:00 pagi hingga 5:00 petang di Dewan SHAS.&#10;Petugas: Admin: ALI BIN ABU | Fotografi: SITI BINTI OMAR"></textarea>
+            </div>
+          </div>
+          <textarea id="ki-email-raw" class="raw-wa" placeholder="Raw E-mel Log — teks e-mel asal disimpan penuh di sini (tidak dicampur dengan Tajuk/Tarikh/Lokasi/Petugas)."></textarea>
+          <div class="prow">
+            <button type="button" class="btn primary" id="ki-email-parse">🔎 Analisis E-mel</button>
+            <button type="button" class="btn" id="ki-email-clear">Kosongkan</button>
+            <span class="ki-count" id="ki-email-count">0 Penugasan Dikesan</span>
+            <span style="font-size:12px;color:var(--muted)" id="ki-email-msg"></span>
+          </div>
+          <div id="ki-email-preview"></div>
+          <div class="prow" id="ki-email-batch-actions" style="display:none">
+            <button type="button" class="btn save" id="ki-email-save">💾 Simpan Semua ke Log Penugasan</button>
+            <button type="button" class="btn" id="ki-email-stage-clear">Buang Semua Draf</button>
+          </div>
         </div>
       </section>
 
@@ -6839,7 +6875,7 @@ if(SESSION) setTimeout(function(){ LAST_SYNC_TS=Date.now(); renderSyncStatus(fal
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
       /* v103b: daftar dengan ?v=103e untuk paksa muat turun sw.js BAHARU (elak cache lama) */
-      navigator.serviceWorker.register('sw.js?v=103h').then(function(reg){
+      navigator.serviceWorker.register('sw.js?v=105').then(function(reg){
         try{
           reg.addEventListener('updatefound',function(){
             var nw=reg.installing;
@@ -8178,6 +8214,355 @@ body.not-authed #fr-mic,body.not-authed #fr-status,body.not-authed #fr-bubble,bo
     if(typeof console!=='undefined')console.log('[v103] Ahmad NL Q&A + alias dimuatkan');
   }
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',bindV98);}else{bindV98();}
+})();
+</script>
+
+<script id="v105-script">
+/* =====================================================================
+   v105 — SUBMODUL 3: TAMPAL E-MEL + status "Akan Datang"
+   Blok ini MESTI kekal di HUJUNG fail (override menang).
+   Tiada kod lama diubah: semua tingkah laku ditokok melalui pembalut.
+   ===================================================================== */
+(function(){
+  'use strict';
+  var G=function(id){return document.getElementById(id);};
+
+  /* --- kiraan/status masa hadapan --- */
+  function todayYmd(){
+    var d=new Date();
+    return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  }
+  function isFuture(r){ return !!(r&&r.tarikh_mula&&String(r.tarikh_mula)>todayYmd()); }
+  function futureCount(list){
+    try{ return (list||[]).filter(isFuture).length; }catch(e){ return 0; }
+  }
+
+  /* --- buang baris sejarah balasan e-mel --- */
+  function stripEmailHistory(text){
+    var out=[],cut=false;
+    String(text||'').replace(/\r/g,'').split('\n').forEach(function(line){
+      var t=line.trim();
+      if(/^>+/.test(t))return;                                              /* baris dipetik */
+      if(/^[-_]{2,}\s*(Original|Forwarded|Asal)\b/i.test(t)){cut=true;return;}
+      if(/^On .{6,80}\bwrote:?\s*$/i.test(t)){cut=true;return;}
+      if(/^Pada .{4,80}\bmenulis:?\s*$/i.test(t)){cut=true;return;}
+      if(/^(Dari|From|Kepada|To|Cc|Bcc|Sent|Hantar|Date|Tarikh|Subject|Subjek|Sari kata)\s*:/i.test(t))return;
+      if(cut)return;
+      out.push(line);
+    });
+    return out.join('\n');
+  }
+  /* --- ambil Subject:/Subjek: sebagai cadangan tajuk --- */
+  function extractEmailSubject(text){
+    var m=String(text||'').match(/^\s*(?:Subject|Subjek|Sari kata)\s*:\s*(.+)$/im);
+    return m?m[1].trim():'';
+  }
+  /* --- teks yang disuap ke enjin parser Submodul 1 --- */
+  function emailToParserText(text){
+    var body=stripEmailHistory(text);
+    var subj=extractEmailSubject(text);
+    var head=(subj&&!/^\s*(?:Tajuk|📌)\s*:/i.test(body))?('📌 Tajuk: '+subj+'\n'):'';
+    return head+body;
+  }
+
+  /* --- ekstraksi prosa: e-mel selalunya ayat biasa, bukan "Tarikh: ..." --- */
+  var BULAN={januari:1,februari:2,mac:3,april:4,mei:5,jun:6,julai:7,ogos:8,september:9,oktober:10,november:11,disember:12};
+  function pad2(n){ return ('0'+n).slice(-2); }
+  function extractProseDate(text){
+    var s=String(text||''),m;
+    m=s.match(/\b(\d{1,2})\s+(Januari|Februari|Mac|April|Mei|Jun|Julai|Ogos|September|Oktober|November|Disember)\s+(\d{4})\b/i);
+    if(m){ var mm=BULAN[m[2].toLowerCase()]; if(mm)return m[3]+'-'+pad2(mm)+'-'+pad2(+m[1]); }
+    m=s.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+    if(m)return m[1]+'-'+m[2]+'-'+m[3];
+    m=s.match(/\b(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})\b/);
+    if(m)return m[3]+'-'+pad2(+m[2])+'-'+pad2(+m[1]);
+    return '';
+  }
+  function extractProseTimes(text){
+    /* buang tarikh dahulu supaya "15.10.2026" tidak dibaca sebagai jam 15:10 */
+    var s=String(text||'')
+      .replace(/\b\d{4}-\d{2}-\d{2}\b/g,' ')
+      .replace(/\b\d{1,2}[\/.]\d{1,2}[\/.]\d{4}\b/g,' ')
+      .replace(/\b\d{1,2}\s+(?:Januari|Februari|Mac|April|Mei|Jun|Julai|Ogos|September|Oktober|November|Disember)\s+\d{4}\b/gi,' ');
+    var re=/(\d{1,2})[:.](\d{2})\s*(pagi|petang|malam|tengah hari)?/gi,out=[],m;
+    while((m=re.exec(s))!==null){
+      var h=+m[1],mk=String(m[3]||'').toLowerCase();
+      if(/petang|malam|tengah hari/.test(mk)){ if(h<12)h+=12; }
+      else if(/pagi/.test(mk)){ if(h===12)h=0; }
+      else if(h<7){ h+=12; } /* tanpa penanda: 1-6 = petang (waktu kerja) */
+      out.push(pad2(h)+pad2(+m[2]));
+      if(out.length>=4)break;
+    }
+    return out;
+  }
+  function extractProsePlace(text){
+    var m=String(text||'').match(/(?:bertempat\s+di|tempat\s*:|lokasi\s*:|di)\s+((?:Dewan|Bilik|Auditorium|Padang|Balai|Surau|Hotel|Grand|Moot|Lobi|PULAPOL|KPN|SHAS)[^\n.,;]{2,60})/i);
+    return m?m[1].trim():'';
+  }
+  /* isi medan yang parser terlepas daripada ayat prosa e-mel */
+  function fillProseFields(recs,text){
+    var d=extractProseDate(text), t=extractProseTimes(text), p=extractProsePlace(text);
+    (recs||[]).forEach(function(r){
+      if(!r)return;
+      if(!r.tarikh_mula&&d){ r.tarikh_mula=d; r.tarikh_tamat=d; }
+      if((!r.masa_mula||!r.masa_tamat)&&t.length>=2){
+        if(!r.masa_mula)r.masa_mula=t[0];
+        if(!r.masa_tamat)r.masa_tamat=t[1];
+      }
+      if(!normTxt(r.tempat)&&p)r.tempat=p;
+    });
+  }
+
+  /* --- jadikan setiap kad STAGE sebagai penugasan draf bila simpan --- */
+  var _origFinalize=window.finalizeRecord;
+  window.finalizeRecord=function(r){
+    var out=_origFinalize?_origFinalize.apply(this,arguments):r;
+    try{ if(String(r&&r.sumber||'').indexOf('E-mel')>=0 && !r.status){ r.status=isFuture(r)?'⏳ Akan Datang':'Aktif ✅'; } }catch(e){}
+    return out;
+  };
+
+  /* --- label "Akan Datang" pada kad & baris jadual --- */
+  var _origRenderStage=window.renderStage;
+  if(_origRenderStage){
+    window.renderStage=function(){
+      var r=_origRenderStage.apply(this,arguments);
+      try{
+        var wrap=G('ki-stage-wrap');
+        if(wrap)wrap.querySelectorAll('.ki-card').forEach(function(c){
+          var eid=c.getAttribute('data-eid');
+          if(typeof stageIdxByEid!=='function')return;
+          var idx=stageIdxByEid(eid);
+          if(idx<0)return;
+          var rc=STAGE[idx];
+          if(isFuture(rc)&&!c.querySelector('.kc-tag-akan')){
+            var t=c.querySelector('.kc-t');
+            if(t){ var s=document.createElement('span'); s.className='kc-tag-akan'; s.textContent='⏳ Akan Datang'; s.style.cssText='display:inline-block;margin-left:6px;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;background:rgba(251,191,36,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.5)'; t.appendChild(s); }
+          }
+        });
+      }catch(e){}
+      return r;
+    };
+  }
+
+  /* --- KPI: tapis rekod masa hadapan dari carta/jumlah --- */
+  var _origDash=window.buildDashboard;
+  if(_origDash){
+    window.buildDashboard=function(logRows){
+      var rows=Array.isArray(logRows)?logRows.filter(function(r){return !isFuture(r);}):logRows;
+      var res=_origDash.call(this,rows);
+      try{
+        var pe=G('period-count');
+        var fc=futureCount(typeof LOG_BASE!=='undefined'?LOG_BASE:[]);
+        if(pe&&fc>0){ pe.textContent=pe.textContent+' · '+fc+' akan datang (tidak dikira KPI)'; }
+      }catch(e){}
+      return res;
+    };
+  }
+
+  /* --- label baris jadual --- */
+  var _origSwitch=window.switchTab;
+  window.switchTab=function(name){
+    var res=_origSwitch?_origSwitch.apply(this,arguments):undefined;
+    try{ if(name==='log')setTimeout(decorateLogRows,120); }catch(e){}
+    return res;
+  };
+  function decorateLogRows(){
+    try{
+      document.querySelectorAll('#log-tbl tbody tr[data-bil], #log-body tr[data-bil]').forEach(function(tr){
+        var bil=tr.getAttribute('data-bil');
+        var rec=null;
+        try{ rec=(typeof LOG!=='undefined'?LOG:[]).filter(function(x){return String(x.bil)===String(bil);})[0]; }catch(e){}
+        if(rec&&isFuture(rec)&&!tr.querySelector('.pill-akan')){
+          var s=document.createElement('span');
+          s.className='pill-akan'; s.textContent='⏳ Akan Datang';
+          s.style.cssText='display:inline-block;margin-left:6px;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;background:rgba(251,191,36,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.5)';
+          var cell=tr.children[4]||tr.children[1];
+          if(cell)cell.appendChild(s);
+        }
+      });
+    }catch(e){}
+  }
+
+  /* --- butang tindakan dalam kad (per _eid) --- */
+  function bindCardActions(wrap){
+    if(!wrap||wrap.dataset.v105bound)return;
+    wrap.dataset.v105bound='1';
+    wrap.addEventListener('click',function(ev){
+      var b=ev.target.closest&&ev.target.closest('[data-act105]');
+      if(!b)return;
+      ev.preventDefault(); ev.stopPropagation();
+      var eid=b.getAttribute('data-eid');
+      var idx=(typeof stageIdxByEid==='function')?stageIdxByEid(eid):-1;
+      if(idx<0)return;
+      var rec=STAGE[idx];
+      if(b.getAttribute('data-act105')==='draft'){
+        rec.status='🟡 Belum Agih Petugas'; rec.sumber='Draf (Staging_Penugasan)';
+        if(!rec.id)rec.id='STG-'+Date.now()+'-'+idx;
+        try{finalizeRecord(rec);}catch(e){}
+        if(typeof gasConfigured==='function'&&!gasConfigured()){ rec._draftSaved=true; showToast('⚠️ Draf disimpan SETEMPAT sahaja (backend GAS belum dikonfigurasi).'); return; }
+        gasCall('saveStagingPenugasan',{record:rec,actorEmail:(typeof SESSION!=='undefined'&&SESSION&&SESSION.id)||''}).then(function(res){
+          showToast(res&&res.ok?('🟡 Draf #'+rec.bil+' disimpan ke Staging_Penugasan.'):'⚠️ Draf gagal disimpan.');
+        }).catch(function(){ showToast('❌ Draf gagal disimpan (rangkaian).'); });
+      } else if(b.getAttribute('data-act105')==='del'){
+        STAGE=STAGE.filter(function(x){return x._eid!==eid;});
+        try{renderStage();}catch(e){}
+      }
+    });
+  }
+
+  /* --- tanda "Akan Datang" pada kad + butang simpan draf --- */
+  function decorateEmailCards(){
+    try{
+      var wrap=G('ki-stage-wrap');
+      if(!wrap)return;
+      bindCardActions(wrap);
+      var cards=wrap.querySelectorAll('.ki-card');
+      var fcount=0;
+      cards.forEach(function(c){
+        var eid=c.getAttribute('data-eid');
+        var idx=(typeof stageIdxByEid==='function')?stageIdxByEid(eid):-1;
+        if(idx<0)return;
+        var rec=STAGE[idx];
+        if(isFuture(rec)){
+          fcount++;
+          if(!c.querySelector('.kc-tag-akan')){
+            var t=c.querySelector('.kc-t');
+            if(t){var s=document.createElement('span');s.className='kc-tag-akan';s.textContent='⏳ Akan Datang';s.style.cssText='display:inline-block;margin-left:6px;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:800;background:rgba(251,191,36,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.5)';t.appendChild(s);}
+          }
+        }
+        var box=c.querySelector('.kc-edit-actions');
+        if(box&&!box.querySelector('[data-act105="draft"]')){
+          var d=document.createElement('button');
+          d.type='button'; d.className='btn draft'; d.setAttribute('data-act105','draft'); d.setAttribute('data-eid',eid); d.textContent='🟡 Simpan Draf';
+          box.insertBefore(d,box.firstChild);
+        }
+      });
+      var cnt=G('ki-email-count');
+      if(cnt)cnt.textContent=cards.length+' Penugasan Dikesan'+(fcount?(' · '+fcount+' akan datang'):'');
+    }catch(e){}
+  }
+
+  /* --- enjin parser: utamakan laporan bernombor, sandaran untuk e-mel bebas --- */
+  function parseAnyEmail(feed){
+    var out=[];
+    try{ var res=smartParseLaporan(feed); out=(res.assignments||[]).slice(); }catch(e){}
+    if(out.length)return out;
+    /* E-mel selalunya SATU rekod bebas (bukan senarai bernombor 1., 2., ...),
+       jadi enjin v55 (parseWhats) diperlukan sebagai sandaran. */
+    try{
+      if(typeof parseWhatsMulti==='function'){
+        var m=parseWhatsMulti(feed);
+        if(m&&m.length)return m.map(function(x){ return (x&&x.rec)?x.rec:x; });
+      }
+    }catch(e){}
+    try{
+      if(typeof parseWhats==='function'){
+        var one=parseWhats(feed);
+        if(one&&one.rec)return [one.rec];
+      }
+    }catch(e){}
+    return out;
+  }
+
+  /* kira semula Jam Tugas / Jam-Orang / nama hari selepas medan diisi */
+  function recalcRec(r){
+    try{
+      var a=toMinutes(r.masa_mula),b=toMinutes(r.masa_tamat);
+      if(a!=null&&b!=null&&b>a){ var j=(b-a)/60; if(j>1)j-=1; r.jumlah_jam=Math.round(j*10)/10; }
+      var np=countNamesAll(r);
+      var jj=Number(r.jumlah_jam);
+      if(!isNaN(jj)&&jj>0&&np>0)r.jam_orang=Math.round(jj*np*10)/10;
+      if(r.tarikh_mula)r.hari=dayName(r.tarikh_mula);
+    }catch(e){}
+  }
+
+  /* --- analisis e-mel --- */
+  function parseEmail(){
+    var ta=G('ki-email-text'), pmsg=G('ki-email-msg');
+    var txt=(ta&&ta.value||'').trim();
+    if(!txt){ if(pmsg)pmsg.textContent='Sila tampal teks e-mel dahulu.'; return; }
+    var raw=G('ki-email-raw'); if(raw)raw.value=txt;
+    var feed=emailToParserText(txt);
+    try{
+      var out=parseAnyEmail(feed);
+      fillProseFields(out,txt);
+      out.forEach(function(r){
+        r.sumber='E-mel (Submodul 3)';
+        /* Rekod baharu datang dengan status lalai 'Aktif ✅' — tukar kepada
+           'Akan Datang' bila tarikhnya belum tiba supaya log & KPI konsisten. */
+        if(!r.status||/^\s*Aktif/i.test(r.status))r.status=isFuture(r)?'⏳ Akan Datang':'Aktif ✅';
+        if(!normTxt(r.tajuk)){
+          var subj=extractEmailSubject(txt);
+          if(subj)r.tajuk=subj;
+        }
+        recalcRec(r);
+      });
+      if(!out.length){
+        if(pmsg)pmsg.textContent='Tiada penugasan dikesan. Pastikan e-mel mengandungi Tarikh + Tajuk/Tempat yang jelas.';
+        return;
+      }
+      STAGE=out;
+      renderStage();
+      decorateEmailCards();
+      var bacts=G('ki-email-batch-actions'); if(bacts)bacts.style.display='flex';
+      if(pmsg)pmsg.textContent='✅ '+out.length+' penugasan dikesan'+(futureCount(out)?(' · '+futureCount(out)+' akan datang (tidak dikira KPI)'):'')+' — semak kad, kemudian Simpan.';
+      showToast(out.length+' penugasan dikesan ✅');
+    }catch(e){ if(pmsg)pmsg.textContent='Ralat analisis: '+((e&&e.message)||e); }
+  }
+
+  function bindEmail(){
+    var sec=G('tab-keyin-email'); if(!sec||sec.dataset.v105)return; sec.dataset.v105='1';
+    var ta=G('ki-email-text'), raw=G('ki-email-raw'), pmsg=G('ki-email-msg');
+    /* cerminkan teks ke Raw E-mel Log masa taip */
+    if(ta&&raw)ta.addEventListener('input',function(){ raw.value=ta.value; });
+    var pb=G('ki-email-parse'); if(pb)pb.addEventListener('click',parseEmail);
+    var cb=G('ki-email-clear');
+    if(cb)cb.addEventListener('click',function(){
+      if(ta)ta.value=''; if(raw)raw.value=''; if(pmsg)pmsg.textContent='';
+      STAGE=[]; try{renderStage();}catch(e){}
+      var c=G('ki-email-count'); if(c)c.textContent='0 Penugasan Dikesan';
+      var bacts=G('ki-email-batch-actions'); if(bacts)bacts.style.display='none';
+    });
+    var sc=G('ki-email-stage-clear');
+    if(sc)sc.addEventListener('click',function(){ STAGE=[]; try{renderStage();}catch(e){} var c=G('ki-email-count'); if(c)c.textContent='0 Penugasan Dikesan'; showToast('Draf dibuang.'); });
+    var sv=G('ki-email-save');
+    if(sv)sv.addEventListener('click',function(){ if(typeof saveStageAll==='function')saveStageAll(); else showToast('⚠️ Enjin simpan tidak tersedia.'); });
+    /* OCR e-mel (enjin sama seperti Submodul 1) */
+    var ocrBtn=G('ki-email-ocr-run');
+    function note(msg,bad){ var e=G('ki-email-ocr-msg'); if(e){ e.innerHTML=msg; e.style.color=bad?'#fde68a':'var(--muted)'; } }
+    if(ocrBtn)ocrBtn.addEventListener('click',function(){
+      var f=G('ki-email-ocr-file');
+      if(!f||!f.files||!f.files[0]){ note('⚠️ Pilih fail gambar screenshot dahulu.',true); return; }
+      function run(){
+        if(!window.Tesseract){ note('⚠️ Enjin OCR tidak dapat dimuatkan (tiada internet?). Sila tampal teks e-mel secara manual.',true); return; }
+        note('⏳ Membaca screenshot… sila tunggu.',false);
+        window.Tesseract.recognize(f.files[0],'ms+en').then(function(res){
+          var t=(res&&res.data&&res.data.text)||'';
+          if(ta)ta.value=t; if(raw)raw.value=t;
+          note('✅ OCR selesai. <b>Sila semak teks sebelum simpan.</b> Tekan 🔎 Analisis E-mel untuk kesan tajuk.',false);
+          showToast('OCR selesai — sila semak teks ✅');
+        }).catch(function(e){ note('⚠️ OCR gagal: '+((e&&e.message)||e)+' — sila tampal teks manual.',true); });
+      }
+      if(window.Tesseract){ run(); return; }
+      var s=document.getElementById('tesseract-cdn')||document.createElement('script');
+      if(!s.src){ s.id='tesseract-cdn'; s.async=true; s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; s.onload=run; s.onerror=function(){ note('⚠️ Enjin OCR tidak dapat dimuatkan (tiada internet?). Sila tampal teks manual.',true); }; document.head.appendChild(s); }
+      else { run(); }
+    });
+  }
+
+  /* --- pastikan Simpan Semua menandakan rekod akan datang dengan betul --- */
+  var _origSave=window.saveStageAll;
+  if(_origSave){
+    window.saveStageAll=function(){
+      try{ STAGE.forEach(function(r){ if(isFuture(r)&&(!r.status||/^\s*Aktif/i.test(r.status)))r.status='⏳ Akan Datang'; }); }catch(e){}
+      return _origSave.apply(this,arguments);
+    };
+  }
+
+  /* --- daftar tab bila DOM sedia --- */
+  function boot(){ bindEmail(); }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
+  setTimeout(boot,400);
 })();
 </script>
 </body>

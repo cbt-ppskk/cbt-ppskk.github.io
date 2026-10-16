@@ -269,6 +269,61 @@ yang kukuh — jangan bergantung padanya sebagai satu-satunya faktor.
    sebagai kawalan keselamatan. Pastikan `Code.gs` menyemak peranan untuk
    `upsertPersonel`, `adminUpdateUser`, `deleteLog`.
 
+## Submodul Key In Penugasan (v105)
+
+Dropdown **➕ Key In Penugasan** mempunyai **tiga** halaman (`index.html`):
+
+| Submodul | `data-tab` | Untuk apa |
+|---|---|---|
+| 1 | `keyin-wa` | Tampal laporan **WhatsApp** (senarai bernombor 1., 2., …) |
+| 2 | `keyin-manual` | Borang **manual** satu-satu |
+| 3 | `keyin-email` | Tampal teks **e-mel** (termasuk tugasan 2–3 minggu lebih awal) |
+
+### Submodul 3 — enjin dua lapis (penting)
+
+`smartParseLaporan()` (v56) **hanya** memproses laporan **berformat bernombor**
+(`1. …`, `2. …`, `ADMIN`, `TUGASAN`). Ia memulangkan `assignments: []` untuk
+e-mel berbentuk prosa. Sebab itu `v105` menggunakan **dua lapis**:
+
+1. `smartParseLaporan(feed)` — laporan bernombor.
+2. Jika kosong → `parseWhatsMulti()` / `parseWhats()` (enjin v55) — satu rekod bebas.
+3. `fillProseFields()` mengisi medan yang parser terlepas daripada ayat biasa:
+   `extractProseDate()`, `extractProseTimes()`, `extractProsePlace()`.
+
+**Perangkap masa:** `extractProseTimes()` membuang tarikh **dahulu**
+(`15.10.2026`) sebelum mencari jam, jika tidak "15.10" dibaca sebagai jam 15:10.
+Tanpa penanda pagi/petang, jam `< 7` dianggap petang (`+12`).
+
+**Perangkap status:** `newUserRecord()` menetapkan `status:'Aktif ✅'` secara
+lalai, jadi semakan `!r.status` **tidak pernah** tercetus. Untuk menanda
+"Akan Datang", mesti tulis semula status bila ia bermula dengan `Aktif`.
+
+### Status "Akan Datang" (keputusan reka bentuk 2026-10)
+
+Rekod bertarikh **masa hadapan** disimpan dalam log tetapi **tidak** dikira
+sebagai penugasan selesai:
+
+- **Backend** (`fetchLogCounts_`): medan baharu `future`; rekod `tarikh_mula > hari ini`
+  dilangkau daripada `inPeriod` dan `jenis`.
+- **Frontend** (`v105`): `buildDashboard` dibalut untuk menapis rekod masa hadapan;
+  kad & baris jadual mendapat lencana **⏳ Akan Datang**; `#period-count` menyebut
+  bilangan rekod akan datang yang dikecualikan.
+- **Sempadan:** tarikh **hari ini** masih dikira; hanya `> hari ini` dikecualikan.
+- `todayYmd_()` menggunakan zon `Asia/Kuala_Lumpur` (bukan UTC).
+
+### Amaran: `inPeriod` mesti ditapis di KEDUA-DUA tempat
+
+`inPeriod` datang dari `fetchLogCounts` (Sheet) **dan** daripada fallback tempatan
+`dispCount()` (`LOG_BASE.filter(...)`). Menapis hanya satu daripadanya akan
+menyebabkan KPI berbeza antara mod dalam talian dan luar talian.
+
+### Amaran: `saveStageAll` membina rekod log SEBENAR
+
+Submodul 3 menggunakan semula `saveStageAll()` yang sama seperti Submodul 1 —
+ia menghantar ke `commitLogPenugasan` dan menulis ke **Log_Penugasan** (rekod rasmi),
+bukan `Staging_Penugasan`. Butang **🟡 Simpan Draf** pada kad pula memanggil
+`saveStagingPenugasan`. Pastikan setiap kad benar-benar disemak sebelum menyimpan.
+
 ## Content-Security-Policy (v103b)
 
 `index.html` mempunyai `<meta http-equiv="Content-Security-Policy">`. Kerana beberapa

@@ -278,6 +278,63 @@ console.log('\n=== 18. KOD MATRIK kekal jadi pagar selepas pendaftaran pertama =
   ok(/tidak padan/.test(String(serang.error)), 'mesej sebut tidak padan', String(serang.error));
 }
 
+console.log('\n=== 19. v105: fetchLogCounts_ TIDAK kira penugasan tarikh MASA HADAPAN ===');
+{
+  /* Tarikh relatif kepada HARI INI supaya ujian tidak bergantung pada tarikh sebenar. */
+  const ymd = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+  /* Baris format BAHARU (lajur: Bil, ID, Tarikh Mula, Tarikh Tamat, Tajuk, ...) */
+  function logRow(bil, id, tarikhMula, jenis) {
+    const r = new Array(22).fill('');
+    r[0] = bil; r[1] = id; r[2] = tarikhMula; r[3] = tarikhMula; r[4] = 'TAJUK ' + bil;
+    r[12] = jenis;
+    return r;
+  }
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__sheets['Log_Penugasan'] = makeSheet([
+    logRow(1, 'USR-1', ymd(-10), 'MAJLIS'),   /* lampau -> KPI */
+    logRow(2, 'USR-2', ymd(-3), 'MAJLIS'),    /* lampau -> KPI */
+    logRow(3, 'USR-3', ymd(20), 'MAJLIS'),    /* MASA HADAPAN -> bukan KPI */
+    logRow(4, 'USR-4', ymd(45), 'KURSUS')     /* MASA HADAPAN -> bukan KPI */
+  ]);
+  const r = env.fetchLogCounts_('2000-01-01');
+  ok(r.all === 4, 'all = 4 (semua rekod)', JSON.stringify(r));
+  ok(r.inPeriod === 2, 'inPeriod = 2 (masa hadapan DIKECUALI)', 'inPeriod=' + r.inPeriod);
+  ok(r.future === 2, 'future = 2', 'future=' + r.future);
+  ok(r.jenis && r.jenis['MAJLIS'] === 2, 'jenis hanya kira rekod lampau', JSON.stringify(r.jenis));
+  ok(r.jenis && r.jenis['KURSUS'] === undefined, 'jenis TIDAK ada KURSUS (rekod hadapan)', JSON.stringify(r.jenis));
+}
+
+console.log('\n=== 20. v105: rekod masa hadapan tidak pernah masuk inPeriod (semua hadapan) ===');
+{
+  const ymd = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+  function logRow(bil, id, tarikhMula) {
+    const r = new Array(22).fill('');
+    r[0] = bil; r[1] = id; r[2] = tarikhMula; r[3] = tarikhMula; r[4] = 'TAJUK';
+    r[12] = 'MAJLIS';
+    return r;
+  }
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__sheets['Log_Penugasan'] = makeSheet([logRow(1, 'USR-1', ymd(30)), logRow(2, 'USR-2', ymd(60))]);
+  const r = env.fetchLogCounts_('2000-01-01');
+  ok(r.all === 2 && r.inPeriod === 0 && r.future === 2, 'semua hadapan -> inPeriod 0, future 2', JSON.stringify(r));
+}
+
+console.log('\n=== 21. v105: tarikh HARI INI masih dikira (sempadan) ===');
+{
+  const ymd = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+  function logRow(bil, id, tarikhMula) {
+    const r = new Array(22).fill('');
+    r[0] = bil; r[1] = id; r[2] = tarikhMula; r[3] = tarikhMula; r[4] = 'TAJUK';
+    r[12] = 'MAJLIS';
+    return r;
+  }
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__sheets['Log_Penugasan'] = makeSheet([logRow(1, 'USR-1', ymd(0)), logRow(2, 'USR-2', ymd(1))]);
+  const r = env.fetchLogCounts_('2000-01-01');
+  ok(r.inPeriod === 1, 'hari ini DIKIRA', 'inPeriod=' + r.inPeriod);
+  ok(r.future === 1, 'esok TIDAK dikira', 'future=' + r.future);
+}
+
 console.log('\n========================================');
 console.log('  LULUS: ' + passes + '   GAGAL: ' + fails);
 console.log('========================================\n');

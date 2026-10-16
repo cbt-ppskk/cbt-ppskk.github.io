@@ -2469,7 +2469,8 @@ function fetchLogCounts_(periodStart) {
   if (p.length < 10) p = '2026-10-01';
   var sh = getSheet_(SHEET_LOG, LOG_HEADERS);
   var data = sh.getDataRange().getValues();
-  var all = 0, inPeriod = 0, jenis = {};
+  var all = 0, inPeriod = 0, future = 0, jenis = {};
+  var today = todayYmd_(); /* v105: rekod tarikh MASA HADAPAN tidak dikira sebagai tugasan selesai */
   var del = deletedLogKeys_(); /* v74: kiraan TIDAK termasuk rekod di-soft-delete */
   for (var i = 0; i < data.length; i++) {
     var row = data[i];
@@ -2479,13 +2480,25 @@ function fetchLogCounts_(periodStart) {
     if (isDeletedRec_(rec, del)) continue; /* v74 */
     all++;
     var ds = String(rec.tarikh_mula || '');
+    if (ds && ds > today) { future++; continue; } /* v105: tarikh masa hadapan = "Akan Datang" */
     if (ds && ds >= p) {
       inPeriod++;
       var j = String(rec.jenis || '') || '(kosong)';
       jenis[j] = (jenis[j] || 0) + 1;
     }
   }
-  return { ok: true, all: all, inPeriod: inPeriod, periodStart: p, jenis: jenis, byDevice: false, source: 'sheet', at: new Date().toISOString() };
+  return { ok: true, all: all, inPeriod: inPeriod, future: future, periodStart: p, jenis: jenis, byDevice: false, source: 'sheet', at: new Date().toISOString() };
+}
+
+/**
+ * v105: tarikh HARI INI mengikut zon waktu Malaysia (YYYY-MM-DD).
+ * Digunakan untuk memisahkan penugasan MASA HADAPAN ("Akan Datang") daripada
+ * kiraan KPI. Rekod yang tarikh mula > hari ini BELUM berlaku, jadi ia tidak
+ * boleh dikira sebagai penugasan selesai (keputusan pengguna 2026-10).
+ */
+function todayYmd_() {
+  try { return Utilities.formatDate(new Date(), 'Asia/Kuala_Lumpur', 'yyyy-MM-dd'); }
+  catch (e) { return ''; }
 }
 
 function getLeadershipData() {

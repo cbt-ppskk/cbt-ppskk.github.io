@@ -236,6 +236,42 @@ Nota: padanan hanya `MM-DD`, bukan tahun penuh, kerana `Hari Jadi` menyimpan
 kekal bermakna dari segi keselamatan tetapi **bukan** pengesahan identiti
 yang kukuh — jangan bergantung padanya sebagai satu-satunya faktor.
 
+## Menolak (push) perubahan ke GitHub
+
+Repo ini awam (`cbt-ppskk/cbt-ppskk.github.io`). `git push` memerlukan
+**PAT klasik dengan skop `repo`** — jangan andaikan `$GITHUB_TOKEN` yang
+disediakan dalam sesi ini boleh menulis.
+
+**Perangkap yang berulang:** `$GITHUB_TOKEN` dalam persekitaran ini ialah
+token integrasi/GitHub App bagi akaun lain. Gejalanya mengelirukan:
+
+- `git ls-remote` **berjaya** (repo awam, jadi bacaan dibenarkan tanpa token)
+- API `GET /repos/...` melaporkan `permissions: {push: true, admin: true}`
+  — tetapi itu kebenaran **akaun**, bukan kebenaran yang dimiliki token
+- `git push` gagal: `403 Permission to ... denied to <akaun-lain>`
+
+Jangan cuba lagi dengan format `x-access-token:` — sama sahaja gagal.
+
+**Cara menolak dengan selamat** (jangan simpan token dalam `.git/config`):
+
+```bash
+git remote set-url origin "https://<PAT>@github.com/cbt-ppskk/cbt-ppskk.github.io.git"
+git push origin main
+git remote set-url origin https://github.com/cbt-ppskk/cbt-ppskk.github.io.git
+```
+
+Sentiasa pulihkan URL remote selepas push, dan sahkan:
+
+```bash
+grep -cE "ghp_|github_pat_|x-access-token" .git/config   # mesti 0
+```
+
+**Selepas push, sahkan tapak langsung** — GitHub Pages mengambil masa ~30-60
+saat. Yang paling penting ialah memastikan **CSP tidak menyekat** skrip baharu:
+selepas menukar blok `<script>` inline, buka tapak dalam Chromium dan pastikan
+**0 pelanggaran CSP** dalam konsol. Hash yang salah akan mematikan seluruh
+aplikasi untuk semua pengguna, bukan sekadar ciri baharu.
+
 ## Perkara penting yang mudah tersalah
 
 1. **JANGAN naikkan `APP_VER` / `data-app-version` tanpa menaikkan backend.**

@@ -519,3 +519,26 @@ Cara mengesahkan bentuk tanpa meneka: tangkap skrin, tandakan piksel kulit
 Bulatan isi ~66% (atau kurang bila rambut menutupi sisi); segi empat isi
 ~100%. Warna meja (`deskTop #e0b483`) hampir sama dengan kulit (`#e3b58a`) —
 tolak piksel meja dahulu atau ukuran akan tersalah.
+
+#### Rambut tidak boleh menutupi muka
+
+Jisim rambut mesti dilukis **di belakang** muka, dan bahagian depan mesti
+berbentuk "topi" (lengkok atas `ellipse` + garisan lurus sebagai garis
+rambut) melalui `capPath()`. Elips PENUH sebagai rambut akan menutupi
+seluruh muka — hanya celah mata kelihatan. Garis rambut (`cut`) mesti cukup
+tinggi (kini `-1.95 * s`) supaya kening tidak tertimbus; ciri muka (`ey`,
+hidung, senyuman) pula diletak di bawah tengah kepala supaya dahi lapang.
+Semasa menguji, ukur bilangan piksel kulit muka: jika < ~60px untuk satu
+avatar, rambut berkemungkinan besar sedang menutupi muka.
+
+#### Interaksi antara ejen
+
+`updateSocial()` memilih sepasang ejen berdekatan secara berkala dan memberi
+dialog daripada `CHAT`: gelembung dilukis oleh `drawBubbles()` (dipanggil
+selepas semua avatar dalam `draw()`), avatar berpaling melalui `a.look`, dan
+melambai apabila `a.chatUntil` masih aktif. Kadangkala ejen berjalan
+menghampiri rakan (`walkNear()`, ditandakan `a.social`) lalu pulang ke tempat
+duduk. Hadkan kepada 2 perjalanan serentak (`office.socialWalks`) supaya
+pejabat tidak menjadi huru-hara, dan hormati `reduceMotion()` serta
+`document.hidden`. Gelembung disimpan dalam `office.bubbles` dan direset
+dalam `office.start()`.

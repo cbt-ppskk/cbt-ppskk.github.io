@@ -254,6 +254,15 @@ yang kukuh — jangan bergantung padanya sebagai satu-satunya faktor.
    kosong dan diisi dari backend. Jangan pulihkan snapshot sebenar (nama, no.
    personel, e-mel, tarikh lahir) ke dalam `index.html` — repo ini **awam**.
    Guna `tools/scrub-pii.py` untuk menyemak.
+
+   **Akibat yang mudah terlepas pandang:** membuang snapshot bermakna setiap
+   tempat yang membaca `PER` / `DATA.*` semasa boot kini membaca senarai
+   KOSONG. Sebarang lukisan UI yang berlaku sebelum backend membalas mesti
+   dilukis SEMULA selepas data tiba. Kes sebenar: `initStaffMarquee()` hanya
+   dipanggil sekali semasa boot, jadi banner staff kekal "Tiada data personel."
+   selama-lamanya. Bila membuang snapshot, cari setiap `safe(init…)` yang
+   bergantung pada `PER`/`DATA` dan pastikan ia dipanggil semula dalam
+   `loadPersonelFromServer()` / `loadLogFromServer()`.
 5. **RBAC dikuatkuasa di klien.** `SESSION` disimpan di `localStorage` dan boleh
    disunting melalui DevTools. Token sesi disahkan di backend, tetapi UI
    (butang admin, tab super-admin) hanya disekat di klien — jangan anggap UI

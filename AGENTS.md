@@ -517,8 +517,9 @@ senyuman, leher, bahu dan tangan bulat. Jangan kembali kepada blok
 Cara mengesahkan bentuk tanpa meneka: tangkap skrin, tandakan piksel kulit
 (palet `SKIN`), kemudian kira nisbah isi dalam kotak sempadan.
 Bulatan isi ~66% (atau kurang bila rambut menutupi sisi); segi empat isi
-~100%. Warna meja (`deskTop #e0b483`) hampir sama dengan kulit (`#e3b58a`) —
-tolak piksel meja dahulu atau ukuran akan tersalah.
+~100%. Warna meja (`deskTop #a86f3a`) dahulunya hampir sama dengan kulit
+(`#e3b58a`) dan menyebabkan ukuran tersalah; ia kini digelapkan supaya
+perbezaan jelas.
 
 #### Rambut tidak boleh menutupi muka
 

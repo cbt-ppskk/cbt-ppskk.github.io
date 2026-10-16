@@ -556,11 +556,11 @@ function px(x, y, w, h, c){ g.fillStyle = c; g.fillRect(Math.round(x), Math.roun
 
 const C = {
   floor1:'#d9d2c5', floor2:'#cfc7b8', wall:'#efe9dd', wallTop:'#e2dbcd',
-  deskTop:'#e0b483', deskEdge:'#b98a55', deskLeg:'#9c7443',
+  deskTop:'#a86f3a', deskEdge:'#8a5a2f', deskLeg:'#6d4522',
   chair:'#37474f', chairSeat:'#2b3843', mon:'#2b3440', monScreen:'#7fd3e8',
   cab:'#b0a79a', cabDark:'#948b7e', plant:'#4e8f4a', pot:'#b5651d',
   glass:'rgba(150,200,220,0.26)', glassEdge:'#8aa0ad',
-  paper:'#fdfaf3', paperEdge:'#e6dfd0', wood:'#c9a06a', dark:'#1b2430',
+  paper:'#fdfaf3', paperEdge:'#e6dfd0', wood:'#96632f', dark:'#1b2430',
   rug:'#c8bda9'
 };
 
@@ -926,7 +926,7 @@ function drawMeeting(){
   px(x + w / 2 - 3, y, 6, h, C.glassEdge);
   /* meja mesyuarat */
   px(x + 90, y + 120, 260, 110, C.wood);
-  px(x + 90, y + 120, 260, 8, '#a9834f');
+  px(x + 90, y + 120, 260, 8, '#7d4f26');
   /* kerusi */
   const seats = [[130, 100], [200, 100], [270, 100], [130, 244], [200, 244], [270, 244], [330, 172]];
   seats.forEach(([sx, sy]) => { px(x + sx, y + sy, 30, 10, C.chair); px(x + sx + 6, y + sy + 10, 18, 12, C.chairSeat); });

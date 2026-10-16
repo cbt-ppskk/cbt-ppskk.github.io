@@ -353,6 +353,32 @@ sebagai penugasan selesai:
 `dispCount()` (`LOG_BASE.filter(...)`). Menapis hanya satu daripadanya akan
 menyebabkan KPI berbeza antara mod dalam talian dan luar talian.
 
+### KPI kini tahan backend lama (v105b)
+
+**Masalahnya:** backend produksi dimiliki akaun Google lain
+(`mpdrmkl.it.event@gmail.com`) yang pemilik repo tiada akses. Menunggu deploy
+backend bermakna KPI terus membengkak.
+
+**Penyelesaian:** `v105` membalut `window.buildDashboard` supaya rekod masa hadapan
+dibuang dari carta dan jumlah. `v105b` menambah `window.dispCount` — kerana
+`dispCount()` dan `buildDashboard` ialah *function declaration* pada skop global,
+`window.*` mentakrifkan semula kedua-duanya.
+
+Kelakuan `dispCount()`:
+
+| Keadaan backend | Sumber kiraan | Label |
+|---|---|---|
+| Lapor medan `future` (v105+) | `_COUNTS.inPeriod` dari Sheet | `sumber: Google Sheet` |
+| Tiada medan `future` (v103 lama) | `LOG` ditapis `!isFuture()` | `sumber: tempatan` + amaran |
+
+Rangkaian keselamatan ini **tidak** menggantikan deploy backend. Ia mengekalkan
+KPI betul sehingga deploy dibuat, dan selepas itu kiraan Sheet rasmi diambil alih
+secara automatik.
+
+**Jangan** guna semula `window.dispCount` sebagai corak umum — pembalutan
+berlapis menyukarkan penyahpepijatan. Ia dibenarkan di sini kerana backend tidak
+boleh diubah.
+
 ### Amaran: `saveStageAll` membina rekod log SEBENAR
 
 Submodul 3 menggunakan semula `saveStageAll()` yang sama seperti Submodul 1 —

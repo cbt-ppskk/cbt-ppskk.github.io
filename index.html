@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103b">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-6r01xyNB80rz0wjHsPLO3pVBjXHka84/dqvCQQgkeYU=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-0E2VwE1MwVvAMxSau50wdHgBuB1EwLIqp8O2mLJwz4E=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-6r01xyNB80rz0wjHsPLO3pVBjXHka84/dqvCQQgkeYU=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-0E2VwE1MwVvAMxSau50wdHgBuB1EwLIqp8O2mLJwz4E=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-kYgDPqxmB5ewwFhPLe+pbLZH/ee7IXxepNchVV18KkM=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-zPRfFA208SMnJrRyJ2HOpeKEnnTvz8Bq/eCWRDQxAA0=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-kYgDPqxmB5ewwFhPLe+pbLZH/ee7IXxepNchVV18KkM=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-zPRfFA208SMnJrRyJ2HOpeKEnnTvz8Bq/eCWRDQxAA0=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -6875,7 +6875,7 @@ if(SESSION) setTimeout(function(){ LAST_SYNC_TS=Date.now(); renderSyncStatus(fal
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
       /* v103b: daftar dengan ?v=103e untuk paksa muat turun sw.js BAHARU (elak cache lama) */
-      navigator.serviceWorker.register('sw.js?v=105').then(function(reg){
+      navigator.serviceWorker.register('sw.js?v=105b').then(function(reg){
         try{
           reg.addEventListener('updatefound',function(){
             var nw=reg.installing;
@@ -8345,15 +8345,58 @@ body.not-authed #fr-mic,body.not-authed #fr-status,body.not-authed #fr-bubble,bo
   }
 
   /* --- KPI: tapis rekod masa hadapan dari carta/jumlah --- */
+  /* Kiraan rasmi `dispCount()` datang dari medan backend `_COUNTS.inPeriod`.
+     Backend v103 yang hidup masih mengira rekod masa hadapan, jadi bila ia
+     membalas, kiraan itu DITOLAK dan diganti kiraan lampau dari `LOG_BASE`.
+     Rangkaian lapis berasingan: ini menghalang KPI membengkak WALAUPUN
+     backend belum di-deploy semula dengan penapis v105. */
+  var _origDispCount=window.dispCount;
+  function countsIsTrusted(){
+    /* Dipercayai hanya bila backend melaporkan medan `future` (v105+). */
+    try{ return !!(_COUNTS && typeof _COUNTS.future === 'number'); }catch(e){ return false; }
+  }
+  function localPastCount(){
+    try{
+      if(typeof LOG==='undefined'||!Array.isArray(LOG))return 0;
+      var ps=(typeof effectivePeriodStart==='function')?effectivePeriodStart():PERIOD_START;
+      return LOG.filter(function(r){
+        return String(r.tarikh_mula||'')>=ps && !isFuture(r);
+      }).length;
+    }catch(e){ return 0; }
+  }
+  window.dispCount=function(){
+    if(countsIsTrusted()){ return _origDispCount.apply(this,arguments); }
+    var n=localPastCount();
+    if(n>0)return n;
+    return _origDispCount.apply(this,arguments);
+  };
+
   var _origDash=window.buildDashboard;
   if(_origDash){
     window.buildDashboard=function(logRows){
       var rows=Array.isArray(logRows)?logRows.filter(function(r){return !isFuture(r);}):logRows;
       var res=_origDash.call(this,rows);
       try{
+        /* Bila kiraan Sheet ditolak, betulkan kad KPI yang sudah dilukis. */
+        if(!countsIsTrusted()){
+          var n=localPastCount();
+          var cards=document.querySelectorAll('#kpis .kpi');
+          for(var ci=0;ci<cards.length;ci++){
+            var c=cards[ci];
+            if(/Jumlah Rekod Penugasan/i.test(c.textContent)){
+              var v=c.querySelector('.val'); if(v)v.textContent=n;
+              var f=c.querySelector('.foot');
+              if(f)f.textContent='Sumber: tempatan \u00b7 kiraan masa hadapan dikecualikan (backend belum dikemas kini)';
+              break;
+            }
+          }
+        }
         var pe=G('period-count');
         var fc=futureCount(typeof LOG_BASE!=='undefined'?LOG_BASE:[]);
-        if(pe&&fc>0){ pe.textContent=pe.textContent+' · '+fc+' akan datang (tidak dikira KPI)'; }
+        if(pe){
+          var base=(countsIsTrusted()?String(_COUNTS.inPeriod):String(localPastCount()));
+          pe.textContent='\u00b7 '+base+' rekod dalam tempoh'+(countsIsTrusted()?' \u00b7 sumber: Google Sheet':' \u00b7 sumber: tempatan')+(fc>0?(' \u00b7 '+fc+' akan datang (tidak dikira KPI)'):'');
+        }
       }catch(e){}
       return res;
     };

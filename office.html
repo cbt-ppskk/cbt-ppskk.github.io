@@ -62,6 +62,24 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .chk input{accent-color:var(--accent)}
 .side .full{width:100%;margin-top:6px}
 
+/* ---------- bilik kuota ---------- */
+#quotaPanel{top:70px}
+.qcard{border:1px solid var(--line);border-left:3px solid var(--q,#5ea9ff);border-radius:9px;padding:9px 10px;margin:8px 0;background:rgba(10,16,25,.6)}
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px}
+.qname{font-weight:600;font-size:12px;word-break:break-all;line-height:1.25}
+.qage{color:var(--muted);font-size:10.5px;white-space:nowrap}
+.qrow{margin:6px 0}
+.qlbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px}
+.qlbl b{color:var(--txt);font-variant-numeric:tabular-nums}
+.qbar{height:6px;background:#0d1420;border-radius:4px;overflow:hidden}
+.qbar i{display:block;height:100%;border-radius:4px}
+.qreset{font-size:10.5px;color:var(--muted);margin-top:3px}
+.qflag{font-size:9.5px;padding:1px 6px;border-radius:20px;font-weight:600;margin-left:5px;vertical-align:middle}
+.qf-ok{background:#12331f;color:var(--ok)}
+.qf-warn{background:#3a2f0c;color:var(--warn)}
+.qf-bad{background:#3a1616;color:var(--bad)}
+.qf-old{background:#242c3a;color:var(--muted)}
+
 /* ---------- legenda ---------- */
 #legend{position:absolute;left:12px;bottom:12px;z-index:35;background:rgba(14,22,34,.94);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:11.5px;color:var(--muted);max-width:330px}
 #legend b{color:var(--txt);font-weight:600}
@@ -98,6 +116,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <span class="right">
     <button id="btnSound" title="Hidupkan/matikan bunyi">🔇 HIDUPKAN BUNYI</button>
     <button id="btnAudioCfg" title="Tetapan audio">🎚 Audio</button>
+    <button id="btnQuota" title="Penggunaan Claude — Bilik Kuota">📊 Kuota</button>
     <button id="btnJourney" title="Paparkan aliran kerja">🧭 Aliran Kerja</button>
     <span class="sep"></span>
     <button id="btnZoomOut" title="Zum keluar">−</button>
@@ -144,6 +163,14 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <div class="row" style="color:var(--muted);font-size:11px" id="cfgState"></div>
 </div>
 
+<div class="side" id="quotaPanel">
+  <h3>Bilik Kuota — Penggunaan Claude</h3>
+  <div class="row" style="color:var(--muted);font-size:11px" id="quotaState">Belum dimuatkan.</div>
+  <div id="quotaBody"></div>
+  <div class="row" style="color:var(--muted);font-size:11px">Nombor lebih 30 minit ditanda <b>lama</b>. Tetingkap yang sudah tamat ditanda <b>diperbaharui</b> — bukan angka lama.</div>
+  <button class="full" id="quotaRefresh">Muat semula</button>
+</div>
+
 <div id="legend">
   <b>Status data</b>
   <div class="k"><i>🟢</i><span><b>LIVE</b> — diambil daripada sistem CBT (jumlah rekod, validasi, team)</span></div>
@@ -172,19 +199,32 @@ input[type=range]{width:100%;accent-color:var(--accent)}
    index.html). Token sesi diambil daripada sesi log masuk sedia ada dan
    digunakan DALAM MEMORI sahaja — tidak disimpan, tidak dipaparkan, tidak
    dihantar ke mana-mana selain endpoint rasmi tersebut.
+
+   PENGECUALIAN — Bilik Kuota (17b): panel itu memanggil endpoint KEDUA
+   (CONFIG.quotaUrl) yang berasingan daripada sistem penugasan. Ia menggunakan
+   token sesi yang sama, dan hanya menghantar satu tindakan baca ('getUsage')
+   yang disemak di sisi pelayan. Ia tidak melalui callRead kerana endpointnya
+   berbeza; senarai putih READ_ONLY_ACTIONS terpakai kepada endpoint penugasan.
+   Jika CONFIG.quotaUrl dikosongkan, panel itu lumpuh dan sistem penugasan
+   berjalan seperti biasa.
    ========================================================================== */
 
 /* ---------- 1. KONFIGURASI ---------- */
 const CONFIG = {
   /* Endpoint sebenar sistem CBT PPSKK (sama seperti index.html). */
   gasUrl: 'https://script.google.com/macros/s/AKfycbxPR1L7RUFKZCKaTdk4lArc2nST4L1gLfJSvTY-ZKK9AAjYgK2-alN54muOF15OvVKkiQ/exec',
+  /* Endpoint BERASINGAN untuk penggunaan Claude (Bilik Kuota).
+     Ia hanya boleh MENULIS bila diberi kunci, dan membaca hanya dengan sesi
+     admin. Sistem penugasan tidak terjejas jika ini dibiarkan kosong. */
+  quotaUrl: 'https://script.google.com/macros/s/AKfycbw-C5EerMazb0IU86EiTk517iCzv4bgqAfWTKzFeC_4G7Qf6kbHYGQBM3-WBinMPuX_/exec',
   reuseSession: true,
   listHref: 'index.html',
   refreshMs: 30000,        /* selang segar semula biasa (spesifikasi: 30 saat) */
   burstMs: 3000,           /* selang pantas selepas kesan tindakan dikesan */
   burstFor: 45000,         /* tempoh mod pantas */
   localPollMs: 700,        /* pemantauan storan setempat (tanpa rangkaian) */
-  staleAfterMs: 90000
+  staleAfterMs: 90000,
+  quotaStaleMs: 30 * 60 * 1000   /* nombor >30 min ditanda "lama" (ikut Habblaud) */
 };
 
 /* Tindakan backend yang DIBENARKAN — semuanya baca sahaja. */
@@ -211,7 +251,7 @@ const S = {
   focus:null,              /* rekod yang sedang "dimesyuaratkan" */
   events:[],               /* acara sebenar yang dikesan */
   burstUntil:0,
-  loading:false, abort:null, lastTry:0
+  loading:false, abort:null, lastTry:0, quotaAbort:null
 };
 
 /* ---------- 3. UTILITI ---------- */
@@ -1376,6 +1416,12 @@ function bindUI(){
     if(on) toast('Bunyi dihidupkan');
   });
   $('btnAudioCfg').addEventListener('click', () => $('audioPanel').classList.toggle('show'));
+  $('btnQuota').addEventListener('click', () => {
+    const p = $('quotaPanel');
+    p.classList.toggle('show');
+    if(p.classList.contains('show')) loadQuota();
+  });
+  $('quotaRefresh').addEventListener('click', loadQuota);
   $('btnAudioOff').addEventListener('click', () => { Audio2.on = false; Audio2.suspend(); syncAudioUI(); });
   ['volM', 'volA', 'volS'].forEach((id, i) => {
     $(id).addEventListener('input', () => {
@@ -1428,6 +1474,149 @@ function syncAudioUI(){
   $('volS').value = Audio2.prefs.s; $('outS').textContent = Audio2.prefs.s;
   $('chkAmbOnly').checked = !!Audio2.prefs.ambOnly;
   $('chkMute').checked = !!Audio2.prefs.mute;
+}
+
+/* ============================================================================
+   17b. BILIK KUOTA — penggunaan Claude (Habblaud)
+   ----------------------------------------------------------------------------
+   Data datang daripada endpoint kuota BERASINGAN (CONFIG.quotaUrl), bukan
+   endpoint penugasan. Baca sahaja, dan hanya dengan sesi sah — pengesahan
+   berlaku di sisi pelayan.
+
+   Peraturan paparan diambil daripada Habblaud:
+     - tetingkap yang sudah tamat tempoh ditunjuk "diperbaharui", BUKAN angka
+       lama (angka lama boleh menyebabkan keputusan salah);
+     - angka lebih 30 minit ditanda "lama";
+     - 90%+ "hampir had", 70%+ "tinggi".
+   ========================================================================== */
+const QW = { sesi: 5*3600e3, mingguan: 7*24*3600e3 };
+
+function quotaView(pct, setIso, ageMs, windowMs, now){
+  const v = (pct==null || pct==='') ? null : Number(pct);
+  if(v == null || !isFinite(v)) return { kosong:true };
+  const setMs = setIso ? Date.parse(setIso) : NaN;
+  if(isFinite(setMs) && setMs <= now) return { renewed:true };
+  if(!isFinite(setMs) && ageMs >= windowMs) return { renewed:true };
+  return { pct: Math.max(0, Math.min(100, v)), resetMs: isFinite(setMs) ? setMs : null };
+}
+function quotaLevel(p){ return p >= 90 ? 'bad' : p >= 70 ? 'warn' : 'ok'; }
+function quotaColor(p){ return getComputedStyle(document.documentElement).getPropertyValue('--'+quotaLevel(p)).trim() || '#5ea9ff'; }
+
+function fmtDur(ms, now){
+  const t = Math.max(0, Math.round((ms - now) / 60000));
+  const d = Math.floor(t / 1440), h = Math.floor((t % 1440) / 60), m = t % 60;
+  if(d > 0) return d + ' hari ' + h + 'j';
+  if(h > 0) return h + 'j ' + m + 'm';
+  return m + 'm';
+}
+function fmtAge(ms){
+  if(ms < 90e3) return 'baru sahaja';
+  if(ms < 3600e3) return Math.round(ms/60000) + ' min lalu';
+  if(ms < 86400e3) return Math.round(ms/3600e3) + ' jam lalu';
+  return Math.round(ms/86400e3) + ' hari lalu';
+}
+
+async function loadQuota(){
+  const st = $('quotaState'), body = $('quotaBody');
+  if(!CONFIG.quotaUrl){ st.textContent = 'Endpoint kuota belum dikonfigurasi.'; return; }
+  if(!S.session || !S.session.token){ st.textContent = 'Perlukan sesi. Log masuk melalui sistem penugasan dahulu.'; body.innerHTML=''; return; }
+  st.textContent = 'Memuatkan…';
+  /* GAS boleh sejuk (cold start) sehingga beberapa saat. Beri had masa supaya
+     panel tidak tersekat 'Memuatkan…' selama-lamanya jika rangkaian tersekat. */
+  if(S.quotaAbort) S.quotaAbort.abort();
+  const ctrl = new AbortController();
+  S.quotaAbort = ctrl;
+  const to = setTimeout(() => ctrl.abort(), 20000);
+  try{
+    const body_ = { action:'getUsage', token: S.session.token, _cb: Date.now() };
+    const res = await fetch(CONFIG.quotaUrl, {
+      method:'POST', cache:'no-store', redirect:'follow', signal:ctrl.signal,
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify(body_)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = JSON.parse(await res.text());
+    if(!data || data.ok !== true){
+      st.textContent = String((data && data.error) || 'Gagal memuatkan.');
+      body.innerHTML = '';
+      return;
+    }
+    renderQuota(data);
+  }catch(e){
+    if(e && e.name === 'AbortError') st.textContent = 'Tamat masa menunggu respons. Cuba "Muat semula".';
+    else st.textContent = 'Ralat: ' + String((e && e.message) || e);
+  }finally{
+    clearTimeout(to);
+    if(S.quotaAbort === ctrl) S.quotaAbort = null;
+  }
+}
+
+function renderQuota(data){
+  const st = $('quotaState'), body = $('quotaBody');
+  const now = Date.now();
+  body.innerHTML = '';
+  if(!data.admin){
+    st.textContent = 'Ringkasan sahaja (' + (data.jumlah||0) + ' akaun). Butiran akaun hanya untuk pentadbir.';
+    const d = document.createElement('div');
+    d.className = 'qcard';
+    d.style.setProperty('--q', quotaColor(Number(data.tertinggi)||0));
+    d.innerHTML = '<div class="qhead"><span class="qname">Penggunaan tertinggi</span></div>' +
+      '<div class="qlbl"><span>Semua akaun</span><b>' + (Number(data.tertinggi)||0) + '%</b></div>';
+    body.appendChild(d);
+    return;
+  }
+  const list = Array.isArray(data.akaun) ? data.akaun : [];
+  if(!list.length){ st.textContent = 'Tiada data penggunaan lagi. Habblaud belum menghantar apa-apa.'; return; }
+  st.textContent = list.length + ' akaun. Dikemas kini ' + new Date().toLocaleTimeString('ms-MY');
+
+  list.forEach(a => {
+    const ageMs = a.diterima ? (now - Date.parse(a.diterima)) : Infinity;
+    const lama = ageMs > CONFIG.quotaStaleMs;
+    const f = quotaView(a.sesi_5j_peratus, a.sesi_5j_set, ageMs, QW.sesi, now);
+    const w = quotaView(a.mingguan_peratus, a.mingguan_set, ageMs, QW.mingguan, now);
+    const tertinggi = Math.max(f.pct||0, w.pct||0);
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.style.setProperty('--q', tertinggi > 0 ? quotaColor(tertinggi) : 'var(--muted)');
+
+    const head = document.createElement('div'); head.className = 'qhead';
+    const nm = document.createElement('span'); nm.className = 'qname'; nm.textContent = a.akaun;
+    const ag = document.createElement('span'); ag.className = 'qage';
+    ag.textContent = isFinite(ageMs) ? fmtAge(ageMs) : '';
+    head.append(nm, ag); card.appendChild(head);
+
+    [['Sesi 5 jam', f], ['Mingguan', w]].forEach(([label, v]) => {
+      const row = document.createElement('div'); row.className = 'qrow';
+      const l = document.createElement('div'); l.className = 'qlbl';
+      const kiri = document.createElement('span'); kiri.textContent = label;
+      if(v.renewed){
+        const fl = document.createElement('span'); fl.className = 'qflag qf-old'; fl.textContent = 'diperbaharui';
+        kiri.appendChild(fl);
+        const b = document.createElement('b'); b.textContent = '—';
+        l.append(kiri, b); row.appendChild(l);
+        const r = document.createElement('div'); r.className = 'qreset';
+        r.textContent = 'tetingkap tamat · penggunaan semasa tidak diketahui';
+        row.appendChild(r);
+      } else if(v.kosong){
+        const b = document.createElement('b'); b.textContent = '—'; l.append(kiri, b); row.appendChild(l);
+        const r = document.createElement('div'); r.className = 'qreset'; r.textContent = 'tiada data';
+        row.appendChild(r);
+      } else {
+        const b = document.createElement('b'); b.textContent = v.pct.toFixed(v.pct % 1 ? 1 : 0) + '%';
+        if(lama){ const fl=document.createElement('span'); fl.className='qflag qf-old'; fl.textContent='lama'; kiri.appendChild(fl); }
+        else if(v.pct >= 70){ const fl=document.createElement('span'); fl.className='qflag qf-'+quotaLevel(v.pct); fl.textContent = v.pct>=90?'hampir had':'tinggi'; kiri.appendChild(fl); }
+        l.append(kiri, b); row.appendChild(l);
+        const bar = document.createElement('div'); bar.className = 'qbar';
+        const fill = document.createElement('i');
+        fill.style.width = v.pct + '%';
+        fill.style.background = lama ? 'var(--muted)' : quotaColor(v.pct);
+        bar.appendChild(fill); row.appendChild(bar);
+        if(v.resetMs){ const r=document.createElement('div'); r.className='qreset'; r.textContent='↻ set semula dalam ' + fmtDur(v.resetMs, now); row.appendChild(r); }
+      }
+      card.appendChild(row);
+    });
+    body.appendChild(card);
+  });
 }
 
 /* ============================================================================

@@ -371,6 +371,24 @@ Jangan sekali-kali memulihkan snapshot sebenar ke dalam repo untuk memenuhi ujia
 Modul paparan tambahan, **satu fail**. `office.html` sendiri **baca sahaja** —
 ia tidak pernah menulis data kerja.
 
+### Bilik Kuota — endpoint KEDUA (dokumentasi)
+
+Seksyen "Bilik Kuota" memanggil endpoint **berasingan** daripada sistem
+penugasan: `CONFIG.quotaUrl` (projek GAS `cbt-ingest`, sheet `Uso_Claude`).
+Ia menghantar satu tindakan baca `getUsage` dengan token sesi sedia ada; ia
+**tidak** melalui `callRead`/`READ_ONLY_ACTIONS` kerana URL berbeza. Pengesahan
+sesi **didelegasi** kepada endpoint penugasan (`whoami`) — token disimpan di
+projek penugasan, bukan di sini. Kosongkan `CONFIG.quotaUrl` untuk melumpuhkan
+panel tanpa menjejaskan sistem penugasan.
+
+- `getUsage` tanpa token sah -> `{ok:false, code:"NO_SESSION"}`; bukan admin
+  menerima ringkasan (`tertinggi`) tanpa nama akaun.
+- Panel mesti had masa (~20s): GAS boleh sejuk; tanpa had masa panel tersekat
+  "Memuatkan…" selama-lamanya. Had masa + `AbortController` wajib dikekalkan.
+- Tetingkap kuota `resets_at` (Habblaud) ialah **saat** epoch. Tetingkap yang
+  sudah tamat dipaparkan "diperbaharui", **bukan** angka lama — angka lama
+  mengelirukan (97% daripada tetingkap lepas).
+
 Satu-satunya perubahan dalam `index.html` bagi menyokongnya ialah satu baris
 dalam `switchTab()` yang menulis isyarat tab (`cbt_office_tab_v1`), dibungkus
 dalam `try{}catch(e){}`. Jangan tambah tulisan lain dari `office.html`.

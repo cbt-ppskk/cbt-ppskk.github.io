@@ -606,7 +606,7 @@ function buildAgents(){
       home: { x: st.x + st.w / 2, y: st.y - 34 },
       x: st.x + st.w / 2, y: st.y - 34,
       pal: { skin:SKIN[i % SKIN.length], hair:HAIR[i % HAIR.length], shirt:SHIRT[i % SHIRT.length],
-             pants:PANTS[i % PANTS.length], glasses:(i % 3 === 0), hijab:(i % 4 === 2) },
+             pants:PANTS[i % PANTS.length], glasses:(i % 3 === 0), hijab:(i % 4 === 2), style:(i % 4) },
       state:'idle', pose:'sit', dir:1, phase: i * 0.7, anim:0,
       path:[], target:null, busy:0
     });
@@ -623,96 +623,170 @@ function drawAgent(a, t){
 
   const skin = p.skin, hair = p.hair, shirt = p.shirt, pants = p.pants;
   const ink = C.dark;
+  const line = 'rgba(26,18,12,0.92)';          /* garis luar gaya kartun */
+  const lw = Math.max(1, 0.30 * s);
 
-  /* Bentuk licin (2D) menggantikan blok piksel. */
-  const rrect = (x, y, w, h, r, c) => {
-    g.fillStyle = c; g.beginPath();
-    if(g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h);
-    g.fill();
+  /* --- pembantu bentuk: isi + garis luar --- */
+  const fill = (fn, c) => { g.fillStyle = c; g.beginPath(); fn(); g.fill(); };
+  const shape = (fn, c) => { fill(fn, c); g.strokeStyle = line; g.lineWidth = lw; g.stroke(); };
+  const box = (x, y, w, h, r, c) => shape(() => { if(g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h); }, c);
+  const ball = (cx, cy, r, c) => shape(() => g.arc(cx, cy, r, 0, 6.2832), c);
+  const blob = (cx, cy, rx, ry, c) => shape(() => g.ellipse(cx, cy, rx, ry, 0, 0, 6.2832), c);
+  const stick = (x1, y1, x2, y2, w, c) => {
+    g.lineCap = 'round';
+    g.strokeStyle = line; g.lineWidth = w + lw * 1.3;
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+    g.strokeStyle = c; g.lineWidth = w;
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
   };
-  const circ = (cx, cy, r, c) => { g.fillStyle = c; g.beginPath(); g.arc(cx, cy, r, 0, 6.2832); g.fill(); };
-  const ell  = (cx, cy, rx, ry, c) => { g.fillStyle = c; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, 6.2832); g.fill(); };
-  const limb = (x1, y1, x2, y2, w, c) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = 'round'; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
 
   /* bayang */
-  ell(bx, by + (sit ? 15 : 18) * s, 4.3 * s, 1.1 * s, 'rgba(0,0,0,0.16)');
+  fill(() => g.ellipse(bx, by + (sit ? 15 : 18) * s, 4.3 * s, 1.1 * s, 0, 0, 6.2832), 'rgba(0,0,0,0.15)');
 
   /* --- kaki --- */
   const hipY  = by + (sit ? 8 : 9) * s;
   const footY = by + (sit ? 15 : 18) * s;
   const swing = walk ? (step ? 1 : -1) * 1.1 * s : 0;
   if(sit){
-    rrect(bx - 2.7 * s, hipY, 2.4 * s, 5.4 * s, 0.9 * s, pants);
-    rrect(bx + 0.3 * s, hipY, 2.4 * s, 5.4 * s, 0.9 * s, pants);
-    rrect(bx - 3.0 * s, hipY + 5.0 * s, 2.7 * s, 1.2 * s, 0.5 * s, ink);
-    rrect(bx + 0.3 * s, hipY + 5.0 * s, 2.7 * s, 1.2 * s, 0.5 * s, ink);
+    box(bx - 2.8 * s, hipY, 2.4 * s, 5.4 * s, 0.9 * s, pants);
+    box(bx + 0.4 * s, hipY, 2.4 * s, 5.4 * s, 0.9 * s, pants);
+    box(bx - 3.1 * s, hipY + 5.0 * s, 2.7 * s, 1.3 * s, 0.5 * s, ink);
+    box(bx + 0.4 * s, hipY + 5.0 * s, 2.7 * s, 1.3 * s, 0.5 * s, ink);
   } else {
-    limb(bx - 1.3 * s, hipY, bx - 1.3 * s + swing, footY - 0.7 * s, 2.1 * s, pants);
-    limb(bx + 1.3 * s, hipY, bx + 1.3 * s - swing, footY - 0.7 * s, 2.1 * s, pants);
-    ell(bx - 1.3 * s + swing, footY, 1.5 * s, 0.9 * s, ink);
-    ell(bx + 1.3 * s - swing, footY, 1.5 * s, 0.9 * s, ink);
+    stick(bx - 1.3 * s, hipY, bx - 1.3 * s + swing, footY - 0.7 * s, 2.0 * s, pants);
+    stick(bx + 1.3 * s, hipY, bx + 1.3 * s - swing, footY - 0.7 * s, 2.0 * s, pants);
+    blob(bx - 1.3 * s + swing, footY, 1.5 * s, 0.95 * s, ink);
+    blob(bx + 1.3 * s - swing, footY, 1.5 * s, 0.95 * s, ink);
   }
 
   /* --- badan (bahu ke pinggang) --- */
   const shoulderY = by + 4.2 * s;
   const waistY = hipY + 0.4 * s;
   const bw = 3.6 * s;
-  rrect(bx - bw, shoulderY, bw * 2, waistY - shoulderY, 1.6 * s, shirt);
-  rrect(bx - bw * 0.85, shoulderY + 0.3 * s, bw * 1.7, 0.8 * s, 0.4 * s, 'rgba(255,255,255,0.14)');
+  box(bx - bw, shoulderY, bw * 2, waistY - shoulderY, 1.7 * s, shirt);
+  /* kolar V + sorotan fabrik */
+  fill(() => { g.moveTo(bx - 1.15 * s, shoulderY); g.lineTo(bx, shoulderY + 1.6 * s); g.lineTo(bx + 1.15 * s, shoulderY); g.closePath(); }, 'rgba(255,255,255,0.20)');
+  fill(() => g.ellipse(bx - bw * 0.45, shoulderY + 1.5 * s, bw * 0.32, 1.5 * s, -0.25, 0, 6.2832), 'rgba(255,255,255,0.12)');
 
   /* --- lengan --- */
   const armY = shoulderY + 1.2 * s;
   const bob = typing ? (Math.floor(t / 170) % 2) * 0.5 * s : 0;
-  limb(bx - bw - 0.4 * s, armY, bx - bw - 0.9 * s, armY + 3.4 * s + bob, 1.5 * s, shirt);
-  limb(bx + bw + 0.4 * s, armY, bx + bw + 0.9 * s, armY + 3.4 * s + bob, 1.5 * s, shirt);
-  circ(bx - bw - 0.9 * s, armY + 3.9 * s + bob, 0.85 * s, skin);
-  circ(bx + bw + 0.9 * s, armY + 3.9 * s + bob, 0.85 * s, skin);
+  const chat = (a.chatUntil || 0) > Date.now();
+  const wave = chat ? Math.sin(t / 150) * 0.55 * s : 0;
+  const waveSide = chat ? ((a.look || 1) < 0 ? -1 : 1) : 0;   /* lambai ke arah rakan */
+  const arm = (side) => {
+    if(side === waveSide){
+      stick(bx + side * (bw + 0.3 * s), armY, bx + side * (bw + 1.5 * s), armY - 2.6 * s + wave, 1.5 * s, shirt);
+      ball(bx + side * (bw + 1.5 * s), armY - 3.1 * s + wave, 0.9 * s, skin);
+    } else {
+      stick(bx + side * (bw + 0.3 * s), armY, bx + side * (bw + 0.9 * s), armY + 3.4 * s + bob, 1.5 * s, shirt);
+      ball(bx + side * (bw + 0.9 * s), armY + 3.9 * s + bob, 0.9 * s, skin);
+    }
+  };
+  arm(-1); arm(1);
 
   /* --- leher --- */
-  rrect(bx - 0.9 * s, by + 2.6 * s, 1.8 * s, 1.8 * s, 0.6 * s, skin);
+  box(bx - 0.85 * s, by + 2.5 * s, 1.7 * s, 1.9 * s, 0.55 * s, skin);
 
-  /* --- kepala (bulat, bukan kotak) --- */
-  const hcy = by - 0.6 * s, hr = 2.9 * s;
-  circ(bx - hr + 0.2 * s, hcy + 0.3 * s, 0.55 * s, skin);   /* telinga kiri */
-  circ(bx + hr - 0.2 * s, hcy + 0.3 * s, 0.55 * s, skin);   /* telinga kanan */
-  circ(bx, hcy, hr, skin);
+  /* --- kepala: siluet + rambut BELAKANG + muka + rambut depan --- */
+  const hcy = by - 0.7 * s, hr = 2.95 * s;
+  const rim = lw;
+  /* "topi" rambut = lengkok atas elips + garis lurus (garis rambut).
+     Elips PENUH akan menutupi muka — jangan kembali kepadanya. */
+  const capPath = (cx, cy, rx, ry, cutDy) => {
+    const a = Math.asin(Math.min(0.97, Math.abs(cutDy) / ry));
+    g.beginPath();
+    g.ellipse(cx, cy, rx, ry, 0, Math.PI + a, 2 * Math.PI - a, false);
+    g.closePath();
+  };
+  const hrx = hr + 0.10 * s, hry = hr + 0.16 * s;
+  const cut = -1.95 * s;                    /* garis rambut: di atas kening */
+  const hclip = (rx, ry) => { g.beginPath(); g.ellipse(bx, hcy, rx, ry, 0, 0, 6.2832); g.clip(); };
 
-  /* --- rambut / tudung --- */
+  /* 1. garis luar siluet */
+  g.fillStyle = line;
+  g.beginPath(); g.arc(bx, hcy, hr + rim, 0, 6.2832); g.fill();
+  if(p.hijab){ g.beginPath(); g.ellipse(bx, hcy + 0.3 * s, hr + 0.85 * s + rim, hr + 1.05 * s + rim, 0, 0, 6.2832); g.fill(); }
+
+  /* 2. jisim rambut di BELAKANG kepala */
   if(p.hijab){
-    ell(bx, hcy + 0.15 * s, hr + 0.55 * s, hr + 0.75 * s, hair);
-    ell(bx, hcy + 0.85 * s, hr - 0.35 * s, hr - 0.05 * s, skin);
+    fill(() => g.ellipse(bx, hcy + 0.3 * s, hr + 0.85 * s, hr + 1.05 * s, 0, 0, 6.2832), hair);
   } else {
-    g.fillStyle = hair; g.beginPath(); g.arc(bx, hcy, hr + 0.18 * s, Math.PI, 0); g.fill();
-    rrect(bx - hr - 0.18 * s, hcy - 0.25 * s, (hr + 0.18 * s) * 2, 1.15 * s, 0.5 * s, hair);
-    rrect(bx - hr - 0.15 * s, hcy - 1.2 * s, 0.9 * s, 2.2 * s, 0.4 * s, hair);
+    const st = (p.style || 0);
+    if(st === 2){
+      fill(() => g.ellipse(bx - hr - 0.15 * s, hcy + 2.1 * s, 0.5 * s, 2.6 * s, 0, 0, 6.2832), hair);
+      fill(() => g.ellipse(bx + hr + 0.15 * s, hcy + 2.1 * s, 0.5 * s, 2.6 * s, 0, 0, 6.2832), hair);
+    } else if(st === 3){
+      fill(() => g.arc(bx + hr * 0.5 * s, hcy - hr * 0.9 * s, hr * 0.46 * s, 0, 6.2832), hair);
+    }
   }
 
-  /* --- muka: mata besar ekspresif, gaya kartun --- */
-  const ey = hcy + 0.4 * s;
-  const eR = 0.72 * s, eX = 1.02 * s;
-  circ(bx - eX, ey, eR, '#fbfdff');
-  circ(bx + eX, ey, eR, '#fbfdff');
-  circ(bx - eX + 0.08 * s, ey + 0.07 * s, eR * 0.58, '#2a2018');
-  circ(bx + eX + 0.08 * s, ey + 0.07 * s, eR * 0.58, '#2a2018');
-  circ(bx - eX + 0.26 * s, ey - 0.16 * s, eR * 0.22, 'rgba(255,255,255,0.92)');
-  circ(bx + eX + 0.26 * s, ey - 0.16 * s, eR * 0.22, 'rgba(255,255,255,0.92)');
-  g.strokeStyle = 'rgba(74,52,36,0.9)'; g.lineWidth = Math.max(1, 0.24 * s); g.lineCap = 'round';
-  g.beginPath(); g.moveTo(bx - eX - 0.6 * s, ey - 0.95 * s); g.lineTo(bx - eX + 0.5 * s, ey - 1.15 * s); g.stroke();
-  g.beginPath(); g.moveTo(bx + eX + 0.6 * s, ey - 0.95 * s); g.lineTo(bx + eX - 0.5 * s, ey - 1.15 * s); g.stroke();
-  circ(bx, hcy + 0.72 * s, 0.15 * s, 'rgba(190,130,100,0.5)');
-  if(p.glasses){
-    g.strokeStyle = 'rgba(40,60,80,0.8)'; g.lineWidth = Math.max(1, 0.2 * s);
-    g.beginPath(); g.arc(bx - eX, ey, eR + 0.34 * s, 0, 6.2832); g.stroke();
-    g.beginPath(); g.arc(bx + eX, ey, eR + 0.34 * s, 0, 6.2832); g.stroke();
-    g.beginPath(); g.moveTo(bx - eX + eR + 0.34 * s, ey); g.lineTo(bx + eX - eR - 0.34 * s, ey); g.stroke();
+  /* telinga */
+  fill(() => g.arc(bx - hr + 0.2 * s, hcy + 0.4 * s, 0.5 * s, 0, 6.2832), skin);
+  fill(() => g.arc(bx + hr - 0.2 * s, hcy + 0.4 * s, 0.5 * s, 0, 6.2832), skin);
+
+  /* 3. muka (di ATAS jisim rambut belakang) */
+  if(p.hijab){
+    fill(() => g.ellipse(bx, hcy + 0.1 * s, hr - 0.25 * s, hr + 0.05 * s, 0, 0, 6.2832), skin);
+  } else {
+    fill(() => g.arc(bx, hcy, hr, 0, 6.2832), skin);
   }
-  g.strokeStyle = 'rgba(150,70,60,0.75)'; g.lineWidth = Math.max(1, 0.22 * s);
-  g.beginPath(); g.arc(bx, hcy + 0.9 * s, 0.72 * s, 0.22 * Math.PI, 0.78 * Math.PI); g.stroke();
+
+  /* 4. rambut depan: topi nipis + jisim sisi (diklip pada kepala) */
+  if(p.hijab){
+    /* biarkan muka terbuka; hanya sedikit kain di dahi */
+    fill(() => capPath(bx, hcy + 0.1 * s, hr + 0.85 * s, hr + 1.05 * s, -0.5 * s), hair);
+  } else {
+    fill(() => capPath(bx, hcy, hrx, hry, cut), hair);
+    g.save(); hclip(hr + 0.02 * s, hr + 0.02 * s);
+    const st = (p.style || 0);
+    /* helai sisi nipis — jauh dari lajur mata */
+    if(st === 1){
+      fill(() => g.ellipse(bx - hr * 0.86 * s, hcy + 0.5 * s, hr * 0.26 * s, hr * 0.95 * s, 0, 0, 6.2832), hair);
+      fill(() => g.ellipse(bx + hr * 0.86 * s, hcy + 0.1 * s, hr * 0.22 * s, hr * 0.7 * s, 0, 0, 6.2832), hair);
+    } else {
+      fill(() => g.ellipse(bx - hr * 0.88 * s, hcy + 0.2 * s, hr * 0.24 * s, hr * 0.78 * s, 0, 0, 6.2832), hair);
+      fill(() => g.ellipse(bx + hr * 0.88 * s, hcy + 0.2 * s, hr * 0.24 * s, hr * 0.78 * s, 0, 0, 6.2832), hair);
+    }
+    g.restore();
+    /* poni tinggi di dahi */
+    fill(() => g.ellipse(bx - hr * 0.28 * s, hcy - 1.1 * s, hr * 0.5 * s, hr * 0.3 * s, -0.22, 0, 6.2832), hair);
+    fill(() => g.ellipse(bx - hr * 0.38 * s, hcy - hr * 0.72 * s, hr * 0.28 * s, hr * 0.1 * s, -0.5, 0, 6.2832), 'rgba(255,255,255,0.18)');
+  }
+
+  /* --- muka: mata besar ekspresif --- */
+  const ey = hcy + 0.72 * s;
+  const eR = 0.78 * s, eX = 1.02 * s;
+  const lk = (a.look || 0) * 0.32 * s;      /* pandang ke arah rakan bicara */
+  ball(bx - eX + lk, ey, eR, '#fdfeff');
+  ball(bx + eX + lk, ey, eR, '#fdfeff');
+  fill(() => g.arc(bx - eX + lk + 0.06 * s, ey + 0.06 * s, eR * 0.52, 0, 6.2832), '#2a2018');
+  fill(() => g.arc(bx + eX + lk + 0.06 * s, ey + 0.06 * s, eR * 0.52, 0, 6.2832), '#2a2018');
+  fill(() => g.arc(bx - eX + lk + 0.26 * s, ey - 0.2 * s, eR * 0.2, 0, 6.2832), 'rgba(255,255,255,0.95)');
+  fill(() => g.arc(bx + eX + lk + 0.26 * s, ey - 0.2 * s, eR * 0.2, 0, 6.2832), 'rgba(255,255,255,0.95)');
+  /* kening */
+  g.lineCap = 'round';
+  g.strokeStyle = 'rgba(58,38,24,0.92)'; g.lineWidth = Math.max(1, 0.28 * s);
+  g.beginPath(); g.moveTo(bx - eX - 0.62 * s, ey - 1.0 * s); g.lineTo(bx - eX + 0.55 * s, ey - 1.24 * s); g.stroke();
+  g.beginPath(); g.moveTo(bx + eX + 0.62 * s, ey - 1.0 * s); g.lineTo(bx + eX - 0.55 * s, ey - 1.24 * s); g.stroke();
+  /* hidung + pipi */
+  fill(() => g.arc(bx, hcy + 1.05 * s, 0.16 * s, 0, 6.2832), 'rgba(190,130,100,0.45)');
+  fill(() => g.ellipse(bx - eX - 0.5 * s, ey + 0.98 * s, 0.42 * s, 0.28 * s, 0, 0, 6.2832), 'rgba(226,124,116,0.28)');
+  fill(() => g.ellipse(bx + eX + 0.5 * s, ey + 0.98 * s, 0.42 * s, 0.28 * s, 0, 0, 6.2832), 'rgba(226,124,116,0.28)');
+  /* senyuman */
+  g.strokeStyle = 'rgba(150,70,60,0.88)'; g.lineWidth = Math.max(1, 0.26 * s);
+  g.beginPath(); g.arc(bx, hcy + 1.22 * s, 0.78 * s, 0.20 * Math.PI, 0.80 * Math.PI); g.stroke();
+  if(p.glasses){
+    g.strokeStyle = 'rgba(38,56,74,0.9)'; g.lineWidth = Math.max(1, 0.24 * s);
+    g.beginPath(); g.arc(bx - eX, ey, eR + 0.36 * s, 0, 6.2832); g.stroke();
+    g.beginPath(); g.arc(bx + eX, ey, eR + 0.36 * s, 0, 6.2832); g.stroke();
+    g.beginPath(); g.moveTo(bx - eX + eR + 0.36 * s, ey); g.lineTo(bx + eX - eR - 0.36 * s, ey); g.stroke();
+  }
 
   /* --- fail di tangan semasa acara --- */
   if(a.busy > Date.now()){
-    rrect(bx + bw + 0.2 * s, armY + 2.4 * s, 3.2 * s, 4.2 * s, 0.3 * s, C.paper);
-    rrect(bx + bw + 0.2 * s, armY + 2.4 * s, 3.2 * s, 0.7 * s, 0.2 * s, C.paperEdge);
+    box(bx + bw + 0.2 * s, armY + 2.4 * s, 3.2 * s, 4.2 * s, 0.3 * s, C.paper);
+    fill(() => g.rect(bx + bw + 0.2 * s, armY + 2.4 * s, 3.2 * s, 0.7 * s), C.paperEdge);
   }
 }
 
@@ -920,6 +994,88 @@ function walkTo(a, tx, ty, speedPxPerSec){
   a.state = 'walk';
   a.pose = 'stand';
 }
+/* --- gelembung dialog: interaksi antara ejen --- */
+const CHAT = [
+  ['Fail ni dah siap?', 'Kejap, aku semak dulu.'],
+  ['Jom kopi sekejap.', 'Tunggu, aku hantar emel ni.'],
+  ['Pukul berapa mesyuarat?', 'Pukul 3, bilik mesyuarat.'],
+  ['Kuota hari ni ok?', 'Masih ada, boleh hantar.'],
+  ['Tolong validasi ni.', 'Baik, aku tengok sekarang.'],
+  ['Dah simpan ke belum?', 'Dah, baru sahaja.'],
+  ['Print ni untuk fail.', 'Ok, aku ambil sekarang.'],
+  ['Rekod dah masuk log.', 'Bagus, terima kasih!']
+];
+function emitBubble(a, text, ms, lvl){
+  const now = Date.now();
+  office.bubbles.push({ who:a.id, text, lvl:lvl || 0, born:now, until:now + (ms || 3400) });
+  if(office.bubbles.length > 8) office.bubbles.shift();
+}
+function drawBubbles(t){
+  const now = Date.now();
+  office.bubbles = office.bubbles.filter(b => b.until > now);
+  office.bubbles.forEach((b, i) => {
+    const a = AGENTS.filter(x => x.id === b.who)[0];
+    if(!a) return;
+    const pop = Math.min(1, (now - b.born) / 200);
+    const fade = Math.min(1, (b.until - now) / 450);
+    const bob = Math.sin(t / 340 + i) * 2;
+    g.save();
+    g.globalAlpha = pop * fade;
+    g.font = '600 13px system-ui, sans-serif';
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    const pad = 9, tw = g.measureText(b.text).width, w = tw + pad * 2, h = 27;
+    const x = a.x - w / 2, y = a.y - 122 - (b.lvl ? 34 : 0) + bob;
+    g.fillStyle = 'rgba(250,252,255,0.97)';
+    g.strokeStyle = 'rgba(28,40,56,0.9)'; g.lineWidth = 1.5;
+    g.beginPath();
+    if(g.roundRect) g.roundRect(x, y, w, h, 8); else g.rect(x, y, w, h);
+    g.fill(); g.stroke();
+    g.beginPath();
+    g.moveTo(a.x - 6, y + h - 1); g.lineTo(a.x + 6, y + h - 1); g.lineTo(a.x, y + h + 10);
+    g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#16202e';
+    g.fillText(b.text, x + pad, y + 18);
+    g.restore();
+  });
+}
+/* --- tamat gelembung dialog --- */
+
+/* Dua ejen berdekatan berbual: gelembung dialog + berpaling + lambaian. */
+function updateSocial(t){
+  if(reduceMotion() || document.hidden) return;
+  if(t < office.socialNext) return;
+  office.socialNext = t + 5200 + Math.random() * 5600;
+  const cand = AGENTS.filter(a => a.state !== 'walk' && a.kind !== 'leaving');
+  if(cand.length < 2) return;
+  const a = cand[Math.floor(Math.random() * cand.length)];
+  let b = null, best = 1e9;
+  AGENTS.forEach(o => {
+    if(o === a || o.kind === 'leaving' || o.state === 'walk') return;
+    const d = Math.hypot(o.x - a.x, o.y - a.y);
+    if(d < best){ best = d; b = o; }
+  });
+  if(!b) return;
+  const pair = CHAT[Math.floor(Math.random() * CHAT.length)], ms = 3600;
+  emitBubble(a, pair[0], ms, 0);
+  emitBubble(b, pair[1], ms, 1);
+  a.look = b.x >= a.x ? 1 : -1;
+  b.look = a.x >= b.x ? 1 : -1;
+  a.chatUntil = b.chatUntil = Date.now() + ms;
+  if(best > 460 && office.socialWalks < 2 && a.kind === 'desk' && b.kind === 'desk'){
+    office.socialWalks++;
+    a.social = true;
+    walkNear(a, b);
+  }
+  office.sfx('chair');
+}
+function walkNear(a, b){
+  const side = (a.x < b.x) ? -1 : 1;
+  const p = buildPath(a, b.x + side * 74, b.y);
+  if(!p.segs.length) return;
+  a.walkPath = p; a.walkSpeed = 205; a.walkPos = 0;
+  a.state = 'walk'; a.pose = 'stand';
+}
+
 function updateAgents(dt){
   AGENTS.forEach(a => {
     if(a.state !== 'walk' || !a.walkPath) return;
@@ -944,6 +1100,13 @@ function updateAgents(dt){
 function onArrive(a){
   if(a.kind === 'team'){ a.state = 'meet'; a.pose = 'sit'; return; }
   if(a.kind === 'leaving'){ a.state = 'idle'; a.pose = 'stand'; return; }
+  if(a.social){
+    a.social = false; a.kind = 'deco'; a.returnHome = true;
+    a.next = Date.now() + 6000;
+    office.socialWalks = Math.max(0, office.socialWalks - 1);
+    a.state = 'idle'; a.pose = 'sit';
+    return;
+  }
   a.state = 'idle'; a.pose = 'sit';
   if(a.kind === 'deco'){ a.next = Date.now() + 900; }
 }
@@ -1149,6 +1312,7 @@ const Audio2 = {
    ========================================================================== */
 const office = {
   nextDeco:0, lastClick:{ x:0, y:0 }, raf:0, localTimer:0, tickTimer:0, lastFrame:0, started:false,
+  bubbles:[], socialNext:0, socialWalks:0,
 
   sfx(type){ Audio2.blip(type); },
 
@@ -1174,9 +1338,11 @@ const office = {
       draw(rafNow);
       updateAgents(dt);
       updateDecorative(rafNow);
+      updateSocial(rafNow);
       AGENTS.forEach(a => {
         if(a.state === 'type' && a.typingUntil && nowMs > a.typingUntil){ a.state = 'idle'; a.typingUntil = 0; }
         if(a.state === 'idle' && a.next && nowMs > a.next && a.kind === 'deco' && !a.walkPath){ a.next = 0; agentDecoReturn(a); }
+        if(a.look && nowMs > (a.chatUntil || 0)) a.look = 0;
       });
       updateTeamAgents(nowMs);
     }
@@ -1186,6 +1352,7 @@ const office = {
   start(){
     if(this.started) return;
     this.started = true;
+    this.bubbles = []; this.socialNext = 0; this.socialWalks = 0;
     buildAgents();
     fitView();
     this.raf = requestAnimationFrame(t => this.frame(t));
@@ -1280,6 +1447,7 @@ function draw(t){
   drawStationLabels();
   drawAmbient(t);
   AGENTS.forEach(a => drawAgent(a, t));
+  drawBubbles(t);
   drawTeamLabels();
   drawJourney();
 }

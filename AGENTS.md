@@ -389,6 +389,23 @@ panel tanpa menjejaskan sistem penugasan.
   sudah tamat dipaparkan "diperbaharui", **bukan** angka lama — angka lama
   mengelirukan (97% daripada tetingkap lepas).
 
+Dua tindakan ops pada endpoint `cbt-ingest`, **berpagar kunci ingest** (bukan
+sesi) — jadi ia berkongsi sempadan kepercayaan yang sama seperti `ingestUsage`
+dan tidak menambah permukaan awam:
+
+- `diagUsage` — ringkasan storan (bilangan rekod, akaun unik, masa tertua/
+  terbaru, status). Berguna untuk membezakan "Habblaud belum hantar" daripada
+  "sheet hilang".
+- `resetUsage` — buang semua baris data (kekalkan header). Kunci ingest sudah
+  membenarkan suntikan data sewenang-wenangnya, jadi ia tidak menambah kuasa.
+
+**Amaran ujian:** `e2e.mjs` dalam projek `cbt-ingest` menulis ke URL `/exec`
+**produksi**, bukan pasir. Selepas menjalankannya, sheet mengandungi akaun
+ujian (`.claude`, `.claude-opus`, `semak`, `=IMPORTXML(...)`). Jalankan
+`resetUsage` selepas ujian supaya angka sebenar Habblaud tidak bercampur dengan
+data ujian. (Nilai formula seperti `=IMPORTXML` **dilindungi**: `sanitize_`
+menambah awalan `'` menjadikannya teks, bukan formula aktif.)
+
 Satu-satunya perubahan dalam `index.html` bagi menyokongnya ialah satu baris
 dalam `switchTab()` yang menulis isyarat tab (`cbt_office_tab_v1`), dibungkus
 dalam `try{}catch(e){}`. Jangan tambah tulisan lain dari `office.html`.

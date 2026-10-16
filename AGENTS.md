@@ -315,6 +315,40 @@ Dropdown **➕ Key In Penugasan** mempunyai **tiga** halaman (`index.html`):
 | 2 | `keyin-manual` | Borang **manual** satu-satu |
 | 3 | `keyin-email` | Tampal teks **e-mel** (termasuk tugasan 2–3 minggu lebih awal) |
 
+### Submodul 3 — input PDF (v106)
+
+Fail e-mel selalunya **PDF** (eksport e-mel, surat rasmi), bukan screenshot.
+Menghantar PDF ke OCR **memusnahkan** teks yang sebenarnya sudah boleh dibaca:
+
+| Input | Laluan | Ketepatan |
+|---|---|---|
+| PDF teks | pdf.js `getTextContent()` — **teks terus** | Tepat (sifar ralat) |
+| PDF imbas | jatuh ke OCR (Tesseract) | Perlu semak |
+| Imej/screenshot | OCR (Tesseract) | Perlu semak |
+
+Butang itu **auto-mengesan**: jika jumlah teks sesebuah PDF kurang 8 aksara
+bukan-ruang, ia dianggap **diimbas** dan OCR dijalankan automatik. Mesej status
+mesti menyatakan yang mana satu berlaku — pengguna perlu tahu sama ada teks itu
+tepat atau hasil tebakan OCR.
+
+pdf.js (`3.11.174`) dimuat dari **cdnjs**, yang sudah dibenarkan CSP. Jangan
+tambah domain CDN baharu tanpa mengemas kini `tools/csp-hash.py`.
+`worker-src 'self' blob: data:` sudah membenarkan pekerja pdf.js.
+
+Baris PDF disusun mengikut koordinat **y** (baris) dahulu, kemudian **x**;
+tanpa ini, teks e-mel bertaburan dan parser gagal mengenal pasti baris
+`Tarikh:`/`Tempat:`.
+
+**Jangan** jadikan OCR laluan lalai untuk PDF — ia lebih perlahan dan
+memperkenalkan ralat pada teks yang asalnya tepat.
+
+### Tajuk: Subject e-mel mengalahkan tajuk generik
+
+`buildAdminV56_()` menetapkan `rec.tajuk='Tugasan Admin'` untuk blok admin.
+Tajuk generik itu **bukan** `normTxt()`-kosong, jadi semakan lama
+(`if(!normTxt(r.tajuk))`) tidak pernah menggantikannya dengan Subject sebenar.
+`v106` menambah corak `/^Tugasan\s+(Admin|Umum|Lain)/i` supaya Subject menang.
+
 ### Submodul 3 — enjin dua lapis (penting)
 
 `smartParseLaporan()` (v56) **hanya** memproses laporan **berformat bernombor**

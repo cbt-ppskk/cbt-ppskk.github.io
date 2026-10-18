@@ -420,6 +420,82 @@ ia menghantar ke `commitLogPenugasan` dan menulis ke **Log_Penugasan** (rekod ra
 bukan `Staging_Penugasan`. Butang **🟡 Simpan Draf** pada kad pula memanggil
 `saveStagingPenugasan`. Pastikan setiap kad benar-benar disemak sebelum menyimpan.
 
+## Gambar staff + kepimpinan (SEDANG BERJALAN)
+
+Pengguna mahu gambar muncul dalam **banner marquee staff** dan **karusel
+Kepimpinan MPDRMKL**. Kerja ini **belum siap** — kod papar belum ditulis.
+
+### Keadaan sekarang (2026-10-18)
+
+| Perkara | Status |
+|---|---|
+| Folder `img/staff/` + `img/kepimpinan/` | Siap, commit `38a23ed` **belum push** |
+| Kod papar gambar | **Belum ditulis** |
+| Gambar sebenar | Pengguna kumpul, muat naik Selasa 20 Okt |
+| Sistem live | v106 — **tidak berubah** |
+
+### Empat penyekat yang mesti diatasi
+
+**1. Backend tidak hantar medan `gambar` untuk personel.**
+`getPersonnelList()` di `Code.gs` pulangkan `pangkat, nama, no, team, status,
+email, role` sahaja. Lajur gambar **tiada** dalam `PERSONEL_HEADERS`:
+
+```
+['No Personel','Nama','Pangkat','Unit','Team','Status','E-mel','Peranan']
+```
+
+Jadi `p.gambar` (dibaca di `initStaffMarquee`) sentiasa kosong. Penyelesaian
+yang dipilih: **cari gambar ikut nama fail** `img/staff/<no>.jpg` — langsung
+tidak perlukan backend, dan pengguna tiada akses akaun backend.
+
+**2. Kepimpinan membaca sumber yang tidak pernah wujud.**
+`tetHeaderMap()` membaca `DATA.tetapanHeader`, tetapi `DATA` **tidak pernah**
+ada kunci itu — `tetapanHeader` muncul **satu kali sahaja** dalam seluruh repo,
+iaitu di tempat membacanya. Jadi `leadCard()` sentiasa jatuh ke
+`LEADERS_DEFAULT` dan kad papar teks generik ("Komandan MPDRMKL", "Penaung
+Program") selama-lamanya.
+
+Backend **sudah ada** `getLeadershipData()` (tab `Master_Kepimpinan`, lajur
+`Nama/Jawatan/URL Gambar/Susunan`) dan **sudah didaftarkan** di router
+(`Code.gs` baris 315), tetapi `index.html` **tidak pernah memanggilnya** —
+sifar rujukan. Penyelesaian yang dipilih: baca `img/kepimpinan/kepimpinan.json`
++ `img/kepimpinan/<KEY>.jpg`.
+
+**3. CSP menghalang imej luar.**
+`img-src 'self' blob: data:` — hanya imej dari repo sendiri dibenarkan. URL
+Google Drive **akan disekat**. Sebab itu gambar mesti berada dalam repo.
+
+**4. URL Google Drive biasa tidak boleh render dalam `<img>`.**
+`https://drive.google.com/file/d/XXX/view` **tidak** berfungsi. Kalau kemudian
+mahu guna Drive, perlu `lh3.googleusercontent.com/d/XXX` atau
+`thumbnail?id=XXX&sz=w400`.
+
+### Penamaan fail (dikawal kod)
+
+```
+img/staff/R1234567.jpg          <- No. Personel
+img/kepimpinan/KOMANDAN.jpg     <- kunci tetap
+img/kepimpinan/kepimpinan.json  <- nama + jawatan sebenar
+```
+
+Kunci kepimpinan: `KOMANDAN`, `KETUA_PUSAT_1` … `KETUA_PUSAT_5`.
+
+### Pelajaran: pelayan muat naik sesi adalah sementara
+
+Satu pelayan muat naik gambar (port 12000) dibina dalam sesi 2026-10-18 dengan
+27/27 ujian keselamatan + 10/10 ujian UI. Ia **tidak berguna untuk kerja
+sebenar** kerana pautan sesi (`work-1-*.prod-runtime.all-hands.dev`) mati
+sebaik sesi tamat. Untuk kerja berjadual, arahkan pengguna ke **GitHub
+`Add file → Upload files`** — ia kekal.
+
+### Bila gambar sudah dimuat naik
+
+1. Tulis kod papar: `initStaffMarquee` cuba `img/staff/<no>.jpg`, `buildLeaders`
+   baca `kepimpinan.json` + `img/kepimpinan/<KEY>.jpg`
+2. Tambah `img/` ke `ASSETS` dalam `sw.js` supaya PWA simpan luar talian
+3. Uji: gambar muncul, nama betul, 0 pelanggaran CSP
+4. Naik `APP_VER` + cache `sw.js`
+
 ## Content-Security-Policy (v103b)
 
 `index.html` mempunyai `<meta http-equiv="Content-Security-Policy">`. Kerana beberapa

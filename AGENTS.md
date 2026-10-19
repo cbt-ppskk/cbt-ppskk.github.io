@@ -620,6 +620,28 @@ Dua perangkap alat semasa cuba push:
    `git remote set-url origin https://github.com/<owner>/<repo>.git` dan sahkan
    dengan `git config --list | grep -i '@github'` -> mesti kosong.
 
+### Perangkap: blok media query KEMUDIAN menang atas blok 640px anda
+
+Sesi 2026-10-19. Blok responsif log masuk (`@media(max-width:640px)`) menetapkan
+`.field input{font-size:16px}` untuk halang iOS Safari zum. Tetapi ujian pada
+laman LIVE menunjukkan fon terukur **15px**. Puncanya `@media(max-width:900px)`
+(baris ~669) menetapkan `.field input{font-size:15px}` — ia datang KEMUDIAN
+dalam fail dengan kekhususan **sama**, jadi ia menang. Blok 640px nampak
+"lebih spesifik" secara logik, tetapi CSS tidak menilai julat lebar seperti itu.
+
+Pembetulan: naikkan kekhususan dengan awalan id (`#login-screen .field input`)
+dan tambah blok untuk julat 641-900px yang sebelum ini tidak diliputi langsung.
+
+Peraturan: **jangan percaya susunan sumber.** Selepas menetapkan saiz fon medan,
+sahkan nilai terhitung dalam pelayar sebenar:
+
+```js
+getComputedStyle(document.querySelector('#login-email, #reg-email')).fontSize
+```
+
+Nilai mesti `>= 16px` pada SEMUA lebar <= 900px, jika tidak Safari iOS zum dan
+menolak kad keluar dari pandangan.
+
 ### Perangkap: flex `align-items:center` + kandungan lebih tinggi daripada skrin
 
 Sesi 2026-10-19. `#login-screen` ialah `display:flex; align-items:center`.

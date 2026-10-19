@@ -511,9 +511,38 @@ Bila disalin ke `demo/`, laluan mesti jadi `../icons/...`. Kalau tidak, semua
 logo rosak (200 → 404 senyap).
 
 Halaman: `index.html` (senarai), `susunan.html`, `realistik.html`, `depth.html`,
-`fokus.html`, `skeu.html`, `clay.html`, `SKOP-DEPTH.md`.
+`fokus.html`, `skeu.html`, `clay.html`, `kpi.html`, `SKOP-DEPTH.md`.
 
 **Live:** <https://cbt-ppskk.github.io/demo/> (dihantar 2026-10-19, commit `b7116b5`).
+
+### `demo/kpi.html` — hover angkat kad KPI (idea dari kod React)
+
+Pengguna dapat kod React (`framer-motion`, `lucide-react`, Tailwind) dari TikTok
+dan tanya sama ada sesuai. **Tidak sesuai** — dan sebabnya penting untuk sesi
+akan datang:
+
+| Kod React perlu | Sistem ini ada |
+|---|---|
+| `package.json`, Vite/webpack | HTML tunggal, **tiada build step** |
+| `react`, `react-dom`, `framer-motion`, `lucide-react` | **0 rujukan** (hanya Chart.js, jsPDF) |
+| Tailwind (`className`, `p-6`, `text-white/60`) | CSS biasa + token `:root` |
+| `import { motion } from 'framer-motion'` | 8,300 baris JS prosedural, bina DOM via `innerHTML` |
+
+**Jangan cuba tampal JSX ke `index.html`.** Ia bukan sekadar tambah pustaka —
+seluruh aplikasi perlu ditulis semula dalam React. CSP juga hanya benarkan
+`cdn.jsdelivr.net` dan `cdnjs.cloudflare.com`.
+
+Yang **diambil**: idea visual `whileHover={{y:-5}}`, ditulis semula dalam CSS
+(`.kpi2:hover{transform:translateY(-5px)}`). Diuji: hover naik tepat **5px**.
+
+**Perangkap `change`:** `StatCard` kod itu terima prop `change` (peratus), tetapi
+sistem ini **tiada** data tempoh lepas (`prevPeriod`/`delta`/`trend` = 0 padanan).
+Jangan papar nombor peratus yang direka — pada sistem rasmi, nombor palsu lebih
+buruk daripada tiada nombor. `kiraPerubahan()` dalam demo pulangkan `'—'` bila
+bulan lepas `0` (elak `Infinity`/`NaN`).
+
+Nota: `emerald-400` Tailwind = `#34d399`, tepat sama dengan `--ok` sistem ini.
+Palet pengguna sudah selari; tiada keperluan meniru TikTok untuk warna.
 
 ### Push ke repo ini: token mesti milik `cbt-ppskk`
 

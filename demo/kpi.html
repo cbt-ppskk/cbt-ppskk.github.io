@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Kad KPI — CBT PPSKK</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#00f2fe; --sky:#38bdf8; --gold:#d5ad57; --gold-lt:#f0d38a;
+  --text:#f8fafc; --muted:#94a3b8; --muted2:#64748b;
+  --line:rgba(56,189,248,.28); --line2:rgba(56,189,248,.14);
+  --ok:#34d399; --warn:#fbbf24; --err:#f87171;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-color:#08172d;
+  background-image:linear-gradient(rgba(5,16,35,.34),rgba(5,16,35,.46)),
+    radial-gradient(circle at 20% 8%,rgba(0,242,254,.10),transparent 55%),
+    radial-gradient(circle at 85% 85%,rgba(213,173,87,.09),transparent 55%);
+  padding:36px 20px 80px}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:22px;font-weight:800;letter-spacing:.3px;margin-bottom:6px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);
+  font-weight:800;margin:30px 0 12px;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:var(--line2)}
+.warn{font-size:12.5px;color:#fbbf24;background:rgba(251,191,36,.10);
+  border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:11px 14px;margin:18px 0 26px}
+.info{font-size:12.5px;color:#93c5fd;background:rgba(56,189,248,.09);
+  border:1px solid rgba(56,189,248,.3);border-radius:10px;padding:11px 14px;margin:14px 0 24px}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;
+  background:rgba(56,189,248,.10);padding:1px 6px;border-radius:5px;color:var(--gold-lt)}
+.glass{background:linear-gradient(160deg,rgba(15,23,42,.58),rgba(9,13,22,.68));
+  backdrop-filter:blur(12px) saturate(1.12);-webkit-backdrop-filter:blur(12px) saturate(1.12);
+  border:1px solid rgba(213,173,87,.26);border-radius:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(56,189,248,.10) inset,
+    0 0 0 1px rgba(213,173,87,.05) inset}
+
+/* ===== KAD KPI — GAYA SEMASA (rujukan, kekal statik) ===== */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+.kpi{padding:16px 18px;position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--cyan),var(--sky))}
+.kpi .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700}
+.kpi .val{font-size:26px;font-weight:800;margin-top:6px;line-height:1.1;color:#eafcff;
+  text-shadow:0 0 14px rgba(0,242,254,.35)}
+.kpi .foot{font-size:11px;color:var(--muted2);margin-top:5px}
+
+/* ===== KAD KPI — GAYA BAHARU ===== */
+.kpi2{padding:16px 18px 15px;position:relative;overflow:hidden;
+  transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease,border-color .22s ease}
+.kpi2::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--cyan),var(--sky));
+  transition:width .22s ease,box-shadow .22s ease}
+/* HOVER: kad naik 5px, bingkai & jalur menyala — idea dari kod React
+   (whileHover={{y:-5}}), ditulis semula dalam CSS biasa. */
+.kpi2:hover{transform:translateY(-5px);border-color:rgba(0,242,254,.5);
+  box-shadow:0 26px 60px rgba(0,0,0,.62),0 0 0 1px rgba(56,189,248,.16) inset,
+    0 0 26px rgba(0,242,254,.14)}
+.kpi2:hover::before{width:4px;box-shadow:0 0 14px rgba(0,242,254,.7)}
+.kpi2 .baris1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.kpi2 .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);
+  font-weight:700;line-height:1.35}
+.kpi2 .val{font-size:26px;font-weight:800;margin-top:6px;line-height:1.1;color:#eafcff;
+  text-shadow:0 0 14px rgba(0,242,254,.35);font-variant-numeric:tabular-nums}
+.kpi2 .foot{font-size:11px;color:var(--muted2);margin-top:5px}
+
+/* Pil perubahan — warna mengikut arah sebenar */
+.pil{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:800;
+  padding:3px 8px;border-radius:99px;white-space:nowrap;font-variant-numeric:tabular-nums;
+  border:1px solid transparent}
+.pil.naik{background:rgba(52,211,153,.14);color:var(--ok);border-color:rgba(52,211,153,.34)}
+.pil.turun{background:rgba(248,113,113,.14);color:var(--err);border-color:rgba(248,113,113,.34)}
+.pil.sama{background:rgba(148,163,184,.13);color:var(--muted);border-color:rgba(148,163,184,.28)}
+.pil.kosong{background:rgba(148,163,184,.10);color:var(--muted2);border-color:rgba(148,163,184,.2)}
+.pil .ar{font-size:10px;line-height:1}
+
+/* Jalur mikro — tunjuk perkadaran bulan ini vs bulan lepas */
+.mikro{height:3px;border-radius:99px;background:rgba(148,163,184,.16);margin-top:9px;
+  overflow:hidden;position:relative}
+.mikro i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--cyan),var(--sky));transition:width .5s ease}
+
+/* ===== KAWALAN ===== */
+.ctl{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.btn{font:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--text);
+  background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.34);
+  padding:7px 14px;border-radius:9px;transition:background .18s,border-color .18s}
+.btn:hover{background:rgba(56,189,248,.20);border-color:rgba(0,242,254,.6)}
+.btn[aria-pressed="true"]{background:rgba(0,242,254,.22);border-color:var(--cyan);color:#fff}
+
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line2)}
+th{color:var(--muted2);font-size:10.5px;text-transform:uppercase;letter-spacing:.7px}
+td{font-variant-numeric:tabular-nums}
+.sorok{display:none}
+.foot-note{margin-top:30px;padding-top:18px;border-top:1px solid var(--line2);
+  font-size:11.5px;color:var(--muted2);line-height:1.8}
+a{color:var(--gold-lt)}
+
+@media(prefers-reduced-motion:reduce){
+  .kpi2,.kpi2::before,.mikro i{transition:none}
+  .kpi2:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Demo Kad KPI — Sistem Pengurusan Penugasan CBT PPSKK</h1>
+  <div class="sub">Kajian reka bentuk. Bahan rujukan sahaja — bukan sebahagian daripada aplikasi.</div>
+
+  <div class="warn">
+    <b>Folder ini tidak menjejaskan sistem live.</b> Fail HTML statik berasingan.
+    Tiada perubahan pada <code>index.html</code>, <code>office.html</code>, <code>sw.js</code>,
+    atau apa-apa logik. CSP sistem live tidak terjejas. <code>demo/</code> tidak
+    disenaraikan dalam <code>sw.js</code> <code>ASSETS</code>, jadi PWA tidak cache ini.
+  </div>
+
+  <div class="info">
+    <b>Asal idea:</b> kod React dari TikTok (<code>framer-motion</code>, <code>lucide-react</code>,
+    <code>whileHover={{y:-5}}</code>). Kod itu <b>tidak</b> boleh masuk sistem ini — projek
+    React perlu build step, sistem ini HTML tunggal. Yang diambil <b>idea visualnya sahaja</b>,
+    ditulis semula dalam CSS biasa.
+  </div>
+
+  <h2>1 · Kad semasa (rujukan)</h2>
+  <div class="kpis">
+    <div class="kpi glass"><div class="lbl">Jumlah Rekod Penugasan</div><div class="val">184</div><div class="foot">Sumber: Google Sheet (rasmi)</div></div>
+    <div class="kpi glass"><div class="lbl">Jumlah Jam Tugasan</div><div class="val">1,284.5</div><div class="foot">Σ tempoh tugasan (jam)</div></div>
+    <div class="kpi glass"><div class="lbl">Jumlah Jam-Orang</div><div class="val">3,910</div><div class="foot">Σ jam × bilangan petugas</div></div>
+    <div class="kpi glass"><div class="lbl">Petugas Aktif</div><div class="val">17</div><div class="foot">Daripada 21 personel berdaftar</div></div>
+  </div>
+  <div class="sub" style="font-size:12px">Kad diam — tiada tindak balas bila kursor lalu di atasnya. Ini gaya yang ada sekarang.</div>
+
+  <h2>2 · Kad baharu — hover angkat + penunjuk arah</h2>
+  <div class="ctl">
+    <button class="btn" id="t-pil" aria-pressed="true">Penunjuk arah: HIDUP</button>
+    <button class="btn" id="t-mikro" aria-pressed="true">Jalur mikro: HIDUP</button>
+  </div>
+  <div class="kpis" id="kpis2"></div>
+  <div class="sub" style="font-size:12px">Lalu kursor atas kad → kad naik 5px, bingkai menyala.
+    Penunjuk arah dikira daripada data sebenar bulan ini vs bulan lepas.</div>
+
+  <h2>3 · Data yang mengira penunjuk arah</h2>
+  <div class="sub" style="font-size:12.5px;margin-bottom:4px">Ini data <b>contoh</b> dalam demo.
+    Dalam sistem sebenar, nilai datang dari <code>LOG</code> (tarikh + jam) dan <code>PER</code> (status).</div>
+  <div class="glass" style="padding:6px 10px 12px">
+    <table>
+      <thead><tr><th>Bulan</th><th>Rekod</th><th>Jam</th><th>Jam-Orang</th></tr></thead>
+      <tbody id="tbl"></tbody>
+    </table>
+  </div>
+
+  <div class="foot-note">
+    <b>Tiada nombor palsu.</b> Semua peratus dikira daripada jumlah sebenar
+    (bulan ini vs bulan lepas). Jika bulan lepas <code>0</code>, papar
+    <code>—</code> bukan <code>∞</code>. Jika tiada data, pil kelabu "tiada pembanding".<br>
+    <b>Kontras warna:</b> <code>#34d399</code> hijau dalam kod TikTok (<code>emerald-400</code>)
+    tepat sama dengan <code>--ok</code> sistem ini. Palet kau sudah betul.<br>
+    <b>Prestasi:</b> tiada pustaka luar. CSS + JS biasa. Tiada perubahan CSP, tiada
+    berat tambahan. Boleh guna pada telefon.<br>
+    <a href="./">← Kembali ke senarai demo</a>
+  </div>
+
+</div>
+
+<script>
+/* ===== DATA CONTOH — bulan ini (Okt 2026) vs bulan lepas (Sep 2026) =====
+   Dalam sistem sebenar, baris ini ialah LOG sebenar dan penapisan tempoh
+   menggunakan _OFFICIAL_PERIOD yang sama seperti kad KPI sedia ada. */
+const CONTOH = [
+  { bulan:'2026-09', rekod:142, jam:1088.0, jamOrang:3210 },
+  { bulan:'2026-10', rekod:184, jam:1284.5, jamOrang:3910 }
+];
+
+const KAD = [
+  { lbl:'Jumlah Rekod Penugasan', key:'rekod',    fmt:v=>v.toLocaleString('ms-MY'), foot:'Sumber: Google Sheet (rasmi)' },
+  { lbl:'Jumlah Jam Tugasan',     key:'jam',      fmt:v=>v.toLocaleString('ms-MY',{minimumFractionDigits:1,maximumFractionDigits:1}), foot:'Σ tempoh tugasan (jam)' },
+  { lbl:'Jumlah Jam-Orang',       key:'jamOrang', fmt:v=>v.toLocaleString('ms-MY'), foot:'Σ jam × bilangan petugas' },
+  { lbl:'Petugas Aktif',          key:null,       fmt:()=>'17', foot:'Daripada 21 personel berdaftar' }
+];
+
+/* Kira perubahan peratus. Pemulangan eksplisit untuk kes tepi — JANGAN
+   pulangkan Infinity atau NaN ke paparan. */
+function kiraPerubahan(kini, lepas){
+  if(lepas===0 || lepas==null) return { arah:'kosong', teks:'—', nisbah:0 };
+  const pct = (kini - lepas) / lepas * 100;
+  if(Math.abs(pct) < 0.05) return { arah:'sama', teks:'0%', nisbah:1 };
+  return {
+    arah: pct > 0 ? 'naik' : 'turun',
+    teks: (pct > 0 ? '+' : '') + pct.toFixed(0) + '%',
+    nisbah: Math.min(1, kini / Math.max(kini, lepas))
+  };
+}
+
+function binaPil(p){
+  const ar = p.arah==='naik' ? '▲' : (p.arah==='turun' ? '▼' : (p.arah==='sama' ? '→' : '·'));
+  const tajuk = p.arah==='kosong' ? 'Tiada data bulan lepas untuk dibanding' : 'Berbanding bulan lepas';
+  return '<span class="pil '+p.arah+'" title="'+tajuk+'"><span class="ar">'+ar+'</span>'+p.teks+'</span>';
+}
+
+let PIL_HIDUP = true, MIKRO_HIDUP = true;
+
+function lukis(){
+  const kini = CONTOH[1], lepas = CONTOH[0];
+  document.getElementById('kpis2').innerHTML = KAD.map(function(k){
+    const nilai = k.key ? kini[k.key] : 17;
+    const p = k.key ? kiraPerubahan(kini[k.key], lepas[k.key]) : { arah:'sama', teks:'aktif', nisbah:1 };
+    return '<div class="kpi2 glass">'
+      + '<div class="baris1">'
+      +   '<div><div class="lbl">'+k.lbl+'</div>'
+      +     '<div class="val">'+k.fmt(nilai)+'</div></div>'
+      +   (PIL_HIDUP ? binaPil(p) : '')
+      + '</div>'
+      + (MIKRO_HIDUP && k.key ? '<div class="mikro"><i style="width:'+(p.nisbah*100).toFixed(0)+'%"></i></div>' : '')
+      + '<div class="foot">'+k.foot+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+document.getElementById('tbl').innerHTML = CONTOH.map(function(r,i){
+  return '<tr><td>'+(i?'Oktober 2026':'September 2026')+(i?' <span style="color:var(--cyan)">← semasa</span>':'')+'</td>'
+    + '<td>'+r.rekod+'</td><td>'+r.jam.toFixed(1)+'</td><td>'+r.jamOrang.toLocaleString('ms-MY')+'</td></tr>';
+}).join('');
+
+document.getElementById('t-pil').addEventListener('click',function(){
+  PIL_HIDUP=!PIL_HIDUP; this.setAttribute('aria-pressed',String(PIL_HIDUP));
+  this.textContent='Penunjuk arah: '+(PIL_HIDUP?'HIDUP':'MATI'); lukis();
+});
+document.getElementById('t-mikro').addEventListener('click',function(){
+  MIKRO_HIDUP=!MIKRO_HIDUP; this.setAttribute('aria-pressed',String(MIKRO_HIDUP));
+  this.textContent='Jalur mikro: '+(MIKRO_HIDUP?'HIDUP':'MATI'); lukis();
+});
+
+lukis();
+</script>
+</body>
+</html>

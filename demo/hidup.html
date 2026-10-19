@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Dashboard Hidup — CBT PPSKK</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#00f2fe; --sky:#38bdf8; --gold:#d5ad57; --gold-lt:#f0d38a;
+  --text:#f8fafc; --muted:#94a3b8; --muted2:#64748b;
+  --line:rgba(56,189,248,.28); --line2:rgba(56,189,248,.14);
+  --ok:#34d399; --warn:#fbbf24; --err:#f87171;
+  --shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(56,189,248,.10) inset;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-color:#08172d;
+  background-image:linear-gradient(rgba(5,16,35,.34),rgba(5,16,35,.46)),
+    radial-gradient(circle at 20% 8%,rgba(0,242,254,.10),transparent 55%),
+    radial-gradient(circle at 85% 85%,rgba(213,173,87,.09),transparent 55%);
+  padding:30px 20px 80px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:22px;font-weight:800;letter-spacing:.3px;margin-bottom:6px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);
+  font-weight:800;margin:30px 0 12px;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:var(--line2)}
+.warn{font-size:12.5px;color:#fbbf24;background:rgba(251,191,36,.10);
+  border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:11px 14px;margin:18px 0 22px}
+.info{font-size:12.5px;color:#93c5fd;background:rgba(56,189,248,.09);
+  border:1px solid rgba(56,189,248,.3);border-radius:10px;padding:11px 14px;margin:14px 0 22px}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;
+  background:rgba(56,189,248,.10);padding:1px 6px;border-radius:5px;color:var(--gold-lt)}
+.glass{background:linear-gradient(160deg,rgba(15,23,42,.58),rgba(9,13,22,.68));
+  backdrop-filter:blur(12px) saturate(1.12);-webkit-backdrop-filter:blur(12px) saturate(1.12);
+  border:1px solid rgba(213,173,87,.26);border-radius:16px;
+  box-shadow:var(--shadow),0 0 0 1px rgba(213,173,87,.05) inset}
+
+/* ================= KAWALAN ================= */
+.ctl{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px;padding:12px 14px;border-radius:13px;
+  background:rgba(15,23,42,.5);border:1px solid var(--line2)}
+.btn{font:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);
+  background:rgba(148,163,184,.10);border:1px solid rgba(148,163,184,.28);
+  padding:7px 13px;border-radius:9px;transition:background .18s,border-color .18s,color .18s}
+.btn:hover{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.5);color:var(--text)}
+.btn[aria-pressed="true"]{background:rgba(0,242,254,.20);border-color:var(--cyan);color:#fff;
+  box-shadow:0 0 14px rgba(0,242,254,.24)}
+
+/* ================= NAVIGASI ================= */
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:6px;margin-bottom:20px;border-radius:14px;
+  position:relative;z-index:200;
+  background:linear-gradient(160deg,rgba(15,23,42,.66),rgba(9,13,22,.76));
+  border:1px solid var(--line2);box-shadow:var(--shadow)}
+/* Penunjuk gelongsor — bergerak ke tab yang dihover, kembali ke tab aktif bila keluar.
+   transform (bukan left/top) supaya GPU yang uruskan. */
+.nav-ind{position:absolute;top:6px;left:0;height:calc(100% - 12px);width:0;border-radius:10px;
+  background:rgba(56,189,248,.14);border:1px solid rgba(0,242,254,.42);
+  box-shadow:0 0 18px rgba(0,242,254,.22) inset,0 0 14px rgba(0,242,254,.16);
+  transform:translate(0,0);opacity:0;pointer-events:none;
+  transition:transform .34s cubic-bezier(.2,.7,.3,1),width .34s cubic-bezier(.2,.7,.3,1),opacity .2s}
+.nav-ind.on{opacity:1}
+.tab-btn{position:relative;z-index:1;white-space:nowrap;padding:10px 15px;border:0;border-radius:10px;
+  background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:13px;cursor:pointer;
+  overflow:hidden;transition:color .18s,transform .18s cubic-bezier(.2,.7,.3,1)}
+.tab-btn:hover{color:var(--text);transform:translateY(-2px)}
+.tab-btn.active{color:#04121c;background:linear-gradient(135deg,var(--cyan),var(--sky));
+  box-shadow:0 0 22px rgba(0,242,254,.35)}
+/* Riak apabila ditekan — idea sama seperti 'reaction' yang diminta */
+.ripple{position:absolute;border-radius:50%;transform:translate(-50%,-50%) scale(0);
+  background:radial-gradient(circle,rgba(0,242,254,.55),rgba(0,242,254,0) 70%);
+  width:150px;height:150px;pointer-events:none;animation:rip .55s ease-out forwards}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+
+/* ================= KAD HIDUP ================= */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:1100px){.grid2{grid-template-columns:1fr}}
+
+/* Satu kelas untuk semua kad yang "hidup".
+   PENTING — dua lapisan:
+     .hidup  = kawasan sentuh. TIDAK PERNAH dijelmakan (transform). Saiznya kekal.
+     .hidup .in = kad yang kelihatan. Inilah yang condong/naik.
+
+   Mengapa? Jika kita jelmakan elemen yang sama, sudut kad akan surut ke belakang
+   (perspektif) dan kursor 'keluar' kad lalu memicu pointerleave -> putaran
+   ditetapkan semula -> kursor masuk semula -> condong lagi. Hasilnya berkelip.
+   Dengan dua lapisan, kawasan sentuh kekal stabil dan tiada kelipan.
+   JS hanya tulis pemboleh ubah CSS pada .hidup; .in mewarisinya. */
+.hidup{position:relative}
+.hidup .in{position:relative;overflow:hidden;border-radius:inherit;
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(var(--ty,0px));
+  transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease,border-color .22s ease}
+/* Cahaya mengikut kursor — radial-gradient pada kedudukan --mx/--my */
+.hidup .in::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(320px circle at var(--mx,50%) var(--my,50%),rgba(0,242,254,.11),transparent 62%);
+  opacity:0;transition:opacity .28s}
+.kpi2{padding:16px 18px}
+.kpi2::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--cyan),var(--sky));transition:width .22s,box-shadow .22s}
+.kpi2 .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700}
+.kpi2 .val{font-size:26px;font-weight:800;margin-top:6px;line-height:1.1;color:#eafcff;
+  text-shadow:0 0 14px rgba(0,242,254,.35);font-variant-numeric:tabular-nums}
+.kpi2 .foot{font-size:11px;color:var(--muted2);margin-top:5px}
+
+/* ================= CARTA ================= */
+.carta{padding:16px 18px}
+.carta h3{font-size:13.5px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.carta h3 .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.chart-wrap{position:relative;height:210px}
+/* Lapisan cahaya di atas carta — ikut kursor. pointer-events:none supaya
+   Chart.js masih terima hover dan tooltip kekal berfungsi. */
+.carta .glow{position:absolute;inset:0;pointer-events:none;border-radius:10px;opacity:0;
+  transition:opacity .28s;
+  background:radial-gradient(200px circle at var(--gx,50%) var(--gy,50%),rgba(0,242,254,.14),transparent 70%)}
+.carta:hover .glow{opacity:1}
+
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line2)}
+th{color:var(--muted2);font-size:10.5px;text-transform:uppercase;letter-spacing:.7px}
+.foot-note{margin-top:30px;padding-top:18px;border-top:1px solid var(--line2);
+  font-size:11.5px;color:var(--muted2);line-height:1.85}
+a{color:var(--gold-lt)}
+.sorok{display:none}
+
+/* ================= RESPONSIF =================
+   Tiga saiz sasaran: telefon (<=640), tablet (641-1024), desktop (>1024).
+   Prinsip: jangan tetapkan lebar piksel tetap. Guna grid auto-fit + minmax
+   supaya kad mengalir sendiri, dan hadkan tinggi carta supaya nisbah kekal. */
+@media(max-width:1024px){
+  body{padding:24px 16px 64px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .chart-wrap{height:190px}
+}
+@media(max-width:768px){
+  h1{font-size:19px}
+  h2{margin:24px 0 10px}
+  .kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi2{padding:14px 15px}
+  .kpi2 .val{font-size:22px}
+  .chart-wrap{height:180px}
+  /* Jadual boleh leret mendatar daripada pecah keluar skrin */
+  .glass.in:has(table){overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:420px}
+}
+@media(max-width:640px){
+  body{padding:18px 12px 56px}
+  h1{font-size:17px;line-height:1.35}
+  .sub{font-size:12.5px}
+  /* Satu kad satu baris — angka lebih mudah dibaca */
+  .kpis{grid-template-columns:1fr;gap:9px}
+  .kpi2 .val{font-size:21px}
+  .chart-wrap{height:165px}
+  .carta{padding:13px 14px}
+  .carta h3{font-size:12.5px}
+  .ctl{padding:10px 11px;gap:7px}
+  .btn{font-size:11.5px;padding:6px 11px}
+  /* Navigasi: leret mendatar, tab jangan mengecil sampai tak boleh tekan */
+  nav.tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  .tab-btn{font-size:12.5px;padding:9px 12px;flex:0 0 auto}
+  .warn,.info{font-size:12px;padding:10px 12px}
+  .foot-note{font-size:11px}
+}
+/* Peranti sangat kecil (<=380px) */
+@media(max-width:380px){
+  .kpis{grid-template-columns:1fr}
+  .tab-btn{font-size:11.5px;padding:8px 10px}
+  .kpi2 .val{font-size:19px}
+}
+/* Skrin besar — hadkan lebar supaya baris tidak terlalu panjang */
+@media(min-width:1500px){
+  .wrap{max-width:1320px}
+  .chart-wrap{height:240px}
+}
+/* Landskap telefon rendah — kurangkan tinggi carta */
+@media(max-height:520px) and (orientation:landscape){
+  .chart-wrap{height:150px}
+}
+
+/* ================= AKSESIBILITI ================= */
+/* Jika pengguna set "kurangkan gerakan" pada peranti, semua gerakan dimatikan.
+   Ini penting: ada orang pening dengan gerakan. Hormati tetapan mereka. */
+@media(prefers-reduced-motion:reduce){
+  .hidup .in,.nav-ind,.tab-btn,.hidup .in::after,.carta .glow{transition:none}
+  .hidup .in{transform:none}
+  body.boleh-hover .hidup:hover .in{--ty:0px}
+  .tab-btn:hover{transform:none}
+  .ripple{display:none}
+}
+/* ================= HOVER — hanya bila kursor benar-benar ada =================
+   Semua kesan :hover diletakkan di bawah body.boleh-hover, yang JS tambah
+   selepas ia benar-benar melihat peristiwa pointerType='mouse'.
+
+   Mengapa bukan media query '(hover:hover)':
+   Chromium headless melaporkan hover:none, dan sesetengah pelayar mudah alih
+   juga salah lapor. Akibatnya kesan dimatikan tanpa sebab. pointerType ialah
+   bukti sebenar — kita tunggu sampai tetikus benar-benar bergerak. */
+body.boleh-hover .hidup:hover .in{--ty:-5px;border-color:rgba(0,242,254,.5);
+  box-shadow:0 26px 60px rgba(0,0,0,.62),0 0 0 1px rgba(56,189,248,.16) inset,0 0 26px rgba(0,242,254,.14)}
+body.boleh-hover .hidup:hover .in::after{opacity:1}
+body.boleh-hover .kpi2:hover::before{width:4px;box-shadow:0 0 14px rgba(0,242,254,.7)}
+body.boleh-hover .carta:hover .glow{opacity:1}
+
+/* Peranti sentuh tiada kursor — matikan gerakan ikut-mouse */
+body.tanpa-kursor .hidup .in{transform:none}
+body.tanpa-kursor .hidup .in::after,body.tanpa-kursor .carta .glow{display:none}
+
+/* ================= TOGOL (kelas pada <body>) =================
+   Kelas 'off-*' mematikan satu kesan tanpa mengubah JS. Cara ini lebih
+   mudah diselenggara daripada gaya inline bertindih. */
+body.off-angk .hidup:hover .in{--ty:0px}
+body.off-tilt .hidup .in{transform:none}
+body.off-cahaya .hidup .in::after{display:none}
+body.off-nav .nav-ind{display:none}
+body.off-carta .carta .glow{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Demo Dashboard Hidup — Sistem Pengurusan Penugasan CBT PPSKK</h1>
+  <div class="sub">Kajian reka bentuk. Bahan rujukan sahaja — bukan sebahagian daripada aplikasi.</div>
+
+  <div class="warn">
+    <b>Folder ini tidak menjejaskan sistem live.</b> Fail HTML statik berasingan.
+    Tiada perubahan pada <code>index.html</code>, <code>office.html</code>, <code>sw.js</code>,
+    atau apa-apa logik. CSP sistem live tidak terjejas. <code>demo/</code> tidak
+    disenaraikan dalam <code>sw.js</code> <code>ASSETS</code>.
+  </div>
+
+  <div class="info">
+    <b>Gerakkan kursor perlahan-lahan merentas halaman ini.</b> Setiap kad, tab dan carta
+    bertindak balas. Semua ditulis dalam <b>CSS + JS biasa</b> — tiada React, tiada
+    <code>framer-motion</code>. Guna togol di bawah untuk hidup/mati setiap kesan.
+  </div>
+
+  <div class="ctl">
+    <button class="btn" id="t-angk" aria-pressed="true">Hover angkat kad</button>
+    <button class="btn" id="t-tilt" aria-pressed="true">Tilt ikut mouse</button>
+    <button class="btn" id="t-cahaya" aria-pressed="true">Cahaya ikut mouse</button>
+    <button class="btn" id="t-nav" aria-pressed="true">Animasi navigasi</button>
+    <button class="btn" id="t-carta" aria-pressed="true">Carta tindak balas</button>
+  </div>
+
+  <h2>Navigasi</h2>
+  <nav class="tabs" id="tabs">
+    <span class="nav-ind" id="nav-ind"></span>
+    <button class="tab-btn active" data-t="dash">Halaman Utama</button>
+    <button class="tab-btn" data-t="log">📋 Log Penugasan</button>
+    <button class="tab-btn" data-t="per">Personel</button>
+    <button class="tab-btn" data-t="pen">Penyelia</button>
+    <button class="tab-btn" data-t="tet">⚙️ Pentadbiran</button>
+  </nav>
+  <div class="sub" style="font-size:12px">Lalu kursor atas tab → penunjuk gelongsor ikut.
+    Tekan tab → riak keluar dari titik tekan.</div>
+
+  <h2>Kad KPI</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <h2>Carta</h2>
+  <div class="grid2">
+    <div class="hidup" data-carta><div class="glass carta in"><h3><span class="dot"></span>Tugasan Mengikut Bulan</h3>
+      <div class="chart-wrap"><canvas id="ch-bulan"></canvas><span class="glow"></span></div></div></div>
+    <div class="hidup" data-carta><div class="glass carta in"><h3><span class="dot"></span>Tugasan Mengikut Jenis</h3>
+      <div class="chart-wrap"><canvas id="ch-jenis"></canvas><span class="glow"></span></div></div></div>
+  </div>
+  <div class="hidup" data-carta style="margin-bottom:16px"><div class="glass carta in">
+    <h3><span class="dot"></span>Lokasi / Tempat Paling Kerap</h3>
+    <div class="chart-wrap"><canvas id="ch-tempat"></canvas><span class="glow"></span></div>
+  </div></div>
+
+  <h2>Jadual</h2>
+  <div class="hidup" data-tilt="kurang"><div class="glass in" style="padding:6px 10px 12px">
+    <table>
+      <thead><tr><th>Bulan</th><th>Rekod</th><th>Jam</th><th>Jam-Orang</th></tr></thead>
+      <tbody id="tbl"></tbody>
+    </table>
+  </div></div>
+
+  <div class="foot-note">
+    <b>Cara ia berfungsi (ringkas).</b> Satu pendengar <code>pointermove</code> pada dokumen,
+    ditapis melalui <code>requestAnimationFrame</code> supaya tidak lebih daripada satu
+    kemas kini setiap bingkai. JS hanya tulis 4 nombor ke CSS
+    (<code>--mx</code>, <code>--my</code>, <code>--rx</code>, <code>--ry</code>);
+    CSS yang lukis semuanya. Sebab itu ia lancar walaupun ada 16 kad.<br>
+    <b>Prestasi.</b> <code>getBoundingClientRect()</code> dibaca <b>sekali</b> semasa kursor
+    masuk kad, bukan setiap bingkai — membaca layout setiap bingkai ialah punca utama
+    UI tersekat-sekat.<br>
+    <b>Aksesibiliti.</b> Menghormati <code>prefers-reduced-motion</code>. Pada peranti
+    sentuh, gerakan ikut-mouse dimatikan automatik (tiada kursor, jadi tiada makna).<br>
+    <b>Tiada pustaka luar</b> selain Chart.js (CDN yang sama sistem guna).<br>
+    <a href="./">← Kembali ke senarai demo</a>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+/* ===================== KAWALAN =====================
+   Kesan hidup/mati guna kelas pada <body> — tiada keadaan bertindih dalam JS. */
+const B = document.body;
+const hidup_ = k => !B.classList.contains(k);
+
+/* ===================== DATA CONTOH ===================== */
+const KAD = [
+  { lbl:'Jumlah Rekod Penugasan', val:'184',    foot:'Sumber: Google Sheet (rasmi)' },
+  { lbl:'Jumlah Jam Tugasan',     val:'1,284.5',foot:'Σ tempoh tugasan (jam)' },
+  { lbl:'Jumlah Jam-Orang',       val:'3,910',  foot:'Σ jam × bilangan petugas' },
+  { lbl:'Petugas Aktif',          val:'17',     foot:'Daripada 21 personel berdaftar' }
+];
+const BULAN = ['Mei','Jun','Jul','Ogo','Sep','Okt'];
+const BULAN_V = [12, 19, 22, 27, 31, 38];
+const JENIS = ['Kursus','Majlis','Operasi','Sukan'];
+const JENIS_V = [34, 26, 21, 11];
+const TEMPAT = ['Dewan Serbaguna','Padang Kawad','Bilik Mesyuarat','Dewan Utama'];
+const TEMPAT_V = [42, 28, 19, 14];
+
+document.getElementById('kpis').innerHTML = KAD.map(k =>
+  '<div class="hidup"><div class="kpi2 glass in"><div class="lbl">'+k.lbl+'</div>'
+  + '<div class="val">'+k.val+'</div><div class="foot">'+k.foot+'</div></div></div>').join('');
+
+document.getElementById('tbl').innerHTML = [['September 2026',142,1088.0,3210],
+  ['Oktober 2026 <span style="color:var(--cyan)">← semasa</span>',184,1284.5,3910]]
+  .map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2].toFixed(1)+'</td><td>'+r[3].toLocaleString('ms-MY')+'</td></tr>').join('');
+
+/* ===================== NAVIGASI ===================== */
+const tabs=document.getElementById('tabs'), ind=document.getElementById('nav-ind');
+let aktif=tabs.querySelector('.tab-btn.active');
+
+function gerakInd(el){
+  if(!hidup_('off-nav')||!el) return;
+  const nb=tabs.getBoundingClientRect(), b=el.getBoundingClientRect();
+  ind.style.width=b.width+'px';
+  ind.style.transform='translate('+(b.left-nb.left+tabs.scrollLeft)+'px,'+(b.top-nb.top)+'px)';
+  ind.classList.add('on');
+}
+tabs.addEventListener('pointerover',e=>{ const t=e.target.closest('.tab-btn'); if(t) gerakInd(t); });
+tabs.addEventListener('pointerleave',()=>{ if(hidup_('off-nav')) gerakInd(aktif); });
+tabs.addEventListener('click',e=>{
+  const t=e.target.closest('.tab-btn'); if(!t) return;
+  aktif.classList.remove('active'); t.classList.add('active'); aktif=t; gerakInd(t);
+  const nb=tabs.getBoundingClientRect();
+  const r=document.createElement('span'); r.className='ripple';
+  r.style.left=(e.clientX-nb.left)+'px'; r.style.top=(e.clientY-nb.top)+'px';
+  t.appendChild(r); setTimeout(()=>r.remove(),600);
+});
+window.addEventListener('scroll',()=>{ if(hidup_('off-nav')) gerakInd(aktif); },{passive:true});
+/* Bila tetingkap berubah saiz atau nav dileref, penunjuk mesti ikut semula —
+   jika tidak ia akan tersangkut pada kedudukan lama. */
+window.addEventListener('resize',()=>{ if(hidup_('off-nav')) gerakInd(aktif); });
+tabs.addEventListener('scroll',()=>{ if(hidup_('off-nav')) gerakInd(aktif); },{passive:true});
+setTimeout(()=>gerakInd(aktif),80);
+
+/* ===================== GERAKAN IKUT MOUSE =====================
+   Satu pendengar pada dokumen. Kita simpan kad yang sedang dihover SAHAJA,
+   dan baca kedudukannya SEKALI semasa masuk. Kemudian setiap bingkai kita
+   cuma tulis nombor CSS — tiada bacaan layout berulang. */
+let kadKini=null, rectKini=null, mx=0, my=0, giliran=false;
+
+/* Pengesanan peranti: guna pointerType pada peristiwa itu sendiri, bukan
+   media query. Media query '(hover:hover) and (pointer:fine)' boleh gagal
+   (Chromium headless lapor hover:none) dan mematikan kesan tanpa sebab.
+   pointerType ialah bukti sebenar — sentuhan lapor 'touch', tetikus lapor
+   'mouse'. Kita tunggu sampai tetikus benar-benar bergerak, baru hidupkan. */
+const ialahMouse = e => e.pointerType === 'mouse' || e.pointerType === '';
+
+document.querySelectorAll('.hidup').forEach(el=>{
+  el.addEventListener('pointerenter',e=>{
+    if(!ialahMouse(e)) return;
+    kadKini=el; rectKini=el.getBoundingClientRect();
+  });
+  el.addEventListener('pointerleave',e=>{
+    if(kadKini!==el) return;
+    el.style.setProperty('--rx','0deg'); el.style.setProperty('--ry','0deg');
+    kadKini=null; rectKini=null;
+  });
+});
+
+document.addEventListener('pointermove',e=>{
+  if(!ialahMouse(e)) return;
+  /* Bukti pertama kursor wujud — hidupkan semua kesan :hover */
+  if(!B.classList.contains('boleh-hover')){
+    B.classList.add('boleh-hover'); B.classList.remove('tanpa-kursor');
+  }
+  mx=e.clientX; my=e.clientY;
+  if(!giliran){ giliran=true; requestAnimationFrame(lukis); }
+},{passive:true});
+
+function lukis(){
+  giliran=false;
+  if(!kadKini||!rectKini) return;
+  const el=kadKini, r=rectKini;
+  const x=mx-r.left, y=my-r.top;
+
+  /* Cahaya: kedudukan dalam peratus — CSS letak radial-gradient di situ */
+  if(hidup_('off-cahaya')){
+    el.style.setProperty('--mx',(x/r.width*100).toFixed(2)+'%');
+    el.style.setProperty('--my',(y/r.height*100).toFixed(2)+'%');
+  } else { el.style.setProperty('--mx','50%'); el.style.setProperty('--my','50%'); }
+
+  /* Tilt: jauh dari tengah = condong lebih. Had kecil (3.5°) supaya teks kekal jelas
+     dan kad tidak nampak lucah/berlebihan. */
+  if(hidup_('off-tilt') && el.dataset.tilt!=='kurang'){
+    const had=3.5;
+    const nx=(x/r.width-0.5)*2, ny=(y/r.height-0.5)*2;
+    el.style.setProperty('--ry',( nx*had).toFixed(2)+'deg');
+    el.style.setProperty('--rx',(-ny*had).toFixed(2)+'deg');
+  }
+  /* Cahaya pada carta */
+  if(hidup_('off-carta') && el.dataset.carta!==undefined){
+    const g=el.querySelector('.glow');
+    if(g){ g.style.setProperty('--gx',(x/r.width*100).toFixed(2)+'%');
+           g.style.setProperty('--gy',(y/r.height*100).toFixed(2)+'%'); }
+  }
+}
+
+/* ===================== CARTA ===================== */
+const NAVY='#0d2137',GOLD='#d5ad57',BLUE='#38bdf8',GREEN='#34d399',AMBER='#fbbf24';
+const opt=sokong=>({responsive:true,maintainAspectRatio:false,
+  animation:{duration:700,easing:'easeOutQuart'},
+  /* hoverBackgroundColor: bar menyala bila kursor lalu — inilah 'reaction' pada carta */
+  hoverBackgroundColor:sokong,
+  plugins:{legend:{display:false}},
+  scales:{y:{beginAtZero:true,grid:{color:'rgba(56,189,248,.10)'}},x:{grid:{display:false}}}});
+
+new Chart(document.getElementById('ch-bulan'),{type:'bar',
+  data:{labels:BULAN,datasets:[{label:'Bilangan',data:BULAN_V,backgroundColor:BLUE,borderRadius:6,maxBarThickness:46}]},
+  options:opt(GOLD)});
+
+new Chart(document.getElementById('ch-jenis'),{type:'doughnut',
+  data:{labels:JENIS,datasets:[{data:JENIS_V,borderWidth:2,borderColor:'#0b1220',
+    backgroundColor:[BLUE,GREEN,AMBER,GOLD]}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    animation:{duration:700,easing:'easeOutQuart'},
+    hoverOffset:10,
+    plugins:{legend:{position:'right',labels:{boxWidth:12,padding:9,color:'#94a3b8'}}}}});
+
+new Chart(document.getElementById('ch-tempat'),{type:'bar',
+  data:{labels:TEMPAT,datasets:[{label:'Bilangan',data:TEMPAT_V,backgroundColor:GREEN,borderRadius:6,maxBarThickness:26}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    animation:{duration:700,easing:'easeOutQuart'},hoverBackgroundColor:GOLD,
+    plugins:{legend:{display:false}},
+    scales:{x:{beginAtZero:true,grid:{color:'rgba(56,189,248,.10)'}},y:{grid:{display:false}}}}});
+
+/* ===================== TOGOL =====================
+   Guna kelas pada <body>, bukan gaya inline. Lebih bersih: CSS yang tentukan
+   kesan, JS cuma hidup/matikan. Elak konflik gaya inline yang sukar dijejak. */
+function ikat(id, kelas, label){
+  const b=document.getElementById(id);
+  b.addEventListener('click',()=>{
+    const mati=document.body.classList.toggle(kelas);
+    b.setAttribute('aria-pressed',String(!mati));
+    b.textContent=label+': '+(mati?'MATI':'HIDUP');
+    if(mati){
+      if(kelas==='off-tilt') document.querySelectorAll('.hidup').forEach(e=>{
+        e.style.setProperty('--rx','0deg'); e.style.setProperty('--ry','0deg'); });
+      if(kelas==='off-nav') ind.classList.remove('on');
+    } else if(kelas==='off-nav'){ gerakInd(aktif); }
+  });
+  b.textContent=label+': HIDUP';
+}
+ikat('t-angk','off-angk','Hover angkat kad');
+ikat('t-tilt','off-tilt','Tilt ikut mouse');
+ikat('t-cahaya','off-cahaya','Cahaya ikut mouse');
+ikat('t-nav','off-nav','Animasi navigasi');
+ikat('t-carta','off-carta','Carta tindak balas');
+</script>
+</body>
+</html>

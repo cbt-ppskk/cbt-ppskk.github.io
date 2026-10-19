@@ -597,6 +597,60 @@ git commit --no-verify -m "... Nota: --no-verify kerana ..."
 melepaskan commit — itu menutup amaran untuk SEMUA commit akan datang. Risiko
 `gas/` itu **berasingan** dan masih menunggu tindakan pemilik sistem.
 
+### Push 2026-10-19 (2) — token tiada kebenaran tulis (403)
+
+Selepas commit `0831c6c` (log masuk responsif + nav ke tepi), push GAGAL:
+
+```
+remote: Permission to cbt-ppskk/cbt-ppskk.github.io.git denied to djeroll91-prog.
+fatal: ... error: 403
+```
+
+`$GITHUB_TOKEN` milik akaun **`djeroll91-prog`**, yang bukan pemilik dan bukan
+kolaborator repo ini. Commit itu **setempat sahaja, belum di-push**. Perlu salah
+satu: token milik `cbt-ppskk`, atau jemput `djeroll91-prog` sebagai kolaborator
+(kebenaran *write*).
+
+Dua perangkap alat semasa cuba push:
+
+1. `git push` **tergantung** pada prompt interaktif
+   `Username for 'https://github.com':`. Sentiasa guna
+   `GIT_TERMINAL_PROMPT=0` supaya ia gagal pantas, bukan menunggu.
+2. Jangan biarkan token tertinggal dalam URL remote. Selepas cuba, **pulihkan**
+   `git remote set-url origin https://github.com/<owner>/<repo>.git` dan sahkan
+   dengan `git config --list | grep -i '@github'` -> mesti kosong.
+
+### Perangkap: flex `align-items:center` + kandungan lebih tinggi daripada skrin
+
+Sesi 2026-10-19. `#login-screen` ialah `display:flex; align-items:center`.
+Apabila kad lebih tinggi daripada skrin, bahagian **ATAS** kad melimpah ke atas
+titik skrol dan **TIDAK BOLEH dicapai** — skrol hanya ke bawah. Borang Daftar
+pada iPhone SE (kad 923px dalam skrin 667px) menyebabkan tajuk berada pada
+`y=-67`: pengguna tidak nampak tajuk dan tidak boleh skrol ke atas untuknya.
+
+Pembetulan: `align-items:flex-start` pada bekas + `margin:auto` pada kad.
+`margin:auto` memberi tengah bila ada ruang, dan membenarkan skrol bila tiada.
+
+Peraturan am: bagi mana-mana overlay skrin penuh yang boleh skrol, **jangan**
+guna `align-items:center`; ukur `getBoundingClientRect().top` tajuk dan pastikan
+ia `>= 0`.
+
+### Perangkap: ukur JEJAK nav, bukan tinggi sahaja
+
+Sesi 2026-10-19 (nav ke tepi). Apabila nav keluar dari aliran (`position:fixed`),
+`.main` naik sebanyak jejak nav. Jejak itu ialah **tinggi + `margin-bottom`**
+(56px + 18px = 76px pada desktop). Memampas tinggi sahaja menyebabkan kandungan
+melompat 18px setiap kali nav bertukar. Ukur dengan
+`getBoundingClientRect().height + parseFloat(getComputedStyle(nav).marginBottom)`.
+
+### Perangkap: kelas body mesti digate oleh JS yang SAMA dengan media query CSS
+
+Sesi 2026-10-19 (nav ke tepi). Kelas `nav-tepi` ditambah oleh JS pada skrol,
+tetapi CSS hanya menggunakannya dalam `@media(min-width:901px)`. Pada telefon
+(375px) kelas itu tetap ditambah — keadaan tidak konsisten yang menyesatkan
+ujian. Peraturan: JS mesti semak lebar viewport yang **sama** dengan media query
+(`window.innerWidth >= 901`), bukan bergantung pada CSS untuk mengabaikannya.
+
 ### Keputusan reka bentuk sidebar — SUDAH DILAKSANA dalam `index.html` (v103c)
 
 Pengguna mahu **6 kotak bersusun ke bawah** di **KIRI** (kedudukan semasa,

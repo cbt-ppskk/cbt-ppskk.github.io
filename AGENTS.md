@@ -580,11 +580,21 @@ Pengguna mahu **6 kotak bersusun ke bawah** di **KIRI** (kedudukan semasa,
 5. Masa Semasa
 6. Kalendar Khas
 
-**Kotak 3 dan 4 ialah kriteria BERBEZA**, bukan dua salinan data sama.
-"Menarik Hari Ini" (`buildHariIni`) menapis acara yang **BERLANGSUNG** hari ini
-(`mula <= hariIni <= tamat`) — jadi acara berbilang hari yang sedang berjalan
-turut muncul. "Menarik Akan Datang" (`buildAcara`) kekal kriteria lama
-(`tamat >= hariIni`). Kedua-duanya berkongsi `acaraItemHtml()`.
+**Kotak 3 dan 4 ialah kriteria BERBEZA dan SALING MELENGKAPI** (tiada
+pertindihan — setiap acara muncul dalam **satu** kotak sahaja):
+
+| Kotak | Fungsi | Kriteria | Maksud |
+|---|---|---|---|
+| 3. Menarik Hari Ini | `buildHariIni` | `mula <= hariIni <= tamat` | sedang **berlangsung** hari ini |
+| 4. Menarik Akan Datang | `buildAcara` | `mula > hariIni` | **belum mula** |
+
+Kedua-duanya berkongsi `acaraItemHtml()`. Sebelum ini `buildAcara` guna
+`tamat >= hariIni`, jadi acara yang **sudah bermula** muncul dalam kedua-dua
+kotak (bertindih). Jangan pulihkan kriteria lama itu.
+
+**Acara sudah lepas** (`tamat < hariIni`) tidak muncul dalam mana-mana kotak
+sidebar, tetapi **KEKAL** dalam Kalendar (sejarah tidak hilang) — sebab itu
+kedua-dua fungsi guna `LOG.slice()` dan **tidak** menapis `LOG` asal.
 
 **Morph (kotak 2):** `.lead-morph` + `.morph-item`. Semua kad bertindan
 `position:absolute`, hanya satu `.on` kelihatan. Peralihan `opacity` + `scale`

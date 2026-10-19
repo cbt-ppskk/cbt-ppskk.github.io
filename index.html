@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103c">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-ohHPK/F+E/9l+OsZF8vIGaUPN0K5Gj9k6b3ckG7m0Tc=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-ohHPK/F+E/9l+OsZF8vIGaUPN0K5Gj9k6b3ckG7m0Tc=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-yE0FIDpdtn5VFjQLrQpWe4x90fXCitxobXJunR12r2o=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-yE0FIDpdtn5VFjQLrQpWe4x90fXCitxobXJunR12r2o=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-maooxiD+ZknYF9Ff4MwtbHEVtJQJCEGCh8kMd0CJbqE=' 'sha256-9i6kb0gB4ka49h4VqwWS6l3o7UZQuuBPjoKvD/zeUU8=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -3558,23 +3558,25 @@ function buildAcara(){
   const wrap=document.getElementById('acara-list');if(!wrap)return;
   const today=new Date();today.setHours(0,0,0,0);
   const todayKey=ymdKey(today);
-  /* v73: AUTO-EXPIRE guna parseDateKey (format-agnostik: dd/mm/yyyy & yyyy-mm-dd).
-     Perbandingan pada PERMULAAN HARI — acara pada hari kejadian KEKAL dipaparkan
-     sehingga tamat tarikhnya; yang tamatnya sebelum hari ini hilang automatik. */
-  /* v73: auto-expire HANYA untuk widget 'Acara Akan Datang' ini. Guna LOG.slice()
-     supaya array asal TIDAK diubah — KALENDAR (buildCalendar/openCalDialog) KEKAL
-     memaparkan SEMUA acara termasuk yang SUDAH LEPAS (sejarah tidak boleh hilang). */
+  /* v103c: 'MENARIK AKAN DATANG' = penugasan yang BELUM MULA sahaja
+     (tarikh_mula > hari ini). Sebelum ini kriterianya 'tamat >= hari ini',
+     yang menyebabkan acara yang SUDAH BERMULA turut muncul di sini dan
+     bertindih dengan kotak 'Menarik Hari Ini'. Acara yang sedang berlangsung
+     kini HANYA dalam 'Menarik Hari Ini'; acara hari ini tidak lagi berulang.
+     Guna LOG.slice() supaya array asal TIDAK diubah — KALENDAR KEKAL
+     memaparkan SEMUA acara termasuk yang SUDAH LEPAS (sejarah tidak hilang). */
   const up=(LOG||[]).slice().filter(function(r){
     if(!r.tarikh_mula)return false;
-    const endKey=parseDateKey(r.tarikh_tamat||r.tarikh_mula);
-    return !!endKey && endKey>=todayKey;
+    const startKey=parseDateKey(r.tarikh_mula);
+    return !!startKey && startKey>todayKey;
   }).sort(function(a,b){const ka=parseDateKey(a.tarikh_mula),kb=parseDateKey(b.tarikh_mula);return ka<kb?-1:(ka>kb?1:0);});
   if(!up.length){wrap.innerHTML='<div class="acara-empty">Tiada acara akan datang buat masa ini.</div>';return;}
   wrap.innerHTML=up.slice(0,12).map(function(r){return acaraItemHtml(r,today);}).join('');
 }
-/* v107: MENARIK HARI INI — acara yang BERLANGSUNG hari ini (mula <= hari ini <= tamat).
-   Kriteria berbeza daripada 'Akan Datang': yang ini hanya acara aktif pada tarikh
-   hari ini, termasuk acara berbilang hari yang sedang berjalan. */
+/* v103c: MENARIK HARI INI — acara yang BERLANGSUNG pada tarikh hari ini
+   (tarikh_mula <= hari ini <= tarikh_tamat), mengikut tarikh DALAM LOG.
+   Termasuk acara berbilang hari yang sedang berjalan. Kriteria ini melengkapkan
+   'Akan Datang' (belum mula) supaya setiap acara muncul dalam SATU kotak sahaja. */
 function buildHariIni(){
   const wrap=document.getElementById('hariini-list');if(!wrap)return;
   const today=new Date();today.setHours(0,0,0,0);

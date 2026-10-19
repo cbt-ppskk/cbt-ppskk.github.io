@@ -568,7 +568,7 @@ git commit --no-verify -m "... Nota: --no-verify kerana ..."
 melepaskan commit — itu menutup amaran untuk SEMUA commit akan datang. Risiko
 `gas/` itu **berasingan** dan masih menunggu tindakan pemilik sistem.
 
-### Keputusan reka bentuk sidebar (dari kajian `susunan.html`)
+### Keputusan reka bentuk sidebar — SUDAH DILAKSANA dalam `index.html` (v103c)
 
 Pengguna mahu **6 kotak bersusun ke bawah** di **KIRI** (kedudukan semasa,
 `grid-template-columns:300px minmax(0,1fr)` — kolum pertama = kiri):
@@ -580,18 +580,64 @@ Pengguna mahu **6 kotak bersusun ke bawah** di **KIRI** (kedudukan semasa,
 5. Masa Semasa
 6. Kalendar Khas
 
-**Kotak 3 dan 4 ialah kriteria BERBEZA**, bukan dua salinan data sama. Sistem
-sekarang hanya ada satu kotak "Acara Akan Datang" (`acara-card`); "Menarik Hari
-Ini" ialah fungsi **baharu** yang perlu menapis acara mengikut tarikh hari ini.
+**Kotak 3 dan 4 ialah kriteria BERBEZA**, bukan dua salinan data sama.
+"Menarik Hari Ini" (`buildHariIni`) menapis acara yang **BERLANGSUNG** hari ini
+(`mula <= hariIni <= tamat`) — jadi acara berbilang hari yang sedang berjalan
+turut muncul. "Menarik Akan Datang" (`buildAcara`) kekal kriteria lama
+(`tamat >= hariIni`). Kedua-duanya berkongsi `acaraItemHtml()`.
 
-**Morph (kotak 2):** semua kad bertindan `position:absolute`, hanya satu
-`.on`. Peralihan guna `opacity` + `scale` + `blur` (1.15s) — bukan scroll.
-Ketinggian bekas mesti **stabil** (disahkan 440px) supaya tiada lompatan;
-kad `.on` dapat `position:relative` untuk menetapkan tinggi.
+**Morph (kotak 2):** `.lead-morph` + `.morph-item`. Semua kad bertindan
+`position:absolute`, hanya satu `.on` kelihatan. Peralihan `opacity` + `scale`
++ `blur(4px)`, 1.15s, jeda 4.8s — bukan scroll. Kad `.on` dapat
+`position:relative` supaya bekas menetapkan tinggi; disahkan **stabil 378px**.
+`LEAD_ORDER` kini **5 Ketua Pusat sahaja** — Komandan dipisahkan ke kotak
+sendiri kerana ia sebelum ini item pertama dalam karusel.
+
+**Kotak Komandan (kotak 1):** `.kom-box` + bingkai loyang `.kom-frame` +
+`.kom-photo` (`aspect-ratio:2/3`, `object-position:50% 22%` supaya muka tidak
+terpotong). Gambar dari laluan **tetap** `img/kepimpinan/KOMANDAN.jpg`
+(bukan medan backend); nama/jawatan dari `Tetapan_Header` baris `KOMANDAN`.
+Kalau gambar tiada, kekal emoji 🎖️ + teks lalai — **bukan ralat**.
 
 **Kedudukan kiri/kanan:** `susunan.html` ada togol. Lalai = **kiri** =
 tiada perubahan susun atur. Ini penting: menukar ke kanan ialah perubahan besar
 (seluruh sidebar berpindah).
+
+### Perangkap: hash CSP jadi BASI jika anda edit selepas menjana
+
+Sesi 2026-10-19 terkena ini. Urutan yang salah:
+
+1. Edit blok `<script>` → jana semula hash → **edit lagi** → hash basi
+2. Ujian pelayar mendedahkan `safe is not defined` + pelanggaran CSP
+
+`tools/csp-hash.py` **tidak** boleh mengesan bahawa anda mengedit selepasnya.
+Peraturannya: **jana hash sebagai langkah TERAKHIR**, selepas setiap edit
+(termasuk naik `APP_VER`, yang berada dalam blok skrip dan mengubah hash).
+Selepas menjana, sahkan padan:
+
+```bash
+python3 tools/csp-hash.py | head -2 | tail -1 | grep -o "sha256-[A-Za-z0-9+/=]*" | sort -u > /tmp/g.txt
+grep -o "sha256-[A-Za-z0-9+/=]*" index.html | sort -u > /tmp/f.txt
+diff /tmp/g.txt /tmp/f.txt && echo "PADAN"
+```
+
+Ujian pelayar **wajib** — diff hash sahaja tidak cukup untuk membuktikan skrip
+benar-benar berjalan.
+
+### Perangkap: jangan naikkan APP_VER melebihi backend
+
+`bootVersionGuard()` membandingkan nombor versi (`_verNum` ambil `v(\d+)`).
+Backend `Code.gs` ialah **v103** (`minAppVer: 'v103'`). Frontend `v107` akan
+cetak sepanduk merah "VERSI TIDAK PADAN" untuk **SEMUA** pengguna.
+
+Perubahan frontend sahaja mesti kekal pada nombor yang sama — guna **label**
+seperti `v103c`. `_verNum('v103c') === 103 === _verNum('v103')`, jadi tiada
+sepanduk. Ingat naikkan **tiga** tempat bersama:
+
+- `var APP_VER = 'v103c'`
+- `<html data-app-version="v103c">`
+- `CACHE="cbt-penugasan-v103c-pdf"` dalam `sw.js` **dan**
+  `register('sw.js?v=v103c')` dalam `index.html`
 
 ## Content-Security-Policy (v103b)
 

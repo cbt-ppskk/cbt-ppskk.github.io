@@ -1,60 +1,50 @@
 # Gambar Kepimpinan MPDRMKL
 
-Letak gambar kepimpinan di sini. Sistem cari gambar **mengikut nama fail**.
+Ada **dua** kotak kepimpinan dalam sidebar, dan cara ia dapat gambar **berbeza**:
+
+| Kotak | Sumber gambar | Nama & jawatan |
+|---|---|---|
+| 1. Komandan MPDRMKL | Laluan tetap `img/kepimpinan/KOMANDAN.jpg` | `Tetapan_Header` baris `KOMANDAN` |
+| 2. Ketua Pusat Pengajian (morph) | Medan `Gambar_URL` dari `Tetapan_Header` | `Tetapan_Header` baris `KETUA_PUSAT_1..5` |
+
+**Penting:** kedua-duanya membaca `Tetapan_Header` (helaian Google Sheet),
+**bukan** fail `kepimpinan.json`. Fail JSON itu **tidak** dibaca oleh kod —
+jangan bergantung padanya.
+
+Kalau medan kosong, sistem guna teks generik ("Komandan MPDRMKL", "Penaung
+Program") dan emoji 🎖️/⭐. Itu **bukan** ralat — reka bentuk lalai.
 
 ## Nama fail mesti TEPAT
 
 ```
 KOMANDAN.jpg
-KETUA_PUSAT_1.jpg
-KETUA_PUSAT_2.jpg
-KETUA_PUSAT_3.jpg
-KETUA_PUSAT_4.jpg
-KETUA_PUSAT_5.jpg
 ```
 
-Huruf besar semua, guna garis bawah `_` (bukan sengkang `-`). Nama lain
-tidak akan dijumpai.
+Huruf besar semua. Hanya `KOMANDAN.jpg` yang dicari mengikut nama fail.
+`KETUA_PUSAT_1..5` diambil daripada medan `Gambar_URL` di backend, jadi ia
+boleh berada di mana-mana URL yang dibenarkan.
 
 ## Saiz
 
+Kotak Komandan kini guna nisbah **2:3** (menegak), bukan 3:4.
+
 | Perkara | Nilai |
 |---|---|
-| Nisbah | 3:4 (menegak) |
-| Saiz papar | tinggi tetap 290 px |
-| Saiz disyorkan | 900 × 1200 px |
+| Nisbah | **2:3** (menegak) |
+| Saiz papar | ~258 × 387 px (lebar kolum 300 px) |
+| Saiz disyorkan | 900 × 1350 px |
 | Saiz fail | bawah 150 KB |
 
-Kad besar dalam sidebar, jadi resolusi lebih tinggi diperlukan. **Potret
-menegak** — gambar landskap akan dipotong tepi.
-
-## Nama & jawatan
-
-Gambar sahaja tidak cukup — sistem juga perlu **nama penuh** dan **jawatan**
-supaya kad tidak papar teks generik ("Komandan MPDRMKL", "Penaung Program").
-
-Isi dalam fail `kepimpinan.json` (cipta jika tiada):
-
-```json
-{
-  "KOMANDAN":      { "nama": "Nama Penuh", "jawatan": "Jawatan Sebenar" },
-  "KETUA_PUSAT_1": { "nama": "Nama Penuh", "jawatan": "Ketua Pusat Pengajian 1" },
-  "KETUA_PUSAT_2": { "nama": "Nama Penuh", "jawatan": "Ketua Pusat Pengajian 2" },
-  "KETUA_PUSAT_3": { "nama": "Nama Penuh", "jawatan": "Ketua Pusat Pengajian 3" },
-  "KETUA_PUSAT_4": { "nama": "Nama Penuh", "jawatan": "Ketua Pusat Pengajian 4" },
-  "KETUA_PUSAT_5": { "nama": "Nama Penuh", "jawatan": "Ketua Pusat Pengajian 5" }
-}
-```
-
-Kalau `kepimpinan.json` tiada, sistem guna teks generik — bukan ralat, cuma
-kurang lengkap.
+**Potret menegak.** Gambar landskap akan dipotong tepi (fokus diset ke 22%
+dari atas supaya muka tidak terpotong).
 
 ## Cara muat naik
 
 1. Buka repo di GitHub → folder ini
-2. **Add file → Upload files** (gambar)
-3. Untuk `kepimpinan.json`: **Add file → Create new file**
-4. **Commit changes**
+2. **Add file → Upload files** → pilih `KOMANDAN.jpg`
+3. **Commit changes**
+
+Untuk nama/jawatan sebenar, isi `Tetapan_Header` di Google Sheet (bukan di sini).
 
 ## Format
 

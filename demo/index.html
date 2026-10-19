@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Reka Bentuk — CBT PPSKK</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#00f2fe; --sky:#38bdf8; --gold:#d5ad57; --gold-lt:#f0d38a;
+  --text:#f8fafc; --muted:#94a3b8; --muted2:#64748b;
+  --line:rgba(56,189,248,.28); --line2:rgba(56,189,248,.14);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-color:#08172d;
+  background-image:linear-gradient(rgba(5,16,35,.34),rgba(5,16,35,.46)),
+    radial-gradient(circle at 20% 8%,rgba(0,242,254,.10),transparent 55%),
+    radial-gradient(circle at 85% 85%,rgba(213,173,87,.09),transparent 55%);
+  padding:36px 20px 80px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:22px;font-weight:800;letter-spacing:.3px;margin-bottom:6px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+.warn{font-size:12.5px;color:#fbbf24;background:rgba(251,191,36,.10);
+  border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:11px 14px;margin:18px 0 26px}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);
+  font-weight:800;margin:26px 0 12px}
+a.card{display:block;text-decoration:none;color:inherit;border-radius:14px;padding:16px 18px;margin-bottom:12px;
+  background:linear-gradient(168deg,rgba(30,41,59,.72),rgba(15,23,42,.82) 50%,rgba(8,12,22,.90));
+  border:1px solid rgba(213,173,87,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.5),
+    0 2px 4px rgba(0,0,0,.5),0 12px 26px rgba(0,0,0,.42);
+  transition:transform .2s ease,box-shadow .2s ease}
+a.card:hover{transform:translateY(-3px);border-color:rgba(0,242,254,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(0,0,0,.5),
+    0 3px 6px rgba(0,0,0,.5),0 18px 38px rgba(0,0,0,.48)}
+a.card b{display:block;font-size:15px;color:var(--text);margin-bottom:4px}
+a.card small{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:2px}
+.tag.pick{background:rgba(52,211,153,.16);color:#34d399;border:1px solid rgba(52,211,153,.4)}
+.tag.alt{background:rgba(148,163,184,.14);color:#94a3b8;border:1px solid rgba(148,163,184,.3)}
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid var(--line2);
+  font-size:11.5px;color:var(--muted2);line-height:1.7}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;
+  background:rgba(56,189,248,.10);padding:1px 6px;border-radius:5px;color:var(--gold-lt)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Demo Reka Bentuk — Sistem Pengurusan Penugasan CBT PPSKK</h1>
+  <div class="sub">Kajian reka bentuk UI. Bahan rujukan sahaja — bukan sebahagian daripada aplikasi.</div>
+
+  <div class="warn">
+    <b>Folder ini tidak menjejaskan sistem live.</b> Fail HTML statik berasingan.
+    Tiada perubahan pada <code>index.html</code>, <code>office.html</code>, <code>sw.js</code>,
+    atau apa-apa logik. CSP sistem live tidak terjejas. <code>demo/</code> tidak
+    disenaraikan dalam <code>sw.js</code> <code>ASSETS</code>, jadi PWA tidak cache ini.
+  </div>
+
+  <h2>Cadangan utama</h2>
+
+  <a class="card" href="susunan.html">
+    <b>Susunan 6 Kotak Sidebar <span class="tag pick">Paling terkini</span></b>
+    <small>Komandan (gambar 2:3 penuh) &middot; Ketua Pusat Pengajian (morph, bukan scroll) &middot;
+    Menarik Hari Ini &middot; Menarik Akan Datang &middot; Jam &middot; Kalendar.
+    Togol kedudukan kiri/kanan.</small>
+  </a>
+
+  <a class="card" href="realistik.html">
+    <b>Banner + Frame Kepimpinan Realistik <span class="tag pick">Pilihan pengguna</span></b>
+    <small>Banner jadi kepingan pejal (cahaya atas, bayang bawah, kilau berus).
+    Frame kepimpinan jadi bingkai loyang berbevel dengan gambar terbenam dan kilau kaca.</small>
+  </a>
+
+  <a class="card" href="depth.html">
+    <b>Depth — gaya sama, lebih 3D</b>
+    <small>Palet dan susun atur kekal. Tambah bayang berlapis (kontak + ambien + jauh),
+    highlight atas, pengikat bawah, permukaan bergradien, gerak balas hover/tekan.</small>
+  </a>
+
+  <h2>Kajian arah lain (tidak dipilih)</h2>
+
+  <a class="card" href="fokus.html">
+    <b>Skeuomorphism — header, tab, jadual <span class="tag alt">Kajian</span></b>
+    <small>Bahan kulit navy, keluli berus, loyang PDRM. Tab tertekan ke dalam, input terbenam.</small>
+  </a>
+
+  <a class="card" href="skeu.html">
+    <b>Skeuomorphism — penuh <span class="tag alt">Kajian</span></b>
+    <small>Semua komponen dalam gaya skeuomorphism. Togol banding dengan kaca asal.</small>
+  </a>
+
+  <a class="card" href="clay.html">
+    <b>Claymorphism <span class="tag alt">Kajian</span></b>
+    <small>Bentuk gebu seperti tanah liat. Sudut sangat bulat, tiga lapisan bayang,
+    permukaan menggelembung. Banner dikekalkan.</small>
+  </a>
+
+  <h2>Dokumen</h2>
+
+  <a class="card" href="SKOP-DEPTH.md">
+    <b>Skop kerja: Tambah Kedalaman</b>
+    <small>Ukuran sebenar, enam peringkat kerja, anggaran masa, penilaian risiko.
+    Bahan rujukan Markdown.</small>
+  </a>
+
+  <div class="foot">
+    <b>Nota teknikal.</b> Semua demo guna token warna yang sama dengan sistem live
+    (<code>--cyan</code>, <code>--sky</code>, <code>--gold</code>) dan merujuk logo
+    sebenar dari <code>../icons/</code>.<br>
+    Diuji dengan Chromium tanpa kepala — disahkan tiada ralat JavaScript,
+    tiada pelanggaran CSP, dan semua peralihan berfungsi.
+  </div>
+
+</div>
+</body>
+</html>

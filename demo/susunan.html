@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Susunan Kotak — 6 Kotak Kanan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#00f2fe; --sky:#38bdf8; --sky-dk:#0ea5e9;
+  --gold:#d5ad57; --gold-lt:#f0d38a;
+  --text:#f8fafc; --muted:#94a3b8; --muted2:#64748b;
+  --line:rgba(56,189,248,.28); --line2:rgba(56,189,248,.14);
+  --ok:#34d399; --warn:#fbbf24;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-color:#08172d;
+  background-image:linear-gradient(rgba(5,16,35,.34),rgba(5,16,35,.46)),
+    radial-gradient(circle at 20% 8%,rgba(0,242,254,.10),transparent 55%),
+    radial-gradient(circle at 85% 85%,rgba(213,173,87,.09),transparent 55%)}
+
+.ctl{position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 18px;background:rgba(3,7,18,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.ctl h2{font-size:13px;font-weight:800;flex:1;min-width:200px}
+.sw{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:rgba(9,13,22,.9);border:1px solid var(--line2)}
+.sw button{padding:9px 16px;border:0;border-radius:9px;background:transparent;color:var(--muted);
+  font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;transition:.16s}
+.sw button.on{background:linear-gradient(135deg,var(--cyan),var(--sky));color:#04121c;box-shadow:0 0 20px rgba(0,242,254,.4)}
+
+/* susun atur: LALAI = sidebar di KIRI (sama seperti sistem sekarang) */
+.shell{max-width:1500px;margin:0 auto;padding:20px;display:grid;
+  grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+/* togol: sidebar di KANAN */
+body.kanan .shell{grid-template-columns:minmax(0,1fr) 340px}
+body.kanan .side{order:1}
+.side{order:-1}
+.main-ph{min-height:520px;border-radius:16px;padding:20px;
+  background:linear-gradient(168deg,rgba(30,41,59,.5),rgba(8,12,22,.7));
+  border:1px dashed rgba(56,189,248,.28)}
+.main-ph h3{font-size:14px;color:var(--muted);font-weight:700}
+
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:70px}
+
+/* ============================================================
+   KOTAK — gaya realistik (bingkai loyang + depth)
+   ============================================================ */
+.box{
+  border-radius:12px;overflow:hidden;
+  background:linear-gradient(168deg,rgba(30,41,59,.78),rgba(15,23,42,.86) 50%,rgba(8,12,22,.92));
+  border:1px solid rgba(213,173,87,.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    0 2px 4px rgba(0,0,0,.55),
+    0 12px 28px rgba(0,0,0,.48),
+    0 28px 58px rgba(0,0,0,.34);
+  transition:transform .22s ease,box-shadow .22s ease}
+.box:hover{transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(0,0,0,.55),
+    0 3px 6px rgba(0,0,0,.55),0 18px 38px rgba(0,0,0,.5),0 38px 74px rgba(0,0,0,.36)}
+.box-head{display:flex;align-items:center;gap:8px;padding:11px 14px;
+  border-bottom:1px solid rgba(213,173,87,.22);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),transparent)}
+.box-head .dot{width:8px;height:8px;border-radius:50%;background:var(--gold-lt);
+  box-shadow:0 0 10px rgba(212,175,55,.9);flex:none}
+.box-head b{font-size:11px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.box-head .num{font-size:9.5px;color:var(--gold);border:1px solid rgba(213,173,87,.4);
+  border-radius:5px;padding:1px 5px;font-weight:800;margin-left:auto}
+.box-body{padding:12px}
+
+/* --- 1. KOMANDAN: satu gambar besar dgn bingkai loyang --- */
+.kom-frame{
+  border-radius:8px;padding:8px;
+  background:repeating-linear-gradient(48deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),
+    linear-gradient(145deg,#f7e6b0 0%,#d9b45f 16%,#a8823a 34%,#6d5220 50%,#a8823a 66%,#d9b45f 84%,#f0d68c 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,250,.85),
+    inset 0 -2px 3px rgba(60,40,5,.70),
+    inset 0 0 0 3px rgba(30,20,5,.55),
+    0 2px 4px rgba(0,0,0,.6),0 10px 22px rgba(0,0,0,.5);
+}
+/* --- 1. KOMANDAN: gambar PENUH (nisbah potret 2:3 - lebih tinggi) --- */
+.kom-photo{position:relative;aspect-ratio:2/3;display:grid;place-items:center;overflow:hidden;border-radius:3px;
+  background:radial-gradient(circle at 50% 30%,rgba(213,173,87,.18),transparent 65%),linear-gradient(160deg,#0b1220,#030712);
+  box-shadow:inset 0 4px 10px rgba(0,0,0,.8),inset 0 -1px 0 rgba(255,255,255,.07)}
+.kom-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block}
+.kom-photo .em{font-size:72px}
+.kom-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.14),rgba(255,255,255,.05) 20%,transparent 38%,transparent 64%,rgba(255,255,255,.05) 84%,transparent)}
+.plate{margin-top:8px;padding:7px 8px;border-radius:4px;text-align:center;
+  background:linear-gradient(180deg,#3b3128,#241d17);
+  box-shadow:inset 0 1px 0 rgba(255,238,200,.18),inset 0 -2px 4px rgba(0,0,0,.55)}
+.plate b{display:block;font-size:12.5px;color:#f6ecd8;text-shadow:0 1px 0 rgba(0,0,0,.75)}
+.plate small{display:block;font-size:10.5px;color:#c9a24b;margin-top:3px;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+
+/* --- 2. KETUA PUSAT: MORPH (silang-larut lembut + skala halus) ---
+   Semua kad bertindan di tempat sama. Hanya satu kelihatan.
+   Peralihan panjang + easing lembut -> nampak seperti menjelma perlahan. */
+.morph{position:relative;border-radius:6px;overflow:hidden;
+  box-shadow:inset 0 4px 12px rgba(0,0,0,.7);background:linear-gradient(160deg,rgba(11,18,32,.9),rgba(3,7,18,.95))}
+.morph-item{position:absolute;inset:0;padding:8px;opacity:0;visibility:hidden;
+  transform:scale(.97) translateY(6px);filter:blur(4px);
+  transition:opacity 1.15s ease-in-out,transform 1.3s cubic-bezier(.4,0,.2,1),
+    filter 1.15s ease-in-out,visibility 1.15s}
+.morph-item.on{opacity:1;visibility:visible;transform:scale(1) translateY(0);filter:blur(0);position:relative}
+.lead-photo{position:relative;aspect-ratio:4/5;display:grid;place-items:center;overflow:hidden;border-radius:5px;
+  background:radial-gradient(circle at 50% 30%,rgba(213,173,87,.16),transparent 65%),linear-gradient(160deg,#0b1220,#030712);
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.75)}
+.lead-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block}
+.lead-photo .em{font-size:56px}
+.lead-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.11),transparent 40%,transparent 66%,rgba(255,255,255,.05))}
+.lead-cap{text-align:center;padding:8px 4px 3px}
+.lead-cap b{display:block;font-size:12px;color:#f4e8cd}
+.lead-cap small{display:block;font-size:10.5px;color:var(--gold-lt);margin-top:2px}
+.lead-dots{display:flex;gap:6px;justify-content:center;padding:10px 0 2px}
+.lead-dots i{width:7px;height:7px;border-radius:50%;background:rgba(148,163,184,.4);cursor:pointer;transition:.2s}
+.lead-dots i.on{background:var(--cyan);box-shadow:0 0 10px rgba(0,242,254,.7);width:18px;border-radius:4px}
+
+/* --- 3 & 4. MENARIK --- */
+.mn{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:9px;margin-bottom:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.mn:last-child{margin-bottom:0}
+.mn .ic{font-size:17px;flex:none;line-height:1.2}
+.mn b{display:block;font-size:12px;color:var(--text);line-height:1.35}
+.mn small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.mn-empty{font-size:11.5px;color:var(--muted2);text-align:center;padding:14px 0}
+.tag{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  padding:2px 7px;border-radius:99px;margin-bottom:5px}
+.tag.now{background:rgba(52,211,153,.16);color:var(--ok);border:1px solid rgba(52,211,153,.4)}
+.tag.soon{background:rgba(251,191,36,.16);color:var(--warn);border:1px solid rgba(251,191,36,.4)}
+
+/* --- 5. JAM --- */
+.clk{font-size:32px;font-weight:800;text-align:center;letter-spacing:1.5px;color:#eafcff;
+  text-shadow:0 1px 0 rgba(0,0,0,.7),0 0 20px rgba(0,242,254,.35);font-variant-numeric:tabular-nums}
+.dt{font-size:11.5px;color:var(--muted);text-align:center;margin-top:4px}
+.hj{font-size:10.5px;color:var(--gold-lt);text-align:center;margin-top:2px}
+.wc{margin-top:11px;border-top:1px solid var(--line2);padding-top:9px;
+  max-height:132px;overflow:auto;display:flex;flex-direction:column;gap:5px}
+.wc-row{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)}
+.wc-row span:last-child{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* --- 6. KALENDAR --- */
+.mc-year{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.mc-year label{font-size:10.5px;color:var(--muted);font-weight:700}
+.mc-year select{flex:1;padding:5px 7px;border-radius:7px;font:inherit;font-size:11.5px;
+  background:rgba(3,7,18,.8);color:var(--text);border:1px solid var(--line)}
+.mc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.mc-head b{font-size:11.5px;color:var(--text)}
+.mc-nav button{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);
+  background:rgba(3,7,18,.7);color:var(--sky);cursor:pointer;font-weight:800;line-height:1}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:10px;text-align:center}
+.mc-grid span{padding:5px 0;border-radius:5px;color:var(--muted)}
+.mc-grid span.h{color:var(--gold);font-weight:800;font-size:9px}
+.mc-grid span.d{color:var(--text);background:rgba(56,189,248,.07)}
+.mc-grid span.k{background:linear-gradient(180deg,#f0d68c,#c9a24b);color:#2e2408;font-weight:800}
+
+@media(max-width:1000px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="ctl">
+  <h2>Demo Susunan — 6 Kotak (bersusun ke bawah)</h2>
+  <span style="font-size:10.5px;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.8px">Kedudukan kotak:</span>
+  <div class="sw">
+    <button id="kiri" class="on">Kiri</button>
+    <button id="kanan">Kanan</button>
+  </div>
+  <div class="sw">
+    <button id="on" class="on">Tanda Nombor</button>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="main-ph">
+    <h3>← Kawasan kandungan utama (jadual, KPI, carta)</h3>
+    <p style="font-size:12px;color:var(--muted2);margin-top:10px">Demo ini hanya menunjukkan lajur kotak di kanan. Kawasan ini kekal seperti sedia ada.</p>
+  </div>
+
+  <aside class="side">
+
+    <!-- 1. KOMANDAN -->
+    <div class="box">
+      <div class="box-head"><span class="dot"></span><b>Komandan MPDRMKL</b><span class="num">1</span></div>
+      <div class="box-body">
+        <div class="kom-frame">
+          <div class="kom-photo"><span class="em">🎖️</span></div>
+        </div>
+        <div class="plate"><b>YDH Komandan MPDRMKL</b><small>Penaung Program</small></div>
+      </div>
+    </div>
+
+    <!-- 2. KETUA-KETUA PUSAT PENGAJIAN (morph: silang-larut, bukan scroll) -->
+    <div class="box">
+      <div class="box-head"><span class="dot"></span><b>Ketua Pusat Pengajian</b><span class="num">2</span></div>
+      <div class="box-body" style="padding:10px">
+        <div class="morph" id="lead">
+          <div class="morph-item on">
+            <div class="lead-photo"><span class="em">⭐</span></div>
+            <div class="lead-cap"><b>YDH Ketua Pusat Pengajian 1</b><small>Ketua Pusat Pengajian</small></div>
+          </div>
+          <div class="morph-item">
+            <div class="lead-photo"><span class="em">⭐</span></div>
+            <div class="lead-cap"><b>YDH Ketua Pusat Pengajian 2</b><small>Ketua Pusat Pengajian</small></div>
+          </div>
+          <div class="morph-item">
+            <div class="lead-photo"><span class="em">⭐</span></div>
+            <div class="lead-cap"><b>YDH Ketua Pusat Pengajian 3</b><small>Ketua Pusat Pengajian</small></div>
+          </div>
+        </div>
+        <div class="lead-dots" id="dots"></div>
+      </div>
+    </div>
+
+    <!-- 3. MENARIK HARI INI -->
+    <div class="box">
+      <div class="box-head"><span class="dot"></span><b>🔔 Menarik Hari Ini</b><span class="num">3</span></div>
+      <div class="box-body" style="padding:10px">
+        <div class="mn"><span class="ic">📌</span><span><b>Majlis Penutupan Program Pengajian</b><small>Dewan Utama MPDRMKL · 8.00 pagi</small></span></div>
+        <div class="mn"><span class="ic">🎯</span><span><b>Latihan Kawad Kaki Asas</b><small>Padang Kawad · 3.00 petang</small></span></div>
+      </div>
+    </div>
+
+    <!-- 4. MENARIK AKAN DATANG -->
+    <div class="box">
+      <div class="box-head"><span class="dot"></span><b>🗓️ Menarik Akan Datang</b><span class="num">4</span></div>
+      <div class="box-body" style="padding:10px">
+        <div class="mn"><span class="ic">📅</span><span><span class="tag soon">20 Okt</span><b>Persiapan Majlis Konvokesyen</b><small>Dewan Utama MPDRMKL · 8 petugas</small></span></div>
+        <div class="mn"><span class="ic">📅</span><span><span class="tag soon">22 Okt</span><b>Latihan Sistem Audio Visual</b><small>Bilik Kuliah 3 · 4 petugas</small></span></div>
+      </div>
+    </div>
+
+    <!-- 5. JAM -->
+    <div class="box">
+      <div class="box-head"><span class="dot"></span><b>Masa Semasa</b><span class="num">5</span></div>
+      <div class="box-body">
+        <div class="clk" id="clk">--:--:--</div>
+        <div class="dt" id="dt">—</div>
+        <div class="hj">1 Rabiulakhir 1448H</div>
+        <div class="wc">
+          <div class="wc-row"><span>🇲🇾 Kuala Lumpur</span><span data-tz="Asia/Kuala_Lumpur">--:--</span></div>
+          <div class="wc-row"><span>🇸🇦 Makkah / Riyadh</span><span data-tz="Asia/Riyadh">--:--</span></div>
+          <div class="wc-row"><span>🇬🇧 London</span><span data-tz="Europe/London">--:--</span></div>
+          <div class="wc-row"><span>🇺🇸 Washington D.C.</span><span data-tz="America/New_York">--:--</span></div>
+          <div class="wc-row"><span>🇯🇵 Tokyo</span><span data-tz="Asia/Tokyo">--:--</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. KALENDAR -->
+    <div class="box">
+      <div class="box-head"><span class="dot"></span><b>Kalendar Khas</b><span class="num">6</span></div>
+      <div class="box-body">
+        <div class="mc-year"><label>Tahun:</label><select><option>2026</option><option>2027</option></select></div>
+        <div class="mc-head"><b>Oktober 2026</b><div class="mc-nav"><button>‹</button><button>›</button></div></div>
+        <div class="mc-grid">
+          <span class="h">A</span><span class="h">I</span><span class="h">S</span><span class="h">R</span><span class="h">K</span><span class="h">J</span><span class="h">S</span>
+          <span></span><span></span><span></span><span class="d">1</span><span class="d">2</span><span class="d">3</span><span class="d">4</span>
+          <span class="d">5</span><span class="d">6</span><span class="d">7</span><span class="d">8</span><span class="d">9</span><span class="d">10</span><span class="d">11</span>
+          <span class="d">12</span><span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d">17</span><span class="d">18</span>
+          <span class="k">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span><span class="d">25</span><span class="d">26</span>
+          <span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+// --- jam hidup + jam dunia ---
+function tick(){
+  const n = new Date();
+  document.getElementById('clk').textContent = n.toLocaleTimeString('ms-MY',{hour12:false});
+  document.getElementById('dt').textContent = n.toLocaleDateString('ms-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.querySelectorAll('[data-tz]').forEach(el => {
+    el.textContent = n.toLocaleTimeString('en-GB',{timeZone:el.dataset.tz,hour:'2-digit',minute:'2-digit'});
+  });
+}
+tick(); setInterval(tick, 1000);
+
+// --- KETUA PUSAT: MORPH (silang-larut, bukan scroll) ---
+const mor = document.getElementById('lead');
+const items = mor.querySelectorAll('.morph-item');
+const dots = document.getElementById('dots');
+let idx = 0, timer = null;
+
+items.forEach((_, i) => {
+  const d = document.createElement('i');
+  if (i === 0) d.className = 'on';
+  d.onclick = () => { idx = i; go(); };
+  dots.appendChild(d);
+});
+function go(){
+  items.forEach((el, i) => el.classList.toggle('on', i === idx));
+  dots.querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i === idx));
+}
+function auto(){
+  clearInterval(timer);
+  timer = setInterval(() => { idx = (idx + 1) % items.length; go(); }, 4800);
+}
+auto();
+mor.addEventListener('pointerdown', () => clearInterval(timer));
+mor.addEventListener('pointerup', auto);
+
+// --- togol kedudukan kotak: kiri / kanan ---
+function pos(k){
+  document.body.classList.toggle('kanan', k === 'kanan');
+  document.getElementById('kiri').classList.toggle('on', k === 'kiri');
+  document.getElementById('kanan').classList.toggle('on', k === 'kanan');
+}
+document.getElementById('kiri').onclick = () => pos('kiri');
+document.getElementById('kanan').onclick = () => pos('kanan');
+
+// --- togol tanda nombor ---
+let numOn = true;
+document.getElementById('on').onclick = () => {
+  numOn = !numOn;
+  document.querySelectorAll('.num').forEach(n => n.style.display = numOn ? '' : 'none');
+  document.getElementById('on').textContent = numOn ? 'Tanda Nombor' : 'Nombor Tersembunyi';
+};
+pos('kiri');
+</script>
+</body>
+</html>

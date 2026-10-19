@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Claymorphism — CBT PPSKK</title>
+<style>
+/* ============================================================
+   DEMO CLAYMORPHISM — tidak menyentuh sistem live.
+   Claymorphism = bentuk gebu seperti tanah liat:
+     · sudut sangat bulat
+     · 3 lapis bayang: luar lembut + dalam gelap + dalam terang
+     · permukaan nampak "menggelembung" (inflated)
+   Banner dikekalkan dalam gaya asal (kaca gelap).
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;transition:background .35s,color .35s}
+.wrap{max-width:1400px;margin:0 auto;padding:0 0 70px}
+
+/* ---------- bar kawalan ---------- */
+.ctl{position:sticky;top:0;z-index:120;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 16px;background:#0f1320;border-bottom:1px solid #000}
+.ctl h2{font-size:13px;color:#e5e7eb;font-weight:800;flex:1;min-width:170px}
+.sw{display:inline-flex;gap:3px;padding:3px;border-radius:11px;background:#000}
+.sw button{padding:8px 13px;border:0;border-radius:8px;background:transparent;color:#9ca3af;
+  font:inherit;font-weight:700;font-size:11.5px;cursor:pointer;transition:.15s}
+.sw button.on{background:#d4af37;color:#241c08}
+.swlabel{font-size:10.5px;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+
+/* ============================================================
+   BANNER DIKEKALKAN — gaya asal sistem (kaca gelap + garis cyan)
+   Kelas .hd-keep memaksa gaya ini walau apa tema badan.
+   ============================================================ */
+.top{position:sticky;top:52px;z-index:90;padding:12px 20px;transition:.3s}
+.ti{max-width:1680px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px}
+.lr{display:flex;align-items:center;gap:12px}
+.lg{height:50px;width:auto;max-width:120px;object-fit:contain}
+.tt{text-align:center}
+.tt h1{font-size:17px;font-weight:800;letter-spacing:.4px}
+.tt .sb{font-size:10.5px;margin-top:3px}
+
+/* Spesifisiti dinaikkan (body .top.hd-keep) supaya ia MENANG atas .t-cl .top dll.
+   Tanpa ini, peraturan tema akan tulis ganti gaya "kekal banner". */
+body .top.hd-keep{
+  background:linear-gradient(180deg,rgba(3,7,18,.80),rgba(9,13,22,.66));
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(56,189,248,.28);
+  border-radius:0;box-shadow:none;
+}
+body .top.hd-keep .tt h1{color:#f8fafc;text-shadow:none}
+body .top.hd-keep .tt .sb{color:#94a3b8}
+body .top.hd-keep .lr{background:transparent;box-shadow:none;padding:0;border-radius:0}
+body .top.hd-keep .lg{filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+
+/* ============================================================
+   CLAYMORPHISM CERAH — pastel lavender + putih gebu
+   ============================================================ */
+body.t-cl{background:#e3e7f3;color:#2c3244}
+.t-cl .top{
+  background:linear-gradient(145deg,#f3f6fd,#dfe4f2);
+  border-radius:0 0 28px 28px;
+  box-shadow:0 14px 30px rgba(60,70,110,.20),
+    inset -7px -7px 15px rgba(118,133,175,.22),
+    inset 7px 7px 15px rgba(255,255,255,.98);
+}
+.t-cl .tt h1{color:#39406b;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+.t-cl .tt .sb{color:#6b7499}
+
+/* Tab: kapsul gebu, aktif = tertekan */
+.t-cl .tabs{display:flex;gap:9px;padding:10px;margin:18px;border-radius:26px;overflow-x:auto;
+  background:linear-gradient(145deg,#dfe4f2,#eef1f9);
+  box-shadow:inset -7px -7px 15px rgba(255,255,255,.90),
+    inset 7px 7px 15px rgba(118,133,175,.26)}
+.t-cl .tb{white-space:nowrap;padding:12px 19px;border:0;border-radius:17px;
+  font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;color:#4d5678;transition:.16s;
+  background:linear-gradient(145deg,#f7f9fe,#e4e9f6);
+  box-shadow:0 6px 14px rgba(60,70,110,.15),
+    inset -4px -4px 9px rgba(118,133,175,.20),
+    inset 4px 4px 9px rgba(255,255,255,.98)}
+.t-cl .tb:hover{color:#39406b;background:linear-gradient(145deg,#fdfeff,#eaeeF9)}
+.t-cl .tb.on{color:#3a2c05;
+  background:linear-gradient(145deg,#f5d98a,#dcb75f);
+  box-shadow:0 4px 9px rgba(120,90,20,.24),
+    inset -4px -4px 9px rgba(150,110,25,.38),
+    inset 4px 4px 9px rgba(255,250,225,.85)}
+.t-cl .tb:active{transform:translateY(1px)}
+
+/* Jadual: bekas gebu, kepala lembut, baris rata (boleh dibaca) */
+.t-cl .tw{margin:18px;border-radius:26px;overflow:hidden;
+  background:linear-gradient(145deg,#f3f6fd,#e1e6f3);
+  box-shadow:0 16px 34px rgba(60,70,110,.18),
+    inset -7px -7px 15px rgba(118,133,175,.20),
+    inset 7px 7px 15px rgba(255,255,255,.98)}
+.t-cl table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.t-cl thead th{position:sticky;top:0;z-index:2;text-align:left;padding:13px 14px;font-size:10px;
+  text-transform:uppercase;letter-spacing:1.1px;font-weight:800;color:#5f6a94;white-space:nowrap;
+  background:linear-gradient(145deg,#e7ebf7,#dde3f2);
+  border-bottom:1px solid rgba(118,133,175,.20)}
+.t-cl tbody td{padding:12px 14px;color:#3b4257;vertical-align:top;
+  border-bottom:1px solid rgba(118,133,175,.16)}
+.t-cl tbody tr:last-child td{border-bottom:0}
+.t-cl tbody tr:hover td{background:rgba(120,140,200,.09)}
+.t-cl .pl{display:inline-block;padding:5px 13px;border-radius:99px;font-size:10.5px;font-weight:800;
+  color:#14503a;background:linear-gradient(145deg,#a8ecd0,#6fd2a4);
+  box-shadow:inset -2px -2px 5px rgba(20,90,60,.28),inset 2px 2px 5px rgba(255,255,255,.85),0 2px 5px rgba(40,110,80,.20)}
+.t-cl .pl.w{color:#5a3d05;background:linear-gradient(145deg,#fbe0a0,#e9c163);
+  box-shadow:inset -2px -2px 5px rgba(140,100,20,.30),inset 2px 2px 5px rgba(255,255,240,.85),0 2px 5px rgba(150,110,20,.22)}
+
+/* Kad KPI gebu */
+.t-cl .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:18px}
+.t-cl .kpi{padding:19px 21px;border-radius:24px;
+  background:linear-gradient(145deg,#f5f8fe,#e2e7f4);
+  box-shadow:0 14px 30px rgba(60,70,110,.16),
+    inset -6px -6px 13px rgba(118,133,175,.20),
+    inset 6px 6px 13px rgba(255,255,255,.98)}
+.t-cl .kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;color:#6b7499;font-weight:800}
+.t-cl .kpi .val{font-size:27px;font-weight:800;margin-top:8px;line-height:1.1;color:#39406b}
+.t-cl .kpi .foot{font-size:11px;color:#838cb0;margin-top:7px}
+
+/* Kad personel gebu */
+.t-cl .marq{display:flex;gap:13px;overflow-x:auto;padding:16px;margin:18px;border-radius:26px;
+  background:linear-gradient(145deg,#dfe4f2,#eef1f9);
+  box-shadow:inset -7px -7px 15px rgba(255,255,255,.90),inset 7px 7px 15px rgba(118,133,175,.26)}
+.t-cl .pc{flex:none;display:flex;align-items:center;gap:11px;padding:9px 16px 9px 9px;border-radius:19px;
+  background:linear-gradient(145deg,#f7f9fe,#e3e8f5);
+  box-shadow:0 8px 17px rgba(60,70,110,.15),inset -4px -4px 9px rgba(118,133,175,.18),inset 4px 4px 9px rgba(255,255,255,.98)}
+.t-cl .ph{width:46px;height:58px;border-radius:14px;flex:none;display:grid;place-items:center;
+  font-weight:800;font-size:15px;color:#5a4a1e;
+  background:linear-gradient(145deg,#f7e3ad,#e2c473);
+  box-shadow:inset -3px -3px 7px rgba(150,110,25,.32),inset 3px 3px 7px rgba(255,252,235,.90)}
+.t-cl .pi b{display:block;font-size:12.5px;color:#39406b;white-space:nowrap}
+.t-cl .pi small{display:block;font-size:10.5px;color:#838cb0;white-space:nowrap}
+
+/* ============================================================
+   CLAYMORPHISM GELAP — navy gebu + loyang
+   ============================================================ */
+body.t-cd{background:#181d2e;color:#e6e9f5}
+.t-cd .top{
+  background:linear-gradient(145deg,#262e4a,#1d2438);
+  border-radius:0 0 28px 28px;
+  box-shadow:0 14px 30px rgba(0,0,0,.55),
+    inset -7px -7px 15px rgba(0,0,0,.50),
+    inset 7px 7px 15px rgba(255,255,255,.075);
+}
+.t-cd .tt h1{color:#eef1fa;text-shadow:0 1px 0 rgba(0,0,0,.5)}
+.t-cd .tt .sb{color:#8f99bd}
+
+.t-cd .tabs{display:flex;gap:9px;padding:10px;margin:18px;border-radius:26px;overflow-x:auto;
+  background:linear-gradient(145deg,#1c2337,#242c45);
+  box-shadow:inset -7px -7px 15px rgba(0,0,0,.50),inset 7px 7px 15px rgba(255,255,255,.055)}
+.t-cd .tb{white-space:nowrap;padding:12px 19px;border:0;border-radius:17px;
+  font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;color:#a3adcf;transition:.16s;
+  background:linear-gradient(145deg,#2b3452,#212942);
+  box-shadow:0 6px 14px rgba(0,0,0,.42),inset -4px -4px 9px rgba(0,0,0,.42),inset 4px 4px 9px rgba(255,255,255,.075)}
+.t-cd .tb:hover{color:#dfe4f5;background:linear-gradient(145deg,#323c5e,#262f4c)}
+.t-cd .tb.on{color:#33270a;
+  background:linear-gradient(145deg,#f0d68c,#d4ae57);
+  box-shadow:0 4px 9px rgba(0,0,0,.45),inset -4px -4px 9px rgba(140,100,20,.42),inset 4px 4px 9px rgba(255,252,235,.80)}
+.t-cd .tb:active{transform:translateY(1px)}
+
+.t-cd .tw{margin:18px;border-radius:26px;overflow:hidden;
+  background:linear-gradient(145deg,#232b45,#1a2135);
+  box-shadow:0 16px 34px rgba(0,0,0,.55),inset -7px -7px 15px rgba(0,0,0,.48),inset 7px 7px 15px rgba(255,255,255,.065)}
+.t-cd table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.t-cd thead th{position:sticky;top:0;z-index:2;text-align:left;padding:13px 14px;font-size:10px;
+  text-transform:uppercase;letter-spacing:1.1px;font-weight:800;color:#b9c2e0;white-space:nowrap;
+  background:linear-gradient(145deg,#2a3350,#212945);
+  border-bottom:1px solid rgba(0,0,0,.45)}
+.t-cd tbody td{padding:12px 14px;color:#c9d0e6;vertical-align:top;
+  border-bottom:1px solid rgba(0,0,0,.32)}
+.t-cd tbody tr:last-child td{border-bottom:0}
+.t-cd tbody tr:hover td{background:rgba(255,255,255,.045)}
+.t-cd .pl{display:inline-block;padding:5px 13px;border-radius:99px;font-size:10.5px;font-weight:800;
+  color:#0c2a1c;background:linear-gradient(145deg,#7fe0b4,#42b37d);
+  box-shadow:inset -2px -2px 5px rgba(0,60,35,.45),inset 2px 2px 5px rgba(255,255,255,.55),0 2px 5px rgba(0,0,0,.45)}
+.t-cd .pl.w{color:#33270a;background:linear-gradient(145deg,#f2d992,#d4ae57);
+  box-shadow:inset -2px -2px 5px rgba(120,85,15,.45),inset 2px 2px 5px rgba(255,252,235,.60),0 2px 5px rgba(0,0,0,.45)}
+
+.t-cd .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:18px}
+.t-cd .kpi{padding:19px 21px;border-radius:24px;
+  background:linear-gradient(145deg,#262e4a,#1c2338);
+  box-shadow:0 14px 30px rgba(0,0,0,.52),inset -6px -6px 13px rgba(0,0,0,.46),inset 6px 6px 13px rgba(255,255,255,.07)}
+.t-cd .kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;color:#8f99bd;font-weight:800}
+.t-cd .kpi .val{font-size:27px;font-weight:800;margin-top:8px;line-height:1.1;color:#f0e3c2}
+.t-cd .kpi .foot{font-size:11px;color:#7b85a8;margin-top:7px}
+
+.t-cd .marq{display:flex;gap:13px;overflow-x:auto;padding:16px;margin:18px;border-radius:26px;
+  background:linear-gradient(145deg,#1c2337,#242c45);
+  box-shadow:inset -7px -7px 15px rgba(0,0,0,.50),inset 7px 7px 15px rgba(255,255,255,.055)}
+.t-cd .pc{flex:none;display:flex;align-items:center;gap:11px;padding:9px 16px 9px 9px;border-radius:19px;
+  background:linear-gradient(145deg,#2b3452,#202840);
+  box-shadow:0 8px 17px rgba(0,0,0,.42),inset -4px -4px 9px rgba(0,0,0,.40),inset 4px 4px 9px rgba(255,255,255,.07)}
+.t-cd .ph{width:46px;height:58px;border-radius:14px;flex:none;display:grid;place-items:center;
+  font-weight:800;font-size:15px;color:#33270a;
+  background:linear-gradient(145deg,#f0d68c,#d4ae57);
+  box-shadow:inset -3px -3px 7px rgba(140,100,20,.42),inset 3px 3px 7px rgba(255,252,235,.75)}
+.t-cd .pi b{display:block;font-size:12.5px;color:#e2e7f5;white-space:nowrap}
+.t-cd .pi small{display:block;font-size:10.5px;color:#8f99bd;white-space:nowrap}
+
+/* ---------- tema kaca asal (rujukan) ---------- */
+body.t-gl{background-color:#08172d;color:#f8fafc;
+  background-image:linear-gradient(rgba(5,16,35,.34),rgba(5,16,35,.46)),
+    radial-gradient(circle at 20% 8%,rgba(0,242,254,.10),transparent 55%)}
+.t-gl .top{background:linear-gradient(180deg,rgba(3,7,18,.80),rgba(9,13,22,.66));
+  backdrop-filter:blur(16px);border-bottom:1px solid rgba(56,189,248,.28)}
+.t-gl .tt h1{color:#f8fafc}
+.t-gl .tt .sb{color:#94a3b8}
+.t-gl .lg{filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+.t-gl .tabs{display:flex;gap:6px;padding:6px;margin:18px;border-radius:14px;overflow-x:auto;
+  background:rgba(15,23,42,.62);border:1px solid rgba(56,189,248,.28);backdrop-filter:blur(12px)}
+.t-gl .tb{white-space:nowrap;padding:10px 15px;border:0;border-radius:10px;background:transparent;
+  color:#94a3b8;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;transition:.16s}
+.t-gl .tb.on{color:#04121c;background:linear-gradient(135deg,#00f2fe,#38bdf8);box-shadow:0 0 22px rgba(0,242,254,.35)}
+.t-gl .tw{margin:18px;border-radius:14px;overflow:hidden;border:1px solid rgba(56,189,248,.28);background:rgba(9,13,22,.72)}
+.t-gl table{width:100%;border-collapse:collapse;font-size:12.5px}
+.t-gl thead th{text-align:left;padding:11px 12px;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
+  color:#38bdf8;white-space:nowrap;background:linear-gradient(180deg,#0b1220,#0a0f1a);border-bottom:1px solid rgba(56,189,248,.28)}
+.t-gl tbody td{padding:10px 12px;border-bottom:1px solid rgba(56,189,248,.14);color:#f8fafc;vertical-align:top}
+.t-gl .pl{display:inline-block;padding:3px 10px;border-radius:99px;font-size:10.5px;font-weight:700;
+  background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.35)}
+.t-gl .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px}
+.t-gl .kpi{padding:16px 18px;border-radius:16px;background:rgba(15,23,42,.62);border:1px solid rgba(213,173,87,.26)}
+.t-gl .kpi .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;font-weight:700}
+.t-gl .kpi .val{font-size:26px;font-weight:800;margin-top:6px;color:#eafcff}
+.t-gl .kpi .foot{font-size:11px;color:#64748b;margin-top:5px}
+.t-gl .marq{display:flex;gap:10px;overflow-x:auto;padding:10px;margin:18px;border-radius:14px;
+  background:rgba(15,23,42,.62);border:1px solid rgba(213,173,87,.26)}
+.t-gl .pc{flex:none;display:flex;align-items:center;gap:10px;padding:7px 13px 7px 7px;border-radius:12px;
+  background:rgba(9,13,22,.7);border:1px solid rgba(56,189,248,.18)}
+.t-gl .ph{width:44px;height:56px;border-radius:7px;flex:none;display:grid;place-items:center;
+  color:#f0d38a;font-weight:800;font-size:15px;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.25)}
+.t-gl .pi b{display:block;font-size:12.5px;color:#f8fafc;white-space:nowrap}
+.t-gl .pi small{display:block;font-size:10.5px;color:#f0d38a;white-space:nowrap}
+
+@media(max-width:760px){.ti{grid-template-columns:1fr!important;text-align:center}.lr{justify-content:center}}
+</style>
+</head>
+<body class="t-cl">
+
+<div class="ctl">
+  <h2>Demo Claymorphism</h2>
+  <span class="swlabel">Tema</span>
+  <div class="sw">
+    <button id="a" class="on">Clay Cerah</button>
+    <button id="b">Clay Gelap</button>
+    <button id="c">Kaca (asal)</button>
+  </div>
+  <span class="swlabel">Banner</span>
+  <div class="sw">
+    <button id="bk" class="on">Kekal</button>
+    <button id="bc">Clay</button>
+  </div>
+</div>
+
+<header class="top hd-keep" id="hdr">
+  <div class="ti">
+    <div class="lr">
+      <img class="lg" src="../icons/logo-pdrm.png" alt="Logo PDRM">
+      <img class="lg" src="../icons/logo-maktab.png" alt="Logo Maktab PDRM KL">
+      <img class="lg" src="../icons/logo-cbt-v54.png" alt="Logo CBT">
+    </div>
+    <div class="tt">
+      <h1>SISTEM PENUGASAN CAWANGAN BANTUAN TEKNIK MPDRMKL</h1>
+      <div class="sb">Sistem Pengurusan Penugasan &middot; Log Penugasan &middot; Personel &middot; Penyelia &middot; Audit</div>
+    </div>
+    <div></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tb on">Papan Pemuka</button>
+  <button class="tb">Log Penugasan</button>
+  <button class="tb">Key In</button>
+  <button class="tb">Personel</button>
+  <button class="tb">Penyelia</button>
+  <button class="tb">Audit</button>
+  <button class="tb">Tetapan</button>
+</nav>
+
+<div class="kpis">
+  <div class="kpi"><div class="lbl">Jumlah Rekod</div><div class="val">247</div><div class="foot">Tempoh: Okt 2026 – kini</div></div>
+  <div class="kpi"><div class="lbl">Jam-Orang</div><div class="val">1,384</div><div class="foot">Semua penugasan</div></div>
+  <div class="kpi"><div class="lbl">Akan Datang</div><div class="val">12</div><div class="foot">Belum bermula</div></div>
+  <div class="kpi"><div class="lbl">Personel Aktif</div><div class="val">17</div><div class="foot">Cawangan Bantuan Teknik</div></div>
+</div>
+
+<div class="tw">
+  <table>
+    <thead>
+      <tr><th>Tarikh Mula</th><th>Tajuk</th><th>Tempat</th><th>Team</th><th>Petugas</th><th>Jam-Orang</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>12 Okt 2026</td><td>MAJLIS PENUTUPAN PROGRAM PENGAJIAN JANGKA PANJANG</td><td>Dewan Utama MPDRMKL</td><td>Team A</td><td>4</td><td>32</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>13 Okt 2026</td><td>PERSEMBAHAN PERBARISAN SAMBUTAN</td><td>Padang Kawad</td><td>Team B</td><td>6</td><td>48</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>14 Okt 2026</td><td>LATIHAN KAWAD KAKI ASAS</td><td>Dewan Sukan</td><td>Team A</td><td>3</td><td>18</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>15 Okt 2026</td><td>SOKONGAN TEKNIKAL MAJLIS PERBARISAN</td><td>Dewan Utama MPDRMKL</td><td>Team C</td><td>5</td><td>40</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>20 Okt 2026</td><td>PERSIAPAN MAJLIS KONVOKESYEN</td><td>Dewan Utama MPDRMKL</td><td>Team B</td><td>8</td><td>64</td><td><span class="pl w">Akan Datang</span></td></tr>
+      <tr><td>22 Okt 2026</td><td>LATIHAN SISTEM AUDIO VISUAL</td><td>Bilik Kuliah 3</td><td>Team A</td><td>4</td><td>24</td><td><span class="pl w">Akan Datang</span></td></tr>
+      <tr><td>25 Okt 2026</td><td>PENYELENGGARAAN PERALATAN PUSAT SUMBER</td><td>Pusat Sumber</td><td>Team C</td><td>3</td><td>21</td><td><span class="pl w">Akan Datang</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="marq">
+  <div class="pc"><div class="ph">AA</div><div class="pi"><b>AHMAD BIN ALI</b><small>SJN</small></div></div>
+  <div class="pc"><div class="ph">MB</div><div class="pi"><b>MOHD BAKRI</b><small>INSP</small></div></div>
+  <div class="pc"><div class="ph">SN</div><div class="pi"><b>SITI NURHALIZA</b><small>KPL</small></div></div>
+  <div class="pc"><div class="ph">RK</div><div class="pi"><b>RAMESH KUMAR</b><small>SGT</small></div></div>
+  <div class="pc"><div class="ph">HZ</div><div class="pi"><b>HAFIZ ZULKARNAIN</b><small>L/KPL</small></div></div>
+</div>
+
+<script>
+const T = { a:'t-cl', b:'t-cd', c:'t-gl' };
+let theme = 'a', bannerClay = false;
+
+function render(){
+  document.body.className = T[theme];
+  ['a','b','c'].forEach(k => document.getElementById(k).classList.toggle('on', k === theme));
+  document.getElementById('hdr').classList.toggle('hd-keep', !bannerClay);
+  document.getElementById('bk').classList.toggle('on', !bannerClay);
+  document.getElementById('bc').classList.toggle('on', bannerClay);
+}
+document.getElementById('a').onclick = () => { theme = 'a'; render(); };
+document.getElementById('b').onclick = () => { theme = 'b'; render(); };
+document.getElementById('c').onclick = () => { theme = 'c'; render(); };
+document.getElementById('bk').onclick = () => { bannerClay = false; render(); };
+document.getElementById('bc').onclick = () => { bannerClay = true; render(); };
+render();
+</script>
+</body>
+</html>

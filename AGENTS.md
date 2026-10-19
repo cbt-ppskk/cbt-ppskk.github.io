@@ -496,6 +496,48 @@ sebaik sesi tamat. Untuk kerja berjadual, arahkan pengguna ke **GitHub
 3. Uji: gambar muncul, nama betul, 0 pelanggaran CSP
 4. Naik `APP_VER` + cache `sw.js`
 
+## Folder `demo/` — kajian reka bentuk (bukan aplikasi)
+
+`demo/` mengandungi halaman HTML **berdiri sendiri** untuk kajian reka bentuk UI.
+Ia **tidak** sebahagian daripada aplikasi dan **tidak** menjejaskan sistem live:
+
+- Tiada perubahan pada `index.html`, `office.html`, `sw.js`, atau logik GAS.
+- **Tidak** disenaraikan dalam `ASSETS` (`sw.js`) — PWA tidak cache ini.
+- CSP `index.html` tidak terjejas (fail berasingan, bukan skrip inline baharu).
+- Merujuk logo sebenar melalui laluan relatif `../icons/`.
+
+**Perangkap laluan:** fail demo asal dibina di luar repo dan merujuk `icons/...`.
+Bila disalin ke `demo/`, laluan mesti jadi `../icons/...`. Kalau tidak, semua
+logo rosak (200 → 404 senyap).
+
+Halaman: `index.html` (senarai), `susunan.html`, `realistik.html`, `depth.html`,
+`fokus.html`, `skeu.html`, `clay.html`, `SKOP-DEPTH.md`.
+
+### Keputusan reka bentuk sidebar (dari kajian `susunan.html`)
+
+Pengguna mahu **6 kotak bersusun ke bawah** di **KIRI** (kedudukan semasa,
+`grid-template-columns:300px minmax(0,1fr)` — kolum pertama = kiri):
+
+1. Komandan MPDRMKL — gambar **nisbah 2:3** penuh
+2. Ketua Pusat Pengajian — **morph**, bukan scroll
+3. Menarik Hari Ini — acara **hari ini**
+4. Menarik Akan Datang — acara **akan datang**
+5. Masa Semasa
+6. Kalendar Khas
+
+**Kotak 3 dan 4 ialah kriteria BERBEZA**, bukan dua salinan data sama. Sistem
+sekarang hanya ada satu kotak "Acara Akan Datang" (`acara-card`); "Menarik Hari
+Ini" ialah fungsi **baharu** yang perlu menapis acara mengikut tarikh hari ini.
+
+**Morph (kotak 2):** semua kad bertindan `position:absolute`, hanya satu
+`.on`. Peralihan guna `opacity` + `scale` + `blur` (1.15s) — bukan scroll.
+Ketinggian bekas mesti **stabil** (disahkan 440px) supaya tiada lompatan;
+kad `.on` dapat `position:relative` untuk menetapkan tinggi.
+
+**Kedudukan kiri/kanan:** `susunan.html` ada togol. Lalai = **kiri** =
+tiada perubahan susun atur. Ini penting: menukar ke kanan ialah perubahan besar
+(seluruh sidebar berpindah).
+
 ## Content-Security-Policy (v103b)
 
 `index.html` mempunyai `<meta http-equiv="Content-Security-Policy">`. Kerana beberapa

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Fokus — Header · Tab · Jadual</title>
+<style>
+/* ============================================================
+   DEMO FOKUS — header, tab, jadual sahaja.
+   Tidak menyentuh sistem live. Tekstur 100% CSS (tiada fail imej).
+   Tiga gaya: Kaca (sekarang) · Skeu Cerah · Skeu Gelap
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;transition:background .35s}
+.wrap{max-width:1400px;margin:0 auto;padding:0 0 70px}
+
+/* ---------- bar kawalan ---------- */
+.ctl{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:11px 16px;background:#111;border-bottom:1px solid #000}
+.ctl h2{font-size:13px;color:#e5e7eb;font-weight:800;flex:1;min-width:200px}
+.sw{display:inline-flex;gap:3px;padding:3px;border-radius:11px;background:#000}
+.sw button{padding:8px 15px;border:0;border-radius:8px;background:transparent;color:#9ca3af;
+  font:inherit;font-weight:700;font-size:12px;cursor:pointer;transition:.15s}
+.sw button.on{background:#d4af37;color:#241c08}
+
+/* ============================================================
+   1) TEMA KACA — keadaan sekarang
+   ============================================================ */
+body.t-glass{background-color:#08172d;color:#f8fafc;
+  background-image:linear-gradient(rgba(5,16,35,.34),rgba(5,16,35,.46)),
+    radial-gradient(circle at 20% 8%,rgba(0,242,254,.10),transparent 55%)}
+
+.t-glass .top{position:sticky;top:52px;z-index:90;padding:12px 20px;
+  background:linear-gradient(180deg,rgba(3,7,18,.74),rgba(9,13,22,.60));
+  backdrop-filter:blur(16px);border-bottom:1px solid rgba(56,189,248,.28)}
+.t-glass .ti{max-width:1680px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px}
+.t-glass .lr{display:flex;align-items:center;gap:12px}
+.t-glass .lg{height:50px;width:auto;max-width:120px;object-fit:contain;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+.t-glass .tt{text-align:center}
+.t-glass .tt h1{font-size:17px;font-weight:800;letter-spacing:.4px;color:#f8fafc}
+.t-glass .tt .sb{font-size:10.5px;color:#94a3b8;margin-top:3px}
+.t-glass .tabs{display:flex;gap:6px;padding:6px;margin:16px;border-radius:14px;overflow-x:auto;
+  background:rgba(15,23,42,.62);border:1px solid rgba(56,189,248,.28);backdrop-filter:blur(12px)}
+.t-glass .tb{white-space:nowrap;padding:10px 15px;border:0;border-radius:10px;background:transparent;
+  color:#94a3b8;font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;transition:.16s}
+.t-glass .tb:hover{color:#f8fafc;background:rgba(56,189,248,.08)}
+.t-glass .tb.on{color:#04121c;background:linear-gradient(135deg,#00f2fe,#38bdf8);box-shadow:0 0 22px rgba(0,242,254,.35)}
+.t-glass .tw{margin:16px;border-radius:14px;overflow:hidden;border:1px solid rgba(56,189,248,.28);background:rgba(9,13,22,.72)}
+.t-glass table{width:100%;border-collapse:collapse;font-size:12.5px}
+.t-glass thead th{position:sticky;top:0;z-index:2;text-align:left;padding:11px 12px;font-size:10.5px;
+  text-transform:uppercase;letter-spacing:.6px;color:#38bdf8;white-space:nowrap;
+  background:linear-gradient(180deg,#0b1220,#0a0f1a);border-bottom:1px solid rgba(56,189,248,.28)}
+.t-glass tbody td{padding:10px 12px;border-bottom:1px solid rgba(56,189,248,.14);color:#f8fafc;vertical-align:top}
+.t-glass tbody tr:hover{background:rgba(56,189,248,.07)}
+.t-glass .pl{display:inline-block;padding:3px 10px;border-radius:99px;font-size:10.5px;font-weight:700;
+  background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.35)}
+.t-glass .pl.w{background:rgba(251,191,36,.16);color:#fbbf24;border-color:rgba(251,191,36,.4)}
+
+/* ============================================================
+   2) TEMA SKEU CERAH — keluli berus + loyang, permukaan timbul
+   ============================================================ */
+body.t-clr{color:#2a2118;background-color:#3b3229;
+  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.028) 0 2px,transparent 2px 4px),
+    linear-gradient(165deg,#4a4036,#2e2620 60%,#241d18)}
+
+.t-clr .top{position:sticky;top:52px;z-index:90;padding:12px 20px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.020) 0 1px,transparent 1px 3px),
+    linear-gradient(180deg,#5d5245,#3c332a);
+  border-bottom:2px solid #1a1410;
+  box-shadow:inset 0 1px 0 rgba(255,240,205,.30),inset 0 -3px 8px rgba(0,0,0,.45),0 5px 14px rgba(0,0,0,.55)}
+.t-clr .ti{max-width:1680px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px}
+/* papan nama: plat logam berukir, logo duduk atas "rak" */
+.t-clr .lr{display:flex;align-items:center;gap:12px;padding:6px 12px;border-radius:10px;
+  background:linear-gradient(180deg,#241d17,#332a22);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,235,190,.13),0 1px 0 rgba(255,240,205,.16)}
+.t-clr .lg{height:50px;width:auto;max-width:120px;object-fit:contain;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}
+.t-clr .tt{text-align:center}
+.t-clr .tt h1{font-size:17px;font-weight:800;letter-spacing:.5px;color:#f7ecd2;
+  text-shadow:0 1px 0 rgba(0,0,0,.8),0 -1px 0 rgba(255,248,220,.20)}
+.t-clr .tt .sb{font-size:10.5px;color:#b8a480;margin-top:4px;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+
+/* TAB: rel logam, tab aktif TERTEKAN KE DALAM */
+.t-clr .tabs{display:flex;gap:5px;padding:6px;margin:16px;border-radius:13px;overflow-x:auto;
+  background:linear-gradient(180deg,#2b241d,#3d332a);border:1px solid #17120e;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.72),inset 0 -1px 0 rgba(255,235,190,.12)}
+.t-clr .tb{white-space:nowrap;padding:10px 15px;border:1px solid #241c15;border-radius:9px;
+  font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;color:#cdbb99;transition:.15s;
+  background:linear-gradient(180deg,#5c5044,#3e342b);
+  box-shadow:inset 0 1px 0 rgba(255,238,200,.20),0 2px 3px rgba(0,0,0,.45);
+  text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.t-clr .tb:hover{color:#f0e2c4;background:linear-gradient(180deg,#675a4c,#473c31)}
+.t-clr .tb.on{color:#33280f;border-color:#7d6220;
+  background:linear-gradient(180deg,#d9b45f,#e8c874 45%,#c9a24b);
+  box-shadow:inset 0 3px 7px rgba(90,60,10,.58),inset 0 -1px 0 rgba(255,255,225,.55),0 0 13px rgba(232,200,116,.30);
+  text-shadow:0 1px 0 rgba(255,250,215,.45)}
+
+/* JADUAL: bekas berukir, kepala papak, baris rata (boleh dibaca) */
+.t-clr .tw{margin:16px;border-radius:12px;overflow:hidden;border:1px solid #1c1611;
+  box-shadow:inset 0 1px 0 rgba(255,238,200,.18),0 4px 12px rgba(0,0,0,.5)}
+.t-clr table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.t-clr thead th{position:sticky;top:0;z-index:2;text-align:left;padding:11px 12px;font-size:10px;
+  text-transform:uppercase;letter-spacing:1.1px;font-weight:800;color:#d3bd8c;white-space:nowrap;
+  background:linear-gradient(180deg,#5f5346,#443a30);border-bottom:1px solid #1c1611;
+  text-shadow:0 1px 0 rgba(0,0,0,.7);box-shadow:inset 0 1px 0 rgba(255,240,205,.22)}
+.t-clr tbody td{padding:10px 12px;color:#ded1b6;vertical-align:top;
+  background:linear-gradient(180deg,#453b31,#3c332a);border-bottom:1px solid rgba(0,0,0,.30);
+  text-shadow:0 1px 0 rgba(0,0,0,.45)}
+.t-clr tbody tr:nth-child(even) td{background:linear-gradient(180deg,#4c4237,#413730)}
+.t-clr tbody tr:hover td{background:linear-gradient(180deg,#584c3e,#493e33)}
+.t-clr tbody tr:last-child td{border-bottom:0}
+.t-clr .pl{display:inline-block;padding:3px 11px;border-radius:99px;font-size:10.5px;font-weight:800;
+  color:#0f2b1c;background:linear-gradient(180deg,#7fd8a8,#4bb87c);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 2px rgba(0,60,30,.4),0 1px 2px rgba(0,0,0,.4);
+  text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.t-clr .pl.w{color:#3a2a05;background:linear-gradient(180deg,#f5cf7d,#dfae45);
+  box-shadow:inset 0 1px 0 rgba(255,255,240,.6),inset 0 -1px 2px rgba(120,80,10,.4),0 1px 2px rgba(0,0,0,.4)}
+
+/* ============================================================
+   3) TEMA SKEU GELAP — sama bahan, nada malam
+   ============================================================ */
+body.t-glp{color:#e8dfcb;background-color:#161311;
+  background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.06) 0 2px,transparent 2px 4px),
+    radial-gradient(circle at 25% 10%,rgba(200,160,80,.06),transparent 55%),
+    linear-gradient(165deg,#1e1a16,#121010 60%,#0d0b0a)}
+
+.t-glp .top{position:sticky;top:52px;z-index:90;padding:12px 20px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
+    linear-gradient(180deg,#2a2420,#191512);
+  border-bottom:2px solid #0a0807;
+  box-shadow:inset 0 1px 0 rgba(255,235,190,.14),inset 0 -3px 8px rgba(0,0,0,.6),0 5px 14px rgba(0,0,0,.7)}
+.t-glp .ti{max-width:1680px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px}
+.t-glp .lr{display:flex;align-items:center;gap:12px;padding:6px 12px;border-radius:10px;
+  background:linear-gradient(180deg,#100e0c,#1c1815);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.85),inset 0 -1px 0 rgba(255,235,190,.08),0 1px 0 rgba(255,240,205,.09)}
+.t-glp .lg{height:50px;width:auto;max-width:120px;object-fit:contain;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.9))}
+.t-glp .tt{text-align:center}
+.t-glp .tt h1{font-size:17px;font-weight:800;letter-spacing:.5px;color:#f2e6cc;
+  text-shadow:0 1px 0 rgba(0,0,0,.9),0 -1px 0 rgba(255,248,220,.12),0 0 16px rgba(212,175,55,.20)}
+.t-glp .tt .sb{font-size:10.5px;color:#9c8a68;margin-top:4px;text-shadow:0 1px 0 rgba(0,0,0,.7)}
+
+.t-glp .tabs{display:flex;gap:5px;padding:6px;margin:16px;border-radius:13px;overflow-x:auto;
+  background:linear-gradient(180deg,#100d0b,#1e1a16);border:1px solid #080605;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.88),inset 0 -1px 0 rgba(255,235,190,.07)}
+.t-glp .tb{white-space:nowrap;padding:10px 15px;border:1px solid #0d0b09;border-radius:9px;
+  font:inherit;font-weight:700;font-size:12.5px;cursor:pointer;color:#b3a184;transition:.15s;
+  background:linear-gradient(180deg,#2e2823,#1d1916);
+  box-shadow:inset 0 1px 0 rgba(255,238,200,.11),0 2px 3px rgba(0,0,0,.6);
+  text-shadow:0 1px 0 rgba(0,0,0,.8)}
+.t-glp .tb:hover{color:#eadfc4;background:linear-gradient(180deg,#38302a,#241f1b)}
+.t-glp .tb.on{color:#2e2408;border-color:#8a6c22;
+  background:linear-gradient(180deg,#c9a24b,#e8c874 45%,#a8823a);
+  box-shadow:inset 0 3px 7px rgba(70,45,5,.65),inset 0 -1px 0 rgba(255,255,225,.45),0 0 15px rgba(232,200,116,.28);
+  text-shadow:0 1px 0 rgba(255,250,215,.4)}
+
+.t-glp .tw{margin:16px;border-radius:12px;overflow:hidden;border:1px solid #0a0807;
+  box-shadow:inset 0 1px 0 rgba(255,238,200,.10),0 4px 12px rgba(0,0,0,.65)}
+.t-glp table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.t-glp thead th{position:sticky;top:0;z-index:2;text-align:left;padding:11px 12px;font-size:10px;
+  text-transform:uppercase;letter-spacing:1.1px;font-weight:800;color:#c9b07a;white-space:nowrap;
+  background:linear-gradient(180deg,#312a24,#211d19);border-bottom:1px solid #0a0807;
+  text-shadow:0 1px 0 rgba(0,0,0,.85);box-shadow:inset 0 1px 0 rgba(255,240,205,.13)}
+.t-glp tbody td{padding:10px 12px;color:#cfc2a8;vertical-align:top;
+  background:linear-gradient(180deg,#211d19,#1a1714);border-bottom:1px solid rgba(0,0,0,.5);
+  text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.t-glp tbody tr:nth-child(even) td{background:linear-gradient(180deg,#262119,#1e1a16)}
+.t-glp tbody tr:hover td{background:linear-gradient(180deg,#302a21,#241f1a)}
+.t-glp tbody tr:last-child td{border-bottom:0}
+.t-glp .pl{display:inline-block;padding:3px 11px;border-radius:99px;font-size:10.5px;font-weight:800;
+  color:#0b2417;background:linear-gradient(180deg,#5fc492,#2f9a63);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 2px rgba(0,50,25,.5),0 1px 2px rgba(0,0,0,.55)}
+.t-glp .pl.w{color:#2e2104;background:linear-gradient(180deg,#e8c874,#c9a24b);
+  box-shadow:inset 0 1px 0 rgba(255,255,240,.5),inset 0 -1px 2px rgba(110,70,10,.5),0 1px 2px rgba(0,0,0,.55)}
+
+@media(max-width:760px){
+  .ti{grid-template-columns:1fr!important;text-align:center}
+  .lr{justify-content:center}
+}
+</style>
+</head>
+<body class="t-clr">
+
+<div class="ctl">
+  <h2>Demo Fokus — Header · Tab · Jadual</h2>
+  <div class="sw">
+    <button id="g" >Kaca (sekarang)</button>
+    <button id="c" class="on">Skeu Cerah</button>
+    <button id="d">Skeu Gelap</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="top">
+  <div class="ti">
+    <div class="lr">
+      <img class="lg" src="../icons/logo-pdrm.png" alt="Logo PDRM">
+      <img class="lg" src="../icons/logo-maktab.png" alt="Logo Maktab PDRM KL">
+      <img class="lg" src="../icons/logo-cbt-v54.png" alt="Logo CBT">
+    </div>
+    <div class="tt">
+      <h1>SISTEM PENUGASAN CAWANGAN BANTUAN TEKNIK MPDRMKL</h1>
+      <div class="sb">Sistem Pengurusan Penugasan &middot; Log Penugasan &middot; Personel &middot; Penyelia &middot; Audit</div>
+    </div>
+    <div></div>
+  </div>
+</header>
+
+<!-- TAB -->
+<nav class="tabs">
+  <button class="tb on">Papan Pemuka</button>
+  <button class="tb">Log Penugasan</button>
+  <button class="tb">Key In</button>
+  <button class="tb">Personel</button>
+  <button class="tb">Penyelia</button>
+  <button class="tb">Audit</button>
+  <button class="tb">Tetapan</button>
+</nav>
+
+<!-- JADUAL -->
+<div class="tw">
+  <table>
+    <thead>
+      <tr><th>Tarikh Mula</th><th>Tajuk</th><th>Tempat</th><th>Team</th><th>Petugas</th><th>Jam-Orang</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>12 Okt 2026</td><td>MAJLIS PENUTUPAN PROGRAM PENGAJIAN JANGKA PANJANG</td><td>Dewan Utama MPDRMKL</td><td>Team A</td><td>4</td><td>32</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>13 Okt 2026</td><td>PERSEMBAHAN PERBARISAN SAMBUTAN</td><td>Padang Kawad</td><td>Team B</td><td>6</td><td>48</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>14 Okt 2026</td><td>LATIHAN KAWAD KAKI ASAS</td><td>Dewan Sukan</td><td>Team A</td><td>3</td><td>18</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>15 Okt 2026</td><td>SOKONGAN TEKNIKAL MAJLIS PERBARISAN</td><td>Dewan Utama MPDRMKL</td><td>Team C</td><td>5</td><td>40</td><td><span class="pl">Selesai</span></td></tr>
+      <tr><td>20 Okt 2026</td><td>PERSIAPAN MAJLIS KONVOKESYEN</td><td>Dewan Utama MPDRMKL</td><td>Team B</td><td>8</td><td>64</td><td><span class="pl w">Akan Datang</span></td></tr>
+      <tr><td>22 Okt 2026</td><td>LATIHAN SISTEM AUDIO VISUAL</td><td>Bilik Kuliah 3</td><td>Team A</td><td>4</td><td>24</td><td><span class="pl w">Akan Datang</span></td></tr>
+      <tr><td>25 Okt 2026</td><td>PENYELENGGARAAN PERALATAN PUSAT SUMBER</td><td>Pusat Sumber</td><td>Team C</td><td>3</td><td>21</td><td><span class="pl w">Akan Datang</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const B = { g:'t-glass', c:'t-clr', d:'t-glp' };
+function set(k){
+  document.body.className = B[k];
+  ['g','c','d'].forEach(x => document.getElementById(x).classList.toggle('on', x === k));
+}
+document.getElementById('g').onclick = () => set('g');
+document.getElementById('c').onclick = () => set('c');
+document.getElementById('d').onclick = () => set('d');
+set('c');
+</script>
+</body>
+</html>

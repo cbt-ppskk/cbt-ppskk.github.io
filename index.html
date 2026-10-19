@@ -169,12 +169,22 @@ body.not-authed #app{display:none}
   .ltab{font-size:12.5px;padding:11px 6px}
   .field{margin-bottom:12px}
   .field label{font-size:11.5px}
-  /* 16px: halang iOS Safari zum automatik bila fokus medan input */
-  .field input,.field select,.field textarea{font-size:16px;padding:12px}
+  /* 16px: halang iOS Safari zum automatik bila fokus medan input.
+     Awalan #login-screen dinaikkan kekhususan kerana @media(max-width:900px)
+     (baris ~669) menetapkan 15px dan datang KEMUDIAN dalam fail — tanpa ini
+     ia menang dan Safari tetap zum. */
+  #login-screen .field input,#login-screen .field select,#login-screen .field textarea{font-size:16px;padding:12px}
   .login-btn{padding:14px;font-size:15px;min-height:50px}
   .login-foot{font-size:10.5px;margin-top:14px}
   .dob-grid{grid-template-columns:1fr 1fr;gap:7px}
-  .dob-grid select{font-size:16px;padding:11px 6px}
+  #login-screen .dob-grid select{font-size:16px;padding:11px 6px}
+}
+/* Liputan tablet & telefon landskap (lebar 641-900px) yang TIDAK masuk blok
+   640px di atas. Kekhususan `#login-screen` mengalahkan
+   `@media(max-width:900px) .field input{font-size:15px}` di bawah, yang
+   menyebabkan iOS Safari zum apabila medan difokus. */
+@media(max-width:900px){
+  #login-screen .field input,#login-screen .field select,#login-screen .field textarea{font-size:16px}
 }
 /* Telefon sangat kecil (320px) — pastikan tiada limpahan */
 @media(max-width:360px){

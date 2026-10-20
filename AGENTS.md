@@ -1225,7 +1225,7 @@ spasi/NBSP depan (`" R1234567"`), dan sel nombor boleh jadi notasi saintifik
 sifar pad** — itu mengubah nilai. Penjajaran dicapai melalui CSS
 (`tabular-nums`), bukan dengan menambah aksara.
 
-### PEPIJAT (DITEMUI, BELUM DIBAIKI dalam index.html): Mapping Penyelia sentiasa kosong
+### PEPIJAT (DITEMUI, DIBETULKAN dalam v103e): Mapping Penyelia sentiasa kosong
 
 `index.html` baris 2019: `const PEN = DATA.penyelia || [];`
 
@@ -1242,10 +1242,41 @@ Punca sebenar: medan `penyelia` sebenarnya DISIMPAN pada setiap baris personel
 (borang personel menghantarnya melalui `upsertPersonel`), tetapi tidak pernah
 dibaca semula daripada `PER`.
 
-**React membetulkannya** melalui `senaraiPenyelia(personel, penyelia)`: ia
-menerbitkan senarai penyelia daripada baris personel, dan mengutamakan set data
-khusus jika backend kemudiannya menyediakannya. **Pembetulan ini belum
-dipakaikan kepada `index.html`** — ia menunggu keputusan pengguna.
+**Pembetulan v103e** (kedua-dua `index.html` dan React) menerbitkan senarai
+penyelia daripada baris personel melalui `senaraiPenyelia_()`, dan mengutamakan
+set data khusus jika backend kemudiannya menyediakannya.
+
+Tiga perkara lain yang tersembunyi di belakang pepijat yang sama:
+
+1. **Jadual Penyelia terperangkap dalam closure.** `const tbl=makeTable(...)`
+   hidup di dalam `initPenyelia()`, jadi tiada cara menyegarkannya selepas data
+   tiba — ia kekal kosong walaupun `PEN` diisi. Jadual kini pada aras atas
+   (`PEN_TBL`) dengan `refreshPenyeliaTbl()`, dipanggil bersama
+   `refreshPersonelTbl()`.
+2. **Dropdown Team dibina semasa data kosong.** `initPenyelia`/`initPersonel`
+   berjalan pada boot, ketika `PER` masih `[]`, jadi "Semua Team" kekal satu-
+   satunya pilihan. `isiTeamOptions_()` mengisinya semula apabila data tiba,
+   idempoten, dan mengekalkan pilihan pengguna.
+3. **`includes('aktif')` menganggap "Tidak Aktif" sebagai aktif.** Rentetan
+   "tidak aktif" MENGANDUNGI "aktif", jadi baris tidak aktif dipaparkan dengan
+   pil hijau "Aktif". Guna `perActive()`, yang menolak "tidak" dahulu.
+
+`uji-v103e.js` menguji kesemua ini, dan **boleh dijalankan terhadap dua versi**
+untuk membuktikan ia benar-benar menangkap pepijat:
+
+```sh
+node uji-v103e.js http://127.0.0.1:12001/   # v103e  -> LULUS (25)
+node uji-v103e.js http://127.0.0.1:12002/   # v103d  -> GAGAL (17+)
+```
+
+Ujian yang lulus pada kedua-dua versi tidak membuktikan apa-apa. Sahkan ia
+GAGAL pada kod lama sebelum mempercayainya.
+
+**Peringatan CSP:** mengubah mana-mana blok `<script>` inline menjadikan hash
+CSP basi, dan pelayar akan menyekat skrip **serta-merta** — seluruh aplikasi
+mati, bukan sekadar satu ciri. Selepas setiap suntingan skrip inline, jalankan
+`python3 tools/csp-hash.py --write` SEBELUM ujian pelayar. Gejalanya mengelirukan
+(fungsi "is not defined"), jadi sentiasa syak hash basi dahulu.
 
 ### Perangkap React: `Dialog` memulangkan `null` apabila tertutup
 

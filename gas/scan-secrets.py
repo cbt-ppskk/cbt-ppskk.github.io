@@ -11,7 +11,6 @@ Guna:
 Keluar 1 jika ada penemuan pada tahap itu atau lebih tinggi (lalai: high).
 """
 import argparse
-import fnmatch
 import hashlib
 import os
 import re
@@ -141,29 +140,16 @@ def hash_nilai(nilai):
 def dikecualikan_senarai(laluan, nama, cuplikan):
     """Benar jika (laluan, nama, nilai) disenaraikan sebagai penemuan yang diketahui.
 
-    Padanan laluan menerima akhiran ATAU corak glob, supaya allowlist boleh guna
-    'index.html' tanpa mengira sama ada imbasan bermula dari akar repo, dan boleh
-    guna 'react/assets/index-*.js' untuk bundle yang namanya bercap kandungan
-    (berubah setiap bina).
-
-    Glob TIDAK melemahkan kawalan: cap jari nilai mesti tetap sepadan. Corak
-    luas hanya meluaskan nama fail yang layak, bukan nilai yang dikecualikan —
-    jadi rahsia sebenar dalam bundle baharu (cap jari berbeza) tetap dikesan.
+    Padanan laluan ialah akhiran, supaya allowlist boleh guna 'index.html'
+    tanpa mengira sama ada imbasan bermula dari akar repo atau dari gas/.
     """
     h = hash_nilai(cuplikan)
-    laluan_n = laluan.replace(os.sep, "/")
     for laluan_s, nama_s, hash_s in TERSENARAI:
         if nama_s != nama:
             continue
         if hash_s != h:
             continue
-        pola = laluan_s.replace(os.sep, "/")
-        # Padanan akhiran (laluan mutlak vs relatif) DAN glob. Glob mesti
-        # dibenarkan berpadan pada AKHIRAN laluan, kerana imbasan biasanya
-        # menerima laluan mutlak ('/repo/react/assets/index-abc.js').
-        if (laluan_n.endswith(pola)
-                or fnmatch.fnmatch(laluan_n, pola)
-                or fnmatch.fnmatch(laluan_n, "*" + pola)):
+        if laluan.replace(os.sep, "/").endswith(laluan_s.replace(os.sep, "/")):
             return True
     return False
 

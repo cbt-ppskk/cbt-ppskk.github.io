@@ -2,11 +2,6 @@
 #
 # Format:  <laluan>|<nama peraturan>|<cap jari nilai>
 #
-# <laluan> boleh jadi akhiran laluan biasa ('index.html') ATAU corak glob
-# ('react/assets/index-*.js'). Glob berguna untuk fail yang namanya bercap
-# kandungan (berubah setiap bina). Glob hanya meluaskan NAMA FAIL yang layak;
-# cap jari nilai masih WAJIB sepadan, jadi rahsia baharu tetap ditangkap.
-#
 # Cap jari ialah sha256(nilai)[:16], dijana dengan:
 #     python3 gas/scan-secrets.py --hash "<nilai>"
 #
@@ -35,35 +30,3 @@
 # sahaja. Mengubah tanda petik atau jarak akan membatalkan pengecualian ini dan
 # memaksa semakan semula — itu memang disengajakan.
 index.html|SALT / pepper kata laluan|baacf714723479d5
-
-# --- Hasil bina React (/react/): dua POSITIF PALSU dalam bundle minified ---
-#
-# Mengapa DITERIMA:
-#   Kedua-duanya ialah rentetan pustaka React, bukan rahsia. Pemboleh ubah
-#   minified ialah satu baris panjang, jadi konteks sebenar tidak kelihatan.
-#
-#   1. "ID Spreadsheet/Drive" -> `18.3.1-next-f1338f8080-20240426`
-#      Ini VERSI React (saluran prarilis "next"), bukan ID fail Google.
-#      Dipadankan kerana ia bermula dengan "1" dan panjang.
-#
-#   2. "Kata laluan dikod keras" -> `PASSWORD:"resetPassword"`
-#      Ini nama pemalar tindakan GAS dalam peta AKSI, bukan kata laluan.
-#      Padanan penuh regex termasuk tanda petik, seperti entri SALT di atas.
-#
-#   Bundle ini juga mengandungi URL Web App GAS dan e-mel placeholder
-#   (nama@contoh.com, pengirim@contoh.gov.my, 0123456789). URL itu SUDAH
-#   awam dalam index.html dan office.html — ia aplikasi sisi klien, jadi ia
-#   mesti ada di sana. Placeholder pula disekat oleh PENGECUALIAN.
-#
-# NOTA PENYELENGGARAAN: nama fail bundle mengandungi cap kandungan Vite
-# (index-<hash>.js), jadi ia BERUBAH setiap bina semula. Corak glob di bawah
-# mengekalkan pengecualian ini merentas bina, jadi anda tidak perlu mengaudit
-# semula hanya kerana hash fail bertukar.
-#
-# Ini TIDAK melemahkan kawalan: cap jari NILAI mesti tetap sepadan. Jika bina
-# baharu mengandungi rentetan yang berbeza (contohnya versi React naik taraf),
-# cap jari tidak lagi sepadan dan pengimbas AKAN menandainya semula — itu
-# memang disengajakan. Yang dikecualikan ialah dua rentetan pustaka tertentu
-# ini sahaja, bukan seluruh fail.
-react/assets/index-*.js|ID Spreadsheet/Drive|c12806fc551ab8e5
-react/assets/index-*.js|Kata laluan dikod keras|0676955c45b383c6

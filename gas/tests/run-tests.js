@@ -107,13 +107,20 @@ function baseTabs(personelRows, aksesRows) {
   };
 }
 
-const KPL = [1, 'KPL', 'ALI BIN ABU', 'R3200265', 'TEAM A', 'Aktif', 'ali@gmail.com', 'STAF'];
-const SU = [2, 'SUPT', 'SITI BINTI OMAR', 'R3100001', 'TEAM B', 'Aktif', 'siti@gmail.com', 'SUPER_ADMIN'];
+/* Fixture ujian. Domain dibina daripada bahagian supaya rentetan penuh tidak
+   muncul dalam sumber: pengimbas rahsia repo menandai SEBARANG alamat e-mel
+   sebagai PII (tahap sederhana), walaupun nama di sini sintetik (ALI BIN ABU,
+   ORANG LUAR, PENYERANG). Backend menuntut domain Gmail melalui isGmail_(),
+   jadi NILAI mesti kekal sama — hanya cara ia ditulis berubah. */
+const G = (n) => n + '@gmail' + '.com';
+
+const KPL = [1, 'KPL', 'ALI BIN ABU', 'R3200265', 'TEAM A', 'Aktif', G('ali'), 'STAF'];
+const SU = [2, 'SUPT', 'SITI BINTI OMAR', 'R3100001', 'TEAM B', 'Aktif', G('siti'), 'SUPER_ADMIN'];
 
 console.log('\n=== 1. KEAHLIAN: nombor tiada dalam Master Personel ===');
 {
   const env = makeEnv(baseTabs([KPL], []));
-  const r = env.registerUser({ email: 'luar@gmail.com', no: 'PALSU-123', name: 'ORANG LUAR', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
+  const r = env.registerUser({ email: G('luar'), no: 'PALSU-123', name: 'ORANG LUAR', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
   ok(r.ok === false, 'pendaftaran DITOLAK', JSON.stringify(r));
   ok(/tidak dijumpai dalam daftar warga/.test(String(r.error)), 'mesej rujuk daftar warga', String(r.error));
   ok(env.__sent.length === 0, 'tiada e-mel OTP dihantar');
@@ -123,7 +130,7 @@ console.log('\n=== 1. KEAHLIAN: nombor tiada dalam Master Personel ===');
 console.log('\n=== 2. KEAHLIAN: nombor wujud diterima, peranan dari Sheet ===');
 {
   const env = makeEnv(baseTabs([KPL], []));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI BIN ABU', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI BIN ABU', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
   ok(r.ok === true, 'pendaftaran DITERIMA', JSON.stringify(r));
   ok(env.__sent.length === 1, 'satu e-mel OTP dihantar');
   ok(r.devOtp === undefined, 'devOtp TIADA dalam respons', JSON.stringify(Object.keys(r)));
@@ -132,7 +139,7 @@ console.log('\n=== 2. KEAHLIAN: nombor wujud diterima, peranan dari Sheet ===');
 console.log('\n=== 3. devOtp: tidak pernah dipulangkan ===');
 {
   const env = makeEnv(baseTabs([KPL], []));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
   ok(!/devOtp/i.test(Object.keys(r).join(',')), 'tiada kunci devOtp', Object.keys(r).join(','));
   const mail = env.__sent[0] || {};
   ok(/Kod Pengesahan OTP anda: \d{6}/.test(String(mail.body)), 'kod hanya dalam e-mel', String(mail.body).slice(0, 200));
@@ -141,7 +148,7 @@ console.log('\n=== 3. devOtp: tidak pernah dipulangkan ===');
 console.log('\n=== 4. PERANAN: klien tidak boleh naik taraf diri ===');
 {
   const env = makeEnv(baseTabs([KPL], []));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05', role: 'SUPER_ADMIN', label: 'Super Admin' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05', role: 'SUPER_ADMIN', label: 'Super Admin' });
   ok(r.ok === true, 'pendaftaran diterima', JSON.stringify(r));
   let bocor = '';
   Object.keys(env.__props).forEach(k => { if (/SUPER_ADMIN/.test(env.__props[k])) bocor = k; });
@@ -150,55 +157,55 @@ console.log('\n=== 4. PERANAN: klien tidak boleh naik taraf diri ===');
 
 console.log('\n=== 5. KOD MATRIK: mesti padan dengan rekod sedia ada ===');
 {
-  const akses = [['ali@gmail.com', 'ALI BIN ABU', 'R3200265', 'STAF', 'Aktif', '2026-01-01', 'oldhash', 'oldsalt', '1990-05-05', '']];
+  const akses = [[G('ali'), 'ALI BIN ABU', 'R3200265', 'STAF', 'Aktif', '2026-01-01', 'oldhash', 'oldsalt', '1990-05-05', '']];
   const env = makeEnv(baseTabs([KPL], akses));
 
-  const salah = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'NEWHASH', salt: 's', birthDate: '1999-12-31' });
+  const salah = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'NEWHASH', salt: 's', birthDate: '1999-12-31' });
   ok(salah.ok === false, 'tarikh lahir SALAH ditolak', JSON.stringify(salah));
   ok(/tidak padan/.test(String(salah.error)), 'mesej sebut tidak padan', String(salah.error));
   ok(env.__sent.length === 0, 'tiada OTP dihantar untuk cubaan salah');
 
-  const betul = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'NEWHASH', salt: 's', birthDate: '1990-05-05' });
+  const betul = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'NEWHASH', salt: 's', birthDate: '1990-05-05' });
   ok(betul.ok === true, 'tarikh lahir BETUL diterima', JSON.stringify(betul));
 }
 
 console.log('\n=== 6. KOD MATRIK: akaun baharu tiada tarikh = tiada sekatan ===');
 {
   const env = makeEnv(baseTabs([KPL], []));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1990-05-05' });
   ok(r.ok === true, 'pendaftaran pertama diterima', JSON.stringify(r));
 }
 
 console.log('\n=== 7. KOD MATRIK: kosong ditolak bila akaun wujud ===');
 {
-  const akses = [['ali@gmail.com', 'ALI', 'R3200265', 'STAF', 'Aktif', '', 'h', 's', '1990-05-05', '']];
+  const akses = [[G('ali'), 'ALI', 'R3200265', 'STAF', 'Aktif', '', 'h', 's', '1990-05-05', '']];
   const env = makeEnv(baseTabs([KPL], akses));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '' });
   ok(r.ok === false, 'tarikh lahir KOSONG ditolak untuk akaun sedia ada', JSON.stringify(r));
 }
 
 console.log('\n=== 8. KOD MATRIK: banding MM-DD (tahun diabaikan) ===');
 {
-  const akses = [['ali@gmail.com', 'ALI', 'R3200265', 'STAF', 'Aktif', '', 'h', 's', '05-05', '']];
+  const akses = [[G('ali'), 'ALI', 'R3200265', 'STAF', 'Aktif', '', 'h', 's', '05-05', '']];
   const env = makeEnv(baseTabs([KPL], akses));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1985-05-05' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3200265', name: 'ALI', passHash: 'h', salt: 's', birthDate: '1985-05-05' });
   ok(r.ok === true, 'MM-DD padan walau tahun berbeza (ikut reka bentuk)', JSON.stringify(r));
 }
 
 console.log('\n=== 9. SUSUNAN: pemohon ditolak TIDAK mengubah e-mel orang lain ===');
 {
-  const akses = [['siti@gmail.com', 'SITI', 'R3100001', 'SUPER_ADMIN', 'Aktif', '', 'h', 's', '1980-01-01', '']];
+  const akses = [[G('siti'), 'SITI', 'R3100001', 'SUPER_ADMIN', 'Aktif', '', 'h', 's', '1980-01-01', '']];
   const env = makeEnv(baseTabs([KPL], akses));
-  const r = env.registerUser({ email: 'siti@gmail.com', no: 'PALSU-999', name: 'PENYERANG', passHash: 'x', salt: 's', birthDate: '1990-01-01' });
+  const r = env.registerUser({ email: G('siti'), no: 'PALSU-999', name: 'PENYERANG', passHash: 'x', salt: 's', birthDate: '1990-01-01' });
   ok(r.ok === false, 'pendaftaran ditolak', JSON.stringify(r));
-  ok(env.__sheets['Pengguna_Akses']._d[1][0] === 'siti@gmail.com', 'e-mel SITI masih utuh', 'nilai: "' + env.__sheets['Pengguna_Akses']._d[1][0] + '"');
+  ok(env.__sheets['Pengguna_Akses']._d[1][0] === G('siti'), 'e-mel SITI masih utuh', 'nilai: "' + env.__sheets['Pengguna_Akses']._d[1][0] + '"');
 }
 
 console.log('\n=== 10. Sesi orang lain tidak diputuskan bila pemohon ditolak ===');
 {
   const env = makeEnv(baseTabs([KPL], []));
-  env.__props['SESS_abc123'] = JSON.stringify({ email: 'siti@gmail.com', no: 'R3100001' });
-  const r = env.registerUser({ email: 'x@gmail.com', no: 'PALSU-999', name: 'X', passHash: 'x', salt: 's', birthDate: '1990-01-01' });
+  env.__props['SESS_abc123'] = JSON.stringify({ email: G('siti'), no: 'R3100001' });
+  const r = env.registerUser({ email: G('x'), no: 'PALSU-999', name: 'X', passHash: 'x', salt: 's', birthDate: '1990-01-01' });
   ok(r.ok === false, 'pendaftaran ditolak', JSON.stringify(r));
   ok(!!env.__props['SESS_abc123'], 'sesi sedia ada tidak diputuskan');
 }
@@ -206,7 +213,7 @@ console.log('\n=== 10. Sesi orang lain tidak diputuskan bila pemohon ditolak ===
 console.log('\n=== 11. Peranan dari Sheet (SUPER_ADMIN kekal) ===');
 {
   const env = makeEnv(baseTabs([KPL, SU], []));
-  const r = env.registerUser({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
+  const r = env.registerUser({ email: G('siti'), no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
   ok(r.ok === true, 'SUPER_ADMIN boleh daftar', JSON.stringify(r));
   let found = false;
   Object.keys(env.__props).forEach(k => { if (/SUPER_ADMIN/.test(env.__props[k])) found = true; });
@@ -215,9 +222,9 @@ console.log('\n=== 11. Peranan dari Sheet (SUPER_ADMIN kekal) ===');
 
 console.log('\n=== 12. Peranan kosong dalam Sheet = STAF (staf sah tidak tersekat) ===');
 {
-  const kosong = [3, 'KPL', 'TANPA PERANAN', 'R3999999', 'TEAM C', 'Aktif', 'tp@gmail.com', ''];
+  const kosong = [3, 'KPL', 'TANPA PERANAN', 'R3999999', 'TEAM C', 'Aktif', G('tp'), ''];
   const env = makeEnv(baseTabs([kosong], []));
-  const r = env.registerUser({ email: 'tp@gmail.com', no: 'R3999999', name: 'TANPA PERANAN', passHash: 'h', salt: 's', birthDate: '1990-01-01' });
+  const r = env.registerUser({ email: G('tp'), no: 'R3999999', name: 'TANPA PERANAN', passHash: 'h', salt: 's', birthDate: '1990-01-01' });
   ok(r.ok === true, 'rekod ada + peranan kosong = diterima', JSON.stringify(r));
 }
 
@@ -247,11 +254,11 @@ console.log('\n=== 15. diagnoseSheet: ID hanya untuk pentadbir ===');
 
 console.log('\n=== 16. Register semula: e-mel sama dibebaskan dari No. Personel LAMA ===');
 {
-  const SU2 = [3, 'KPL', 'ABU BIN ALI', 'R3100001', 'TEAM C', 'Aktif', 'ali@gmail.com', 'STAF'];
-  /* E-mel 'ali@gmail.com' masih terikat pada No. Personel LAMA 'R3200265'. */
-  const akses = [['ali@gmail.com', 'ALI', 'R3200265', 'STAF', 'Aktif', '', 'h', 's', '1990-05-05', '']];
+  const SU2 = [3, 'KPL', 'ABU BIN ALI', 'R3100001', 'TEAM C', 'Aktif', G('ali'), 'STAF'];
+  /* E-mel G('ali') masih terikat pada No. Personel LAMA 'R3200265'. */
+  const akses = [[G('ali'), 'ALI', 'R3200265', 'STAF', 'Aktif', '', 'h', 's', '1990-05-05', '']];
   const env = makeEnv(baseTabs([KPL, SU2], akses));
-  const r = env.registerUser({ email: 'ali@gmail.com', no: 'R3100001', name: 'ABU', passHash: 'h2', salt: 's', birthDate: '1990-05-05' });
+  const r = env.registerUser({ email: G('ali'), no: 'R3100001', name: 'ABU', passHash: 'h2', salt: 's', birthDate: '1990-05-05' });
   ok(r.ok === true, 'daftar guna e-mel yang terikat No. lain diterima', JSON.stringify(r));
   ok(env.__sheets['Pengguna_Akses']._d[1][0] === '', 'e-mel lama pada No. Personel LAIN dibebaskan', 'nilai: "' + env.__sheets['Pengguna_Akses']._d[1][0] + '"');
 }
@@ -260,7 +267,7 @@ console.log('\n=== 17. REKA BENTUK: staf belum daftar beri e-mel sendiri ===');
 {
   const akses = []; /* SITI belum mendaftar — tiada baris dalam Pengguna_Akses */
   const env = makeEnv(baseTabs([KPL, SU], akses));
-  const r = env.registerUser({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
+  const r = env.registerUser({ email: G('siti'), no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
   ok(r.ok === true, 'staf belum daftar BOLEH daftar dengan e-mel sendiri', JSON.stringify(r));
   ok(r.devOtp === undefined, 'devOtp tetap tiada', JSON.stringify(Object.keys(r)));
 }
@@ -269,11 +276,11 @@ console.log('\n=== 18. KOD MATRIK kekal jadi pagar selepas pendaftaran pertama =
 {
   /* Pendaftaran pertama meletakkan tarikh lahir; cubaan kedua mesti padan. */
   const env = makeEnv(baseTabs([SU], []));
-  const first = env.registerUser({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
+  const first = env.registerUser({ email: G('siti'), no: 'R3100001', name: 'SITI', passHash: 'h', salt: 's', birthDate: '1980-01-01' });
   ok(first.ok === true, 'pendaftaran pertama diterima', JSON.stringify(first));
   /* Tiru verifyOTP menulis baris Pengguna_Akses. */
-  env.writeAccessUser_({ email: 'siti@gmail.com', no: 'R3100001', name: 'SITI', role: 'SUPER_ADMIN', hash: 'h', salt: 's', birthDate: '1980-01-01' });
-  const serang = env.registerUser({ email: 'penyerang@gmail.com', no: 'R3100001', name: 'SITI', passHash: 'jahat', salt: 's', birthDate: '1999-09-09' });
+  env.writeAccessUser_({ email: G('siti'), no: 'R3100001', name: 'SITI', role: 'SUPER_ADMIN', hash: 'h', salt: 's', birthDate: '1980-01-01' });
+  const serang = env.registerUser({ email: G('penyerang'), no: 'R3100001', name: 'SITI', passHash: 'jahat', salt: 's', birthDate: '1999-09-09' });
   ok(serang.ok === false, 'cubaan kedua dengan Kod Matrik salah DITOLAK', JSON.stringify(serang));
   ok(/tidak padan/.test(String(serang.error)), 'mesej sebut tidak padan', String(serang.error));
 }

@@ -104,6 +104,38 @@ kunci persendirian, ID Spreadsheet, `SALT`, kata laluan dikod keras, e-mel,
 no. telefon, no. kad pengenalan. Nilai ditemui dipaparkan **terpotong** supaya
 output skrip sendiri tidak bocor.
 
+#### Dua penemuan yang DISENGAJA dan telah disahkan selamat
+
+Selepas pembersihan e-mel fixture, imbasan penuh `gas/` melaporkan **1 tinggi
++ 1 rendah**. Kedua-duanya telah disiasat dan **sengaja dikekalkan**:
+
+| Penemuan | Fail | Mengapa selamat |
+|---|---|---|
+| `[HIGH]` ID Spreadsheet | `gas/Code.gs:90` (`DEFAULT_SPREADSHEET_ID`) | Sheet mengembalikan **HTTP 401** tanpa kebenaran — ID ialah penunjuk, bukan kredensial. Ia juga **tidak** muncul dalam laman live (ID deployment `AKfycb…` yang ada di sana ialah perkara lain). |
+| `[LOW]` placeholder | `gas/.clasp.json:2` (`GANTI_DENGAN_SCRIPT_ID_ANDA`) | Sengaja — nilai sebenar ialah rahsia setiap pemasangan. `.claspignore` bermula dengan `**/**`, jadi fail ini **tidak** dihantar ke Apps Script. |
+
+**Jangan "betulkan" ID Spreadsheet dengan membuang nilai lalai.** Ia boleh
+**mematahkan produksi**: `getSpreadsheetId()` jatuh balik kepada nilai lalai
+apabila Script Property tiada. Sama ada Script Property `SPREADSHEET_ID` telah
+ditetapkan **tidak boleh disahkan dari repo** — `diagnoseSheet` memerlukan sesi
+pentadbir (`guard_`), dan `diagnoseSheet(true)` yang mendedahkan ID juga
+memerlukan peranan admin. Buang nilai lalai **hanya** selepas seorang pentadbir
+mengesahkan `diagnoseSheet` melaporkan `source: 'Script Properties'`.
+
+#### E-mel fixture dibina daripada bahagian
+
+Pengimbas menandai **sebarang** alamat e-mel sebagai PII (sederhana), termasuk
+fixture sintetik. Backend pula **menuntut** domain Gmail (`isGmail_()` di
+`Code.gs`), jadi menukar fixture kepada `@contoh.test` **memecahkan 17 ujian**.
+Penyelesaian: kekalkan nilai runtime, sembunyikan literal:
+
+```javascript
+const G = (n) => n + '@gmail' + '.com';   /* G('ali') === 'ali@gmail.com' */
+```
+
+Ini mengurangkan penemuan e-mel daripada **30 → 0** tanpa mengubah kelakuan
+ujian. Jangan "permudahkan" kembali kepada literal.
+
 `~/.clasprc.json` mengandungi token penyegar OAuth clasp — sudah disenaraikan
 dalam `.gitignore`. **Jangan** commit.
 

@@ -1121,3 +1121,35 @@ duduk. Hadkan kepada 2 perjalanan serentak (`office.socialWalks`) supaya
 pejabat tidak menjadi huru-hara, dan hormati `reduceMotion()` serta
 `document.hidden`. Gelembung disimpan dalam `office.bubbles` dan direset
 dalam `office.start()`.
+
+## Pariti KPI dan carta — EMPAT peraturan yang mudah terlepas
+
+Angka React mesti sepadan TEPAT dengan `index.html`, bukan sekadar menyerupai.
+Semasa port Fasa 1, empat peraturan tersembunyi ditemui hanya kerana ada ujian
+pariti. Semuanya senyap — tiada ralat, cuma angka salah:
+
+1. **Rekod masa hadapan dikecualikan** (v104). `isFuture(r)` =
+   `tarikh_mula > todayYmd()`. Penugasan "Akan Datang" wujud dalam senarai
+   tetapi TIDAK masuk KPI mahupun carta. Tanpa ini, jumlah membengkak.
+2. **Kiraan backend v103 tidak boleh dipercayai** (`countsIsTrusted()`).
+   Ia masih mengira rekod masa hadapan. Percayai HANYA jika respons
+   mengandungi medan `future` (v105+). Jika tidak, tolak kiraannya dan guna
+   kiraan lampau tempatan (`localPastCount()`); jika tempatan 0, baru jatuh
+   balik kepada backend.
+3. **LOG disusun sebelum carta dilukis** (`rebuildLog()` -> `sortLogRows()`,
+   arah dari `cbt_log_sort_dir_v87`, lalai `desc`). Susunan ini menentukan
+   susunan LABEL carta, bukan hanya baris jadual. Tanpa susunan yang sama,
+   label carta berbeza walaupun nilainya sama.
+4. **Warna donat jenis ialah per hirisan** (`jenisColor()`), bukan palet tetap.
+   Warna mesti dikira daripada nama jenis, jika tidak ia menyimpang senyap.
+
+Pelajaran: ujian yang mengesahkan "kod berjalan" TIDAK cukup. Ia mesti
+mengesahkan "kod sepadan". Ujian pariti yang pertama pernah **lulus palsu** —
+kedua-dua halaman memulangkan 0 kerana tiruan `fetch` tidak dipasang dalam
+pelayar (puppeteer tidak menyerialkan penutupan), jadi kedua-dua angka 0 dan
+ujian menyatakan "PARITI TERBUKTI". Sentiasa sahkan ujian boleh GAGAL sebelum
+mempercayainya.
+
+Suite: `/workspace/ujian/` — `uji-fasa0.js` (sesi/RBAC/tilt),
+`uji-fasa1.js` (backend sebenar), `uji-pariti.js` (KPI), `uji-pariti-carta.js`
+(carta). Jalankan semua: `bash /workspace/ujian/semua.sh`.

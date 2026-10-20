@@ -4,11 +4,32 @@
 # Langkau: git commit --no-verify
 set -e
 REPO=$(git rev-parse --show-toplevel)
-if [ -f "$REPO/gas/scan-secrets.py" ]; then
-  python3 "$REPO/gas/scan-secrets.py" "$REPO/gas" --fail-on high || {
-    echo ""
-    echo "Commit dibatalkan: rahsia dikesan dalam gas/."
-    echo "Betulkan dahulu, atau guna: git commit --no-verify"
-    exit 1
-  }
+SCAN="$REPO/gas/scan-secrets.py"
+[ -f "$SCAN" ] || exit 0
+
+# Imbas HANYA fail yang benar-benar di-staging.
+#
+# Versi lama mengimbas seluruh gas/ pada setiap commit. Akibatnya penemuan
+# LAMA (ID spreadsheet dalam Code.gs, e-mel fixture dalam ujian) menyekat
+# SETIAP commit — termasuk commit yang tidak menyentuh fail itu langsung.
+# Cangkuk yang menyekat kerja tidak berkaitan akan dielak dengan --no-verify,
+# dan itu mematikan kawalan ini sepenuhnya. Mengimbas fail yang di-staging
+# memberi isyarat yang betul: "perubahan INI selamat".
+fail=0
+for f in $(git diff --cached --name-only --diff-filter=ACM); do
+  case "$f" in
+    *.gs|*.js|*.json) ;;
+    *) continue ;;
+  esac
+  [ -f "$REPO/$f" ] || continue
+  if ! python3 "$SCAN" "$REPO/$f" --fail-on high; then
+    fail=1
+  fi
+done
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit dibatalkan: rahsia dikesan dalam fail yang di-staging."
+  echo "Betulkan dahulu, atau guna: git commit --no-verify"
+  exit 1
 fi

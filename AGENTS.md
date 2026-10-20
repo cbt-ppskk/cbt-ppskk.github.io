@@ -1198,3 +1198,82 @@ kedua-dua belah memulangkan 0. Guna nama kosong (`LOG.length`) dalam
 Juga: `pg.evaluateOnNewDocument(fn, arg)` **tidak** menyerialkan penutupan.
 Pemboleh ubah luar seperti `opsyen` menjadi `undefined` dalam pelayar. Hantar
 setiap nilai sebagai argumen berasingan.
+
+---
+
+## Fasa 2b (React): Master Personel + Mapping Penyelia
+
+Diport ke React dalam `react-app/src/`:
+
+| Fail | Peranan |
+|---|---|
+| `data/personel.js` | Logik tulen: normalisasi nombor, susunan pangkat, statistik, tapisan |
+| `hooks/usePersonel.js` | Tulis ke Sheet (`upsertPersonel`), soft delete |
+| `components/PanelPersonel.jsx` | Dua panel (Personel + Penyelia) dalam satu fail |
+
+### Dua perkara data yang mudah tersalah
+
+**1. Susunan pangkat, bukan abjad.** Lalai `per-sort` ialah `pangkat` — hierarki
+PDRM (`RANK_ORDER`). Pangkat dari Sheet mengandungi pangkat + no. badan
+(`"SJN RF/134348"`), jadi hanya perkataan PERTAMA diambil sebagai token. Pangkat
+yang tidak dikenali dapat order `999` dan diletak di HUJUNG — barisnya **tidak
+dibuang**. Kalau ini tersalah, senarai nampak "berterabur".
+
+**2. Nombor personel ialah TEKS, bukan angka.** Nilai dari Sheet tiba dengan
+spasi/NBSP depan (`" R1234567"`), dan sel nombor boleh jadi notasi saintifik
+(`2.00265E+11`). `normalNo()` membersihkan ketiga-tiganya. **Jangan tambah
+sifar pad** — itu mengubah nilai. Penjajaran dicapai melalui CSS
+(`tabular-nums`), bukan dengan menambah aksara.
+
+### PEPIJAT (DITEMUI, BELUM DIBAIKI dalam index.html): Mapping Penyelia sentiasa kosong
+
+`index.html` baris 2019: `const PEN = DATA.penyelia || [];`
+
+`DATA.penyelia` ialah `[]` (baris 2010) dan **tiada fungsi pernah mengisinya** —
+`loadPersonelFromServer()` hanya mengisi `PER`. Akibatnya:
+
+- Tab **Mapping Penyelia** sentiasa memaparkan "Tiada rekod" dalam produksi.
+- Lajur **Penyelia** dalam tab Personel sentiasa `—`.
+- Pembantu Meja Maya (`PEN.find(...)`, baris 3742) sentiasa gagal jumpa penyelia.
+- `penyelia_legasi` dibaca (baris 5932) tetapi **tidak pernah ditulis** —
+  tiada medan untuknya dalam borang personel.
+
+Punca sebenar: medan `penyelia` sebenarnya DISIMPAN pada setiap baris personel
+(borang personel menghantarnya melalui `upsertPersonel`), tetapi tidak pernah
+dibaca semula daripada `PER`.
+
+**React membetulkannya** melalui `senaraiPenyelia(personel, penyelia)`: ia
+menerbitkan senarai penyelia daripada baris personel, dan mengutamakan set data
+khusus jika backend kemudiannya menyediakannya. **Pembetulan ini belum
+dipakaikan kepada `index.html`** — ia menunggu keputusan pengguna.
+
+### Perangkap React: `Dialog` memulangkan `null` apabila tertutup
+
+`Dialog` memulangkan `null` jika `buka` palsu. Ini bermakna komponen borang
+yang dibiarkan ter-mount **tidak** menjalankan penginisialisasi `useState`
+semula apabila rekod sasaran berubah — medan akan memaparkan rekod yang salah.
+Borang mesti dipasang hanya semasa terbuka, dengan `key` yang berubah mengikut
+sasaran:
+
+```jsx
+{borangBuka && <BorangPersonel key={sunting ? 'edit-' + sunting.no : 'baru'} ... />}
+```
+
+Ujian `uji-fasa2b.js` bahagian H menyunting baris pertama, menutup, kemudian
+menyunting baris kedua — dan mengesahkan medan berubah.
+
+### Ingat build sebelum ujian
+
+Ujian UI menentang bundle yang dibina, bukan sumber. Selepas mengedit komponen,
+**jalankan `npm run build`** sebelum ujian, jika tidak anda menguji kod lama dan
+kegagalan akan mengelirukan.
+
+### Ujian
+
+`uji-fasa2b.js` — 73 ujian, termasuk pariti sebenar terhadap `index.html`:
+fungsi `perRankOrder`/`normalNo_`/`perActive` yang hidup disuap data ujian yang
+sama, dan susunannya dibandingkan huruf demi huruf dengan React.
+
+**Nota:** `uji-fasa1.js` memanggil backend GAS **sebenar** dan boleh gagal
+secara transien apabila terhad kadar. Jalankan bersendirian untuk mengesahkan;
+kegagalan berkelompok menunjukkan had kadar, bukan regresi.

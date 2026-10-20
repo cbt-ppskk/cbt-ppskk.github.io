@@ -1153,3 +1153,48 @@ mempercayainya.
 Suite: `/workspace/ujian/` — `uji-fasa0.js` (sesi/RBAC/tilt),
 `uji-fasa1.js` (backend sebenar), `uji-pariti.js` (KPI), `uji-pariti-carta.js`
 (carta). Jalankan semua: `bash /workspace/ujian/semua.sh`.
+
+## PEPIJAT SISTEM LIVE: validasi tidak kekal selepas muat semula
+
+Ditemui semasa port panel Validasi (Fasa 2a). Ini pepijat dalam `index.html`
+yang **sudah ada dalam produksi**:
+
+| | Baris | Kod | Kesan |
+|---|---|---|---|
+| TULIS | 3784, 3814 | `status:'DIVALIDASI'` | Ditulis ke Sheet |
+| BACA | 6875 | `/SELESAI/i.test(v.status)` | **Tidak padan** |
+
+`'DIVALIDASI'` tidak mengandungi `'SELESAI'`, jadi `applyValidasiMap_()`
+membuang setiap rekod yang baru divalidasi. Selepas muat semula, kerja admin
+**hilang** dan rekod kembali muncul sebagai "Belum Validasi".
+
+Data dalam Sheet adalah BETUL — hanya paparan yang salah. Admin berkemungkinan
+besar memvalidasi semula rekod yang sama berulang kali.
+
+Bukti: dengan peta `{rec-1: DIVALIDASI, #3: SELESAI}`, index.html mengira
+**1** selesai (sepatutnya 2). React mengira **2**.
+
+**Pembetulan satu baris untuk `index.html`** (baris 6875):
+```js
+if(/SELESAI|DIVALIDASI/i.test(String(v.status||'')))
+```
+Ujian `uji-fasa2a.js` bahagian E2/E3 mengesahkan pepijat ini secara eksplisit
+dan akan menangkapnya jika ia berulang.
+
+### Perangkap berkaitan: baris 'BELUM' tidak boleh diterima
+
+Backend menyimpan baris `status:'BELUM'` apabila validasi dibatalkan. Jika
+`petaValidasi()` menerima semua status, rekod yang **dibatalkan** akan tersalah
+tanda sebagai divalidasi. Hanya terima `SELESAI` atau `DIVALIDASI`.
+
+### Perangkap puppeteer: `let` pada aras atas bukan sifat `window`
+
+Dalam skrip klasik, `let LOG_BASE = ...` dan `let LOG = ...` **tidak** menjadi
+`window.LOG_BASE`. `pg.evaluate(() => window.LOG.length)` memulangkan 0
+walaupun data sudah dimuatkan — dan ujian boleh "lulus" secara palsu kerana
+kedua-dua belah memulangkan 0. Guna nama kosong (`LOG.length`) dalam
+`pg.evaluate`, atau sahkan dahulu bahawa data benar-benar dimuatkan.
+
+Juga: `pg.evaluateOnNewDocument(fn, arg)` **tidak** menyerialkan penutupan.
+Pemboleh ubah luar seperti `opsyen` menjadi `undefined` dalam pelayar. Hantar
+setiap nilai sebagai argumen berasingan.

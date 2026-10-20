@@ -1,0 +1,32 @@
+# Senarai pengecualian pengimbas rahsia — setiap entri telah DIAUDIT.
+#
+# Format:  <laluan>|<nama peraturan>|<cap jari nilai>
+#
+# Cap jari ialah sha256(nilai)[:16], dijana dengan:
+#     python3 gas/scan-secrets.py --hash "<nilai>"
+#
+# Nilai penuh TIDAK disimpan di sini. Fail ini sendiri sentiasa diimbas, jadi
+# menyimpan nilai akan mencipta salinan rahsia yang cuba dilindunginya.
+#
+# Menambah entri = menyatakan "penemuan ini diketahui, disemak, dan diterima".
+# Jangan tambah entri untuk menyenyapkan penemuan yang belum difahami.
+
+# --- SALT dalam index.html: pepper kata laluan klien ---
+#
+# Mengapa DITERIMA (bukan dibaiki):
+#   SALT mesti ada di klien untuk mengira hash kata laluan (hashPass,
+#   line ~3138). Ia dihantar sebagai sebahagian kredensial pengesahan. Tidak
+#   ada PropertiesService untuk penyimpanan sisi klien dalam PWA statik, jadi
+#   cadangan pengimbas "pindah ke PropertiesService" TIDAK terpakai di sini.
+#
+#   Nilai ini bukan rahsia kuat. Ia menambah kos kepada serangan kamus luar
+#   talian terhadap passHash, tetapi sesiapa yang membaca laman boleh melihatnya.
+#   Pertahanan sebenar ialah kekuatan kata laluan + had kadar OTP.
+#
+# JANGAN tukar nilai SALT: ia akan menjadikan SEMUA kata laluan sedia ada tidak
+# sah (hash disimpan sebagai sha256(SALT+pass)). Lihat AGENTS.md "Baki risiko".
+#
+# Cap jari meliputi PADANAN PENUH regex (contoh: SALT='<nilai>'), bukan nilai
+# sahaja. Mengubah tanda petik atau jarak akan membatalkan pengecualian ini dan
+# memaksa semakan semula — itu memang disengajakan.
+index.html|SALT / pepper kata laluan|baacf714723479d5

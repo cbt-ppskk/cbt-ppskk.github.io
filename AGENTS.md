@@ -104,23 +104,67 @@ kunci persendirian, ID Spreadsheet, `SALT`, kata laluan dikod keras, e-mel,
 no. telefon, no. kad pengenalan. Nilai ditemui dipaparkan **terpotong** supaya
 output skrip sendiri tidak bocor.
 
-#### Dua penemuan yang DISENGAJA dan telah disahkan selamat
+Liputan fail: `.gs`, `.js`, `.json`, `.html`, `.md`. **`.html` dan `.md` penting**
+— `index.html` ialah fail paling awam dalam repo (dihidangkan oleh GitHub Pages)
+dan `AGENTS.md` memetik konfigurasi. Sebelum v106 kedua-duanya **dilangkau**, jadi
+`const SALT=...` dalam `index.html` tidak pernah diimbas. Jalankan tanpa hujah
+untuk mengimbas seluruh repo: `python3 gas/scan-secrets.py`.
 
-Selepas pembersihan e-mel fixture, imbasan penuh `gas/` melaporkan **1 tinggi
-+ 1 rendah**. Kedua-duanya telah disiasat dan **sengaja dikekalkan**:
+#### `gas/scan-allowlist.txt` — pengecualian yang diaudit
 
-| Penemuan | Fail | Mengapa selamat |
+Format: `<laluan>|<nama peraturan>|<cap jari nilai>`, di mana cap jari ialah
+`sha256(padanan penuh regex)[:16]`. Jana dengan
+`python3 gas/scan-secrets.py --hash "<padanan penuh>"`.
+
+Masukkan **padanan penuh regex**, bukan nilai rahsia sahaja. Contohnya, peraturan
+pepper memadankan seluruh tugasan (nama, tanda sama, nilai), jadi cap jari mesti
+dijana daripada rentetan penuh itu.
+
+Nilai penuh **tidak** disimpan dalam allowlist, kerana fail itu sendiri sentiasa
+diimbas; menyimpan nilai akan mencipta salinan rahsia yang cuba dilindunginya.
+Mengubah baris (tanda petik, jarak) membatalkan pengecualian dan memaksa semakan
+semula — memang disengajakan.
+
+**Jangan tambah entri untuk menyenyapkan penemuan yang belum difahami.** Setiap
+entri ialah pernyataan "penemuan ini diketahui, disemak, dan diterima".
+
+#### Penemuan yang disiasat
+
+Selepas pembersihan e-mel fixture, pembuangan Sheet ID, dan redaksi `AGENTS.md`,
+imbasan penuh repo melaporkan **0 tinggi + 0 sederhana + 2 rendah**:
+
+| Penemuan | Fail | Status |
 |---|---|---|
-| `[HIGH]` ID Spreadsheet | `gas/Code.gs:90` (`DEFAULT_SPREADSHEET_ID`) | Sheet mengembalikan **HTTP 401** tanpa kebenaran — ID ialah penunjuk, bukan kredensial. Ia juga **tidak** muncul dalam laman live (ID deployment `AKfycb…` yang ada di sana ialah perkara lain). |
-| `[LOW]` placeholder | `gas/.clasp.json:2` (`GANTI_DENGAN_SCRIPT_ID_ANDA`) | Sengaja — nilai sebenar ialah rahsia setiap pemasangan. `.claspignore` bermula dengan `**/**`, jadi fail ini **tidak** dihantar ke Apps Script. |
+| `[LOW]` placeholder | `gas/.clasp.json:2` (`GANTI_DENGAN_SCRIPT_ID_ANDA`) | **Kekal.** Sengaja — nilai sebenar ialah rahsia setiap pemasangan. `.claspignore` bermula dengan `**/**`, jadi fail ini **tidak** dihantar ke Apps Script. |
+| `[LOW]` placeholder | `AGENTS.md:114` | **Kekal.** Ia memetik nama placeholder sebagai contoh; sengaja. |
+| `[HIGH]` `SALT` | `index.html` | **Diterima** melalui `scan-allowlist.txt` — lihat "Baki risiko" #1. |
+| ~~`[HIGH]` ID Spreadsheet~~ | `gas/Code.gs` | **Dibuang dalam v106** — lihat di bawah. |
 
-**Jangan "betulkan" ID Spreadsheet dengan membuang nilai lalai.** Ia boleh
-**mematahkan produksi**: `getSpreadsheetId()` jatuh balik kepada nilai lalai
-apabila Script Property tiada. Sama ada Script Property `SPREADSHEET_ID` telah
-ditetapkan **tidak boleh disahkan dari repo** — `diagnoseSheet` memerlukan sesi
-pentadbir (`guard_`), dan `diagnoseSheet(true)` yang mendedahkan ID juga
-memerlukan peranan admin. Buang nilai lalai **hanya** selepas seorang pentadbir
-mengesahkan `diagnoseSheet` melaporkan `source: 'Script Properties'`.
+#### Sheet ID: dibuang dari kod (v106)
+
+`DEFAULT_SPREADSHEET_ID` dahulunya mengandungi ID Sheet produksi. Ia **dikosongkan**
+dalam v106. Sheet ID ialah konfigurasi setiap pemasangan, bukan kod, dan repo ini
+awam. Tetapkan sekali melalui Sheet sasaran: menu `CBT Penugasan` →
+`⚙️ Tetapkan Sheet ID` (fungsi `setSpreadsheetId`, disimpan dalam Script Properties).
+
+Tertib keutamaan selepas v106:
+
+1. Script Property `SPREADSHEET_ID` — sumber biasa.
+2. `DEFAULT_SPREADSHEET_ID` — kini `''`.
+3. `getActiveSpreadsheet()` — skrip ini **container-bound** (`onOpen` +
+   `SpreadsheetApp.getUi()`), jadi ini menunjuk ke Sheet tempat skrip terikat.
+   Webapp membuang satu panggilan terikat yang gagal sebelum jatuh balik.
+
+**Peringatan sejarah:** ID itu masih boleh dilihat dalam commit awam lama
+(`1143cde`, `8e7dd55`). Membuangnya dari HEAD **tidak** menyembunyikannya —
+keterdedahan sudah berlaku. Ia diterima sebagai berisiko rendah kerana Sheet
+mengembalikan **HTTP 401** tanpa kebenaran (ID ialah penunjuk, bukan kredensial).
+Menulis semula sejarah awam **tidak** disyorkan: ia memecahkan klon dan fork,
+dan tidak boleh ditarik balik.
+
+**Selepas menukar `Code.gs`, `clasp push` sahaja TIDAK cukup** — perlu
+`clasp deploy` juga (lihat "`push` != deploy"). Jika tidak, pengguna masih
+memanggil kod lama.
 
 #### E-mel fixture dibina daripada bahagian
 
@@ -130,7 +174,7 @@ fixture sintetik. Backend pula **menuntut** domain Gmail (`isGmail_()` di
 Penyelesaian: kekalkan nilai runtime, sembunyikan literal:
 
 ```javascript
-const G = (n) => n + '@gmail' + '.com';   /* G('ali') === 'ali@gmail.com' */
+const G = (n) => n + '@' + 'gmail' + '.com';   /* G('ali') === alamat gmail 'ali' */
 ```
 
 Ini mengurangkan penemuan e-mel daripada **30 → 0** tanpa mengubah kelakuan
@@ -148,14 +192,18 @@ berubah".
 
 ### Baki risiko (perlu tindakan pemilik sistem)
 
-1. **`SALT` masih dalam repo.** `const SALT='cbt_mpdrmkl_2026'` ialah pepper
-   kata laluan, bukan data peribadi, jadi alat scrub **tidak** menyentuhnya.
-   Risiko: dengan `SALT` awam, penyerang yang memperoleh `passHash` boleh mencuba
-   kamus dengan lebih murah. Mitigasi tanpa menukar SALT: pastikan kata laluan
-   kukuh (min 8 aksara) dan kekalkan had kadar OTP.
-   **JANGAN tukar nilai SALT** tanpa mengesahkan `Code.gs` membandingkan
-   `passHash` sahaja (bukan mengira semula salt) — menukarnya menjadikan SEMUA
-   kata laluan sedia ada tidak sah.
+1. **`SALT` terdedah dalam `index.html` (DITERIMA, tidak dibaiki).** `index.html`
+   mengandungi `const SALT=<pepper>` (nilai sebenar ~16 aksara). Ia pepper kata
+   laluan klien. Ia **mesti** berada di klien kerana `hashPass()` mengira
+   `sha256(SALT+pass)` dalam pelayar sebelum menghantar; PWA statik tiada
+   `PropertiesService`. Cadangan pengimbas "pindah ke PropertiesService" **tidak
+   terpakai** di sini. Nilai ini bukan rahsia kuat — sesiapa yang membuka laman
+   boleh melihatnya. Pertahanan sebenar: kekuatan kata laluan + had kadar OTP.
+   Penemuan ini disenaraikan dalam `gas/scan-allowlist.txt` (disemak, diterima).
+   **JANGAN tukar nilai SALT.** `Code.gs` mengesahkan dengan
+   `sha256Hex_(storedSalt + pass)` (baris ~827) menggunakan salt yang disimpan
+   per pengguna; menukar pepper klien menjadikan SEMUA kata laluan sedia ada
+   tidak sah.
 2. **PII kekal dalam sejarah git.** Membuang dari commit terbaharu TIDAK
    memadamnya daripada commit lama. Repo awam yang di-klon selepas ini masih
    mengandungi snapshot penuh. Tindakan perlu:
@@ -172,11 +220,11 @@ berubah".
 
 ### Perkongsian Sheet — SUDAH DIKUNCI
 
-`Laporan Penugasan` (`1Vm3fWQzZeHOHHaBY1ZLYjz2KlwTx7M0dexIyJllIe-c`) dahulunya
+`Laporan Penugasan` (`<ID-Sheet-Laporan-Penugasan>`) dahulunya
 `anyone: reader`. Ia kini `restricted`: `/export` dan `/gviz/tq` memulangkan
 **401** (disahkan 2026-10-15).
 
-Jangan kelirukan dengan spreadsheet `testing` (`14fy3vzIscryufczcb4XBAjSu_v3owIrgNgkMRx8fTao`)
+Jangan kelirukan dengan spreadsheet `testing` (`<ID-Sheet-testing>`)
 — ia juga wujud dan juga sudah dikunci, tetapi **sistem tidak menggunakannya**.
 Semasa mengunci, sahkan `export?format=csv` memulangkan 401 untuk ID yang
 **betul**, bukan sekadar spreadsheet yang kelihatan serupa.
@@ -422,7 +470,7 @@ menyebabkan KPI berbeza antara mod dalam talian dan luar talian.
 ### KPI kini tahan backend lama (v105b)
 
 **Masalahnya:** backend produksi dimiliki akaun Google lain
-(`mpdrmkl.it.event@gmail.com`) yang pemilik repo tiada akses. Menunggu deploy
+(akaun Gmail pemilik backend, `<e-mel-pemilik>`) yang pemilik repo tiada akses. Menunggu deploy
 backend bermakna KPI terus membengkak.
 
 **Penyelesaian:** `v105` membalut `window.buildDashboard` supaya rekod masa hadapan

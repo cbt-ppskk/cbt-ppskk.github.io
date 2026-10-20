@@ -15,10 +15,16 @@ SCAN="$REPO/gas/scan-secrets.py"
 # Cangkuk yang menyekat kerja tidak berkaitan akan dielak dengan --no-verify,
 # dan itu mematikan kawalan ini sepenuhnya. Mengimbas fail yang di-staging
 # memberi isyarat yang betul: "perubahan INI selamat".
+#
+# Senarai sambungan mesti sepadan dengan EKSTENSEN dalam scan-secrets.py.
+# `.html` dan `.md` disertakan kerana `index.html` ialah fail PALING awam
+# dalam repo (dihidangkan oleh GitHub Pages) dan `AGENTS.md` memetik
+# konfigurasi. Sebelum ini kedua-duanya dilangkau, jadi `const SALT=...`
+# dalam index.html tidak pernah diimbas.
 fail=0
 for f in $(git diff --cached --name-only --diff-filter=ACM); do
   case "$f" in
-    *.gs|*.js|*.json) ;;
+    *.gs|*.js|*.json|*.html|*.md) ;;
     *) continue ;;
   esac
   [ -f "$REPO/$f" ] || continue

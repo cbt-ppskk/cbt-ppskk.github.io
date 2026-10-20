@@ -342,6 +342,22 @@ console.log('\n=== 21. v105: tarikh HARI INI masih dikira (sempadan) ===');
   ok(r.future === 1, 'esok TIDAK dikira', 'future=' + r.future);
 }
 
+console.log('\n=== 22. v106: Sheet ID tiada -> ralat jelas, bukan TypeError ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  env.SpreadsheetApp.getActiveSpreadsheet = () => null;
+
+  let msg = '';
+  try { env.openSS_(); } catch (e) { msg = String(e && e.message ? e.message : e); }
+  ok(/Tetapkan Sheet ID/.test(msg), 'openSS_ beri arahan "Tetapkan Sheet ID"', msg || '(tiada ralat dibuang)');
+  ok(!/Cannot read|TypeError|undefined/.test(msg), 'bukan TypeError kabur', msg || '(tiada ralat dibuang)');
+
+  env.__props['SPREADSHEET_ID'] = 'SHEET-UJIAN';
+  let dibuka = false;
+  try { dibuka = !!env.openSS_(); } catch (e) { dibuka = false; }
+  ok(dibuka, 'Script Property menang -> openSS_ berjaya tanpa Sheet aktif', String(dibuka));
+}
+
 console.log('\n========================================');
 console.log('  LULUS: ' + passes + '   GAGAL: ' + fails);
 console.log('========================================\n');

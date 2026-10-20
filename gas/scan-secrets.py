@@ -11,6 +11,7 @@ Guna:
 Keluar 1 jika ada penemuan pada tahap itu atau lebih tinggi (lalai: high).
 """
 import argparse
+import hashlib
 import os
 import re
 import sys
@@ -77,6 +78,37 @@ RULES = [
 SKIP_DIRS = {".git", "node_modules", "__pycache__"}
 LEVELS = {"low": 1, "medium": 2, "high": 3}
 
+# Fail yang diimbas. `.html` dan `.md` WAJIB ada: `index.html` ialah fail paling
+# awam dalam repo (dihidangkan kepada seluruh dunia oleh GitHub Pages), dan
+# `AGENTS.md` memetik konfigurasi. Dahulunya senarai ini hanya `.gs/.js/.json`,
+# jadi `const SALT=...` dalam index.html TIDAK PERNAH diimbas.
+EKSTENSEN = (".gs", ".js", ".json", ".html", ".md")
+
+# Senarai pengecualian yang boleh diaudit (lihat scan-allowlist.txt).
+# Nilai disimpan sebagai hash, bukan teks — supaya fail senarai itu sendiri
+# tidak menjadi salinan rahsia yang cuba dilindunginya.
+ALLOWLIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scan-allowlist.txt")
+
+
+def muat_allowlist():
+    """Pulangkan set (laluan, nama peraturan, hash nilai) yang diterima."""
+    terima = set()
+    if not os.path.isfile(ALLOWLIST):
+        return terima
+    with open(ALLOWLIST, encoding="utf-8") as f:
+        for baris in f:
+            baris = baris.split("#", 1)[0].strip()
+            if not baris:
+                continue
+            bahagian = [b.strip() for b in baris.split("|")]
+            if len(bahagian) != 3:
+                continue
+            terima.add((bahagian[0], bahagian[1], bahagian[2]))
+    return terima
+
+
+TERSENARAI = muat_allowlist()
+
 # Nilai contoh/sintetik yang BUKAN data peribadi sebenar.
 PENGECUALIAN = [
     re.compile(r"@(?:contoh|example|test|localhost|domain)\b", re.I),
@@ -96,8 +128,30 @@ def fail_sasaran(roots):
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
             for fn in filenames:
-                if fn.endswith((".gs", ".js", ".json")):
+                if fn.endswith(EKSTENSEN):
                     yield os.path.join(dirpath, fn)
+
+
+def hash_nilai(nilai):
+    """Cap jari nilai rahsia. Disimpan dalam allowlist, bukan nilai itu sendiri."""
+    return hashlib.sha256(nilai.encode("utf-8")).hexdigest()[:16]
+
+
+def dikecualikan_senarai(laluan, nama, cuplikan):
+    """Benar jika (laluan, nama, nilai) disenaraikan sebagai penemuan yang diketahui.
+
+    Padanan laluan ialah akhiran, supaya allowlist boleh guna 'index.html'
+    tanpa mengira sama ada imbasan bermula dari akar repo atau dari gas/.
+    """
+    h = hash_nilai(cuplikan)
+    for laluan_s, nama_s, hash_s in TERSENARAI:
+        if nama_s != nama:
+            continue
+        if hash_s != h:
+            continue
+        if laluan.replace(os.sep, "/").endswith(laluan_s.replace(os.sep, "/")):
+            return True
+    return False
 
 
 def imbas(path, teks):
@@ -111,6 +165,8 @@ def imbas(path, teks):
             cuplikan = m.group(0)
             if dikecualikan(cuplikan):
                 continue
+            if dikecualikan_senarai(path, nama, cuplikan):
+                continue
             # Sembunyikan nilai supaya output sendiri tidak bocor.
             if len(cuplikan) > 12:
                 cuplikan = cuplikan[:6] + "…" + cuplikan[-3:]
@@ -119,14 +175,20 @@ def imbas(path, teks):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Imbas rahsia dalam fail GAS sebelum commit.")
-    ap.add_argument("paths", nargs="*", default=["gas"],
-                    help="Fail/folder untuk diimbas (lalai: gas)")
+    ap = argparse.ArgumentParser(description="Imbas rahsia dalam fail repo sebelum commit.")
+    ap.add_argument("paths", nargs="*", default=["."],
+                    help="Fail/folder untuk diimbas (lalai: seluruh repo)")
     ap.add_argument("--fail-on", choices=list(LEVELS), default="high",
                     help="Tahap minimum yang menyebabkan keluar 1 (lalai: high)")
+    ap.add_argument("--hash", metavar="NILAI",
+                    help="Cetak cap jari untuk entri scan-allowlist.txt, kemudian keluar")
     args = ap.parse_args()
 
-    paths = args.paths or ["gas"]
+    if args.hash is not None:
+        print(hash_nilai(args.hash))
+        return 0
+
+    paths = args.paths or ["."]
     ada_fail = {p for p in paths if os.path.exists(p)}
     if not ada_fail:
         print("Tiada fail untuk diimbas: " + ", ".join(paths))

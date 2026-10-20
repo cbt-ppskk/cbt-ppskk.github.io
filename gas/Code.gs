@@ -86,8 +86,19 @@
 /* v47: Sheet ID boleh dikonfigurasi. Keutamaan:
  *   1) Script Properties 'SPREADSHEET_ID' (ditetapkan via menu '⚙️ Tetapkan Sheet ID')
  *   2) Nilai lalai di bawah (DEFAULT_SPREADSHEET_ID)
- * Ini membolehkan tukar Sheet sasaran TANPA edit kod. */
-var DEFAULT_SPREADSHEET_ID = '1Vm3fWQzZeHOHHaBY1ZLYjz2KlwTx7M0dexIyJllIe-c';
+ * Ini membolehkan tukar Sheet sasaran TANPA edit kod.
+ *
+ * v106: Nilai lalai DIKOSONGKAN. Sheet ID ialah konfigurasi setiap pemasangan,
+ * bukan kod — dan repo ini AWAM. Tetapkan sekali melalui Sheet sasaran:
+ *   Menu 'CBT Penugasan' -> '⚙️ Tetapkan Sheet ID'
+ * Ia disimpan dalam Script Properties, yang menang atas nilai ini.
+ *
+ * Skrip ini CONTAINER-BOUND (onOpen + SpreadsheetApp.getUi()), jadi apabila
+ * kedua-dua sumber kosong, openSS_() cuba getActiveSpreadsheet() — berkesan
+ * apabila dipanggil dari menu di dalam Sheet, tetapi memulangkan null untuk
+ * webapp. Dalam kes itu openSS_() membuang ralat Bahasa Melayu yang jelas
+ * dan boleh tindak, bukan TypeError kabur dari getSheetByName(). */
+var DEFAULT_SPREADSHEET_ID = '';
 var SPREADSHEET_ID = DEFAULT_SPREADSHEET_ID; /* kekal untuk keserasian rujukan lama */
 
 /** v47: baca Sheet ID aktif (Script Properties dahulu, jika tiada guna lalai). */
@@ -3290,7 +3301,12 @@ function resetRegistrationPrompt_() {
 /* ------------------------------ UTILITI --------------------------------- */
 function openSS_() {
   var id = getSpreadsheetId();
-  return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  var ss = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('Sheet ID belum ditetapkan. Buka Sheet sasaran, gunakan menu ' +
+      'CBT Penugasan -> Tetapkan Sheet ID, kemudian cuba lagi.');
+  }
+  return ss;
 }
 
 /** Ambil tab (cipta + header jika tiada). Guna calon nama untuk keserasian. */

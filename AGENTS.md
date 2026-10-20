@@ -1154,10 +1154,10 @@ Suite: `/workspace/ujian/` — `uji-fasa0.js` (sesi/RBAC/tilt),
 `uji-fasa1.js` (backend sebenar), `uji-pariti.js` (KPI), `uji-pariti-carta.js`
 (carta). Jalankan semua: `bash /workspace/ujian/semua.sh`.
 
-## PEPIJAT SISTEM LIVE: validasi tidak kekal selepas muat semula
+## PEPIJAT (DIBAIKI v103d): validasi tidak kekal selepas muat semula
 
 Ditemui semasa port panel Validasi (Fasa 2a). Ini pepijat dalam `index.html`
-yang **sudah ada dalam produksi**:
+yang **sudah ada dalam produksi**. **Dibaiki pada 2026-10-15 dalam v103d.**
 
 | | Baris | Kod | Kesan |
 |---|---|---|---|

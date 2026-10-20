@@ -30,3 +30,30 @@
 # sahaja. Mengubah tanda petik atau jarak akan membatalkan pengecualian ini dan
 # memaksa semakan semula — itu memang disengajakan.
 index.html|SALT / pepper kata laluan|baacf714723479d5
+
+# --- Hasil bina React (/react/): dua POSITIF PALSU dalam bundle minified ---
+#
+# Mengapa DITERIMA:
+#   Kedua-duanya ialah rentetan pustaka React, bukan rahsia. Pemboleh ubah
+#   minified ialah satu baris panjang, jadi konteks sebenar tidak kelihatan.
+#
+#   1. "ID Spreadsheet/Drive" -> `18.3.1-next-f1338f8080-20240426`
+#      Ini VERSI React (saluran prarilis "next"), bukan ID fail Google.
+#      Dipadankan kerana ia bermula dengan "1" dan panjang.
+#
+#   2. "Kata laluan dikod keras" -> `PASSWORD:"resetPassword"`
+#      Ini nama pemalar tindakan GAS dalam peta AKSI, bukan kata laluan.
+#      Padanan penuh regex termasuk tanda petik, seperti entri SALT di atas.
+#
+#   Bundle ini juga mengandungi URL Web App GAS dan e-mel placeholder
+#   (nama@contoh.com, pengirim@contoh.gov.my, 0123456789). URL itu SUDAH
+#   awam dalam index.html dan office.html — ia aplikasi sisi klien, jadi ia
+#   mesti ada di sana. Placeholder pula disekat oleh PENGECUALIAN.
+#
+# NOTA PENYELENGGARAAN: nama fail mengandungi cap kandungan Vite, jadi ia
+# berubah pada setiap bina semula. Bina seterusnya akan mencetuskan semula
+# dan memerlukan audit baharu — itu memang disengajakan (bundle baharu =
+# kod baharu). Jika ini terlalu mengganggu, pertimbang menyemak /react/
+# sekali sahaja dan bukan setiap commit.
+react/assets/index-BhrYDSyl.js|ID Spreadsheet/Drive|c12806fc551ab8e5
+react/assets/index-BhrYDSyl.js|Kata laluan dikod keras|0676955c45b383c6

@@ -544,6 +544,99 @@ bulan lepas `0` (elak `Infinity`/`NaN`).
 Nota: `emerald-400` Tailwind = `#34d399`, tepat sama dengan `--ok` sistem ini.
 Palet pengguna sudah selari; tiada keperluan meniru TikTok untuk warna.
 
+## `react-app/` — percubaan React SEBENAR (2026-10-15)
+
+Seksyen di atas betul untuk **`index.html`**: jangan tampal JSX ke dalamnya.
+Tetapi pada 2026-10-15 pengguna meminta "bincang React, buat sampai jadi", jadi
+satu **projek berasingan** dibina dan **disahkan berfungsi**. Ia hidup di luar
+repo: `/workspace/project/react-app/` (repo hanya dijejaki di
+`/workspace/project/repo/`). **`index.html` tidak disentuh** — md5 disahkan sama
+sebelum dan selepas.
+
+**Keputusan: React BOLEH jalan di sini.** Sebabnya tidak jelas sebelum ini dan
+patut diingati:
+
+- CSP repo **bukan** halangan. `cdn.jsdelivr.net` dan `cdnjs.cloudflare.com`
+  sudah dibenarkan. Yang CSP sekat ialah **skrip inline**.
+- Babel standalone (JSX dalam pelayar) **berfungsi** di bawah CSP repo —
+  diuji: `Babel.transform(...)` + `ReactDOM.createRoot(...)` kedua-duanya
+  berjaya, 0 pelanggaran.
+- Tetapi JSX-dalam-pelayar memerlukan **Babel 536 KB gzip**. Untuk projek
+  sebenar, gunakan Vite supaya JSX dipra-kompil.
+
+**Yang dibina** (`react-app/`): Vite 5 + React 18 + Chart.js 4, 20/20 ujian
+lulus (desktop 1440, iPhone SE 375, `prefers-reduced-motion`). Hasil bina
+**108 KB gzip** JS + 2.6 KB CSS.
+
+### Kelebihan sebenar React di sini — bukan kelajuan, tetapi struktur
+
+Kesan "hidup" (cahaya + condong ikut kursor) menjadi **satu hook**:
+
+```jsx
+<Hidup carta><div className="in glass card">…</div></Hidup>
+```
+
+Dalam `index.html` kesan ini bermasalah kerana dashboard dibina melalui
+`innerHTML` (112 panggilan) — setiap lukisan semula **memusnahkan** elemen lama,
+jadi pendengar mesti dipasang semula setiap kali. React tiada masalah itu.
+
+### Kelebihan CSP yang tidak dijangka
+
+Hasil bina Vite **sifar skrip inline**:
+
+```
+dist/index.html → <script type="module" src="./assets/index-*.js">
+```
+
+Maka CSP boleh jadi lebih ketat daripada `index.html`:
+
+```
+script-src 'self'        ← TIADA hash, TIADA 'unsafe-inline'
+```
+
+`index.html` perlu 6 hash sha256 dan **mesti dijana semula setiap kali** blok
+inline diubah (`tools/csp-hash.py --write`). Projek React tiada beban itu.
+CSP disuntik pada peringkat **bina sahaja** (plugin `cspBina()` dalam
+`vite.config.js`) — mod dev Vite guna skrip inline + WebSocket HMR, jadi CSP
+ketat akan mematikannya.
+
+### Perangkap yang ditemui semasa membina
+
+- **JSX dalam fail `.js` gagal bina.** Vite menolak: *"If you are using JSX,
+  make sure to name the file with the .jsx extension."* Hook tulen (`useTilt.js`)
+  dan komponen (`Hidup.jsx`) mesti dipisahkan.
+- **Tilt berkelip jika satu lapisan sahaja.** Jelmakan (`.hidup`) dan putarkan
+  elemen yang sama → kursor "keluar" kad kerana sudut surut ke belakang
+  (perspektif), `pointerleave` set semula putaran, kursor masuk semula → berkelip.
+  Penyelesaian: dua lapisan. `.hidup` = kawasan sentuh (**tidak pernah**
+  dijelmakan, saiz kekal); `.in` = kad yang condong. Ini sama seperti
+  `demo/hidup.html`.
+- **`media (hover:hover)` boleh salah lapor** pada sesetengah pelayar mudah
+  alih. Guna `pointerType === 'mouse'` sebagai bukti sebenar, dan letakkan semua
+  `:hover` di bawah `body.boleh-hover` yang JS tambah.
+- **Lapisan cahaya carta mesti `pointer-events:none`**, jika tidak Chart.js
+  hilang hover/tooltip.
+- **Medan 16px** diselesaikan dengan menetapkannya **sekali** dalam CSS
+  komponen. Dalam `index.html` masalah ini berulang kerana blok media query
+  kemudian menimpanya semula (lihat perangkap 640px di atas).
+
+### Bila React TIDAK berbaloi
+
+Untuk menambah kesan hover pada kad KPI sahaja, ~30 baris JS biasa sudah cukup
+(itulah yang dibuat `demo/kpi.html`). React berbaloi **hanya** jika seluruh
+aplikasi ditulis semula — 17 tab, borang, OTP, kalendar, Chart.js, jsPDF — yang
+merupakan projek berbulan-bulan, bukan satu pembetulan. Jangan cadangkan
+penulisan semula itu melainkan pengguna memintanya secara jelas.
+
+### Cara jalankan
+
+```bash
+cd react-app && npm install
+npm run dev        # http://localhost:5173
+npm run build      # -> dist/ (CSP disuntik)
+npm run preview    # http://localhost:4173
+```
+
 ### Push ke repo ini: token mesti milik `cbt-ppskk`
 
 Sesi 2026-10-19 mengesahkan perangkap dalam "Menolak (push)" secara langsung.

@@ -144,7 +144,8 @@ function diagnoseSheet(revealId) {
     { label: 'Log_Penugasan', cands: CAND_LOG },
     { label: 'Staging_Penugasan', cands: [SHEET_STAGING] },
     { label: 'Master_Kepimpinan', cands: CAND_KEPIMPINAN },
-    { label: 'OTP_Requests', cands: [SHEET_OTP] }
+    { label: 'OTP_Requests', cands: [SHEET_OTP] },
+    { label: 'Log_Cuti', cands: [SHEET_CUTI] }
   ];
   for (var r = 0; r < reqDefs.length; r++) out.required.push(reqDefs[r].label);
   var ss = null;
@@ -172,7 +173,7 @@ function diagnoseSheet(revealId) {
     }
     /* v48: bilangan baris setiap tab utama yang WUJUD. */
     try {
-      var cntNames = [SHEET_AKSES, SHEET_PERSONEL, SHEET_HARIJADI, SHEET_LOG, SHEET_STAGING, SHEET_KEPIMPINAN, SHEET_OTP];
+      var cntNames = [SHEET_AKSES, SHEET_PERSONEL, SHEET_HARIJADI, SHEET_LOG, SHEET_STAGING, SHEET_KEPIMPINAN, SHEET_OTP, SHEET_CUTI];
       for (var c = 0; c < cntNames.length; c++) {
         var t = ss.getSheetByName(cntNames[c]);
         if (t) out.counts[cntNames[c]] = Math.max(0, t.getLastRow() - 1);
@@ -228,6 +229,10 @@ var SHEET_KELULUSAN  = 'Kelulusan_Penugasan';
 var SHEET_PENYELIA   = 'Mapping Penyelia';
 var SHEET_OTP        = 'OTP_Requests';
 var SHEET_LOG_DELETED = 'Log_Deleted';
+/* v107: CUTI & KURSUS dalam tab SENDIRI. Jangan simpan dalam Log_Penugasan:
+   fetchLogCounts_ mengira SETIAP baris di sana sebagai tugasan, jadi cuti akan
+   mengembung KPI & carta jenis. Tab berasingan memisahkan dua domain ini. */
+var SHEET_CUTI = 'Log_Cuti';
 
 /* Calon nama tab (fallback kepada struktur sedia ada). */
 var CAND_LOG        = ['Log_Penugasan', 'LogPenugasan', 'Log'];
@@ -267,6 +272,7 @@ var PENYELIA_HEADERS = ['No Personel', 'Nama', 'Team', 'Penyelia', 'E-mel', 'Sta
 var LOG_DELETED_HEADERS = ['Kunci', 'ID Penugasan', 'Bil', 'Tarikh Mula', 'Tajuk', 'Dipadam Oleh', 'Cap Masa', 'Sebab', 'Salinan Baris'];
 /* v46: storan OTP tahan lasak (Sheet) — 13 lajur. */
 var OTP_HEADERS = ['E-mel', 'No Personel', 'Kod', 'Jenis', 'Masa Luput', 'Status', 'Cubaan', 'Cap Masa', 'Nama', 'Hash', 'Salt', 'Peranan', 'Tarikh Lahir'];
+var CUTI_HEADERS = ['Bil', 'ID', 'Jenis', 'Nama', 'No Personel', 'Pangkat', 'Team', 'Label', 'Tarikh Mula', 'Tarikh Tamat', 'Catatan', 'Direkod Oleh', 'Tarikh Rekod'];
 
 /* ------------------------------- PERANAN -------------------------------- */
 var ROLE_SUPER = 'SUPER_ADMIN';
@@ -368,6 +374,12 @@ function doPost(e) {
       case 'getStagingPenugasan':  return json_(guard_(body, ['penugasan_cipta', 'urus'], function () { return { ok: true, data: getStagingPenugasan() }; }));
       case 'deleteStagingPenugasan': return json_(guard_(body, ['penugasan_cipta', 'urus'], function (s) { return deleteStagingPenugasan(body, s); }));
       case 'commitLogPenugasan':   return json_(guard_(body, ['penugasan_cipta', 'urus'], function (s) { return commitLogPenugasan(body.records || [], s); }));
+      /* v107: CUTI & KURSUS — laluan simpan/baca/padam yang sebelum ini TIADA.
+         Dulu parser mengesan cuti/kursus tetapi hanya memaparkannya; tiada apa
+         disimpan. Tulis ke tab Log_Cuti (bukan Log_Penugasan). */
+      case 'commitCutiKursus':     return json_(guard_(body, ['penugasan_cipta', 'urus'], function (s) { return commitCutiKursus(body.records || [], s); }));
+      case 'fetchCutiKursus':      return json_(guard_(body, null, function () { return { ok: true, data: fetchCutiKursus(body.startDate, body.endDate) }; }));
+      case 'deleteCutiKursus':     return json_(guard_(body, ['penugasan_cipta', 'urus'], function (s) { return deleteCutiKursus_(body, s); }));
 
       /* Kelulusan penugasan (SUPER ADMIN + ADMIN sahaja) */
       case 'submitPenugasan':      return json_(guard_(body, ['penugasan_cipta', 'urus'], function (s) { return submitPenugasan(body.record || {}, s); }));
@@ -1575,6 +1587,125 @@ function commitLogPenugasan(records, sess) {
   var okCount = results.filter(function (r) { return r.ok; }).length;
   auditLog_(sess, 'SIMPAN_LOG', 'Log_Penugasan', '', '', okCount + '/' + records.length + ' rekod', okCount ? 'BERJAYA' : 'GAGAL');
   return { ok: true, results: results, successCount: okCount, failureCount: results.length - okCount };
+}
+
+/* ===== v107: CUTI & KURSUS (tab Log_Cuti) =====
+   Sebelum ini parser mengesan cuti/kursus tetapi TIADA laluan simpan: rekod
+   hanya muncul dalam pratonton lalu hilang. Tiga fungsi ini memberi domain itu
+   storan sendiri. Tab BERASINGAN daripada Log_Penugasan adalah penting —
+   fetchLogCounts_ mengira setiap baris Log_Penugasan sebagai tugasan, jadi
+   menyimpan cuti di sana akan mengembung KPI dan carta "Tugasan Mengikut Jenis". */
+
+/** Baca SEMUA baris Log_Cuti sebagai objek. Toleran terhadap baris rosak. */
+function bacaCutiRows_() {
+  var sh = getSheet_(SHEET_CUTI, CUTI_HEADERS);
+  var vals = sh.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < vals.length; i++) {
+    var row = vals[i];
+    if (!row || !row.length) continue;
+    var nama = String(row[3] == null ? '' : row[3]).trim();
+    var mula = fmtDateCell_(row[8]);
+    /* Baris tanpa nama DAN tanpa tarikh = sampah; langkau supaya paparan bersih. */
+    if (!nama && !mula) continue;
+    out.push({
+      row: i + 1,
+      bil: row[0], id: String(row[1] == null ? '' : row[1]).trim(),
+      jenis: String(row[2] == null ? '' : row[2]), nama: nama,
+      no: String(row[4] == null ? '' : row[4]), pangkat: String(row[5] == null ? '' : row[5]),
+      team: String(row[6] == null ? '' : row[6]), label: String(row[7] == null ? '' : row[7]),
+      tarikh_mula: mula, tarikh_tamat: fmtDateCell_(row[9]),
+      catatan: String(row[10] == null ? '' : row[10]),
+      direkod_oleh: String(row[11] == null ? '' : row[11]),
+      tarikh_rekod: row[12]
+    });
+  }
+  return out;
+}
+
+/** Simpan cuti/kursus. UPSERT ikut `id` supaya menekan Simpan berulang kali
+    TIDAK mencipta pendua — corak sama seperti commitLogPenugasan. */
+function commitCutiKursus(records, sess) {
+  if (!records || !records.length) return { ok: false, error: 'Tiada rekod cuti/kursus untuk disimpan.', code: 'NO_RECORDS', results: [], successCount: 0, failureCount: 0 };
+  var sh = getSheet_(SHEET_CUTI, CUTI_HEADERS);
+  var results = [];
+  var vals = sh.getDataRange().getValues();
+  var idToRow = {};
+  var nextBil = sh.getLastRow();
+  for (var r = vals.length - 1; r >= 1; r--) {
+    var rid = String(vals[r][1] == null ? '' : vals[r][1]).trim();
+    if (rid) idToRow[rid] = r + 1;
+    var bn = Number(vals[r][0]);
+    if (!isNaN(bn) && bn > nextBil) nextBil = bn;
+  }
+  for (var i = 0; i < records.length; i++) {
+    var t = records[i] || {};
+    try {
+      if (!String(t.nama || '').trim()) { results.push({ ok: false, error: 'Nama petugas tidak lengkap.' }); continue; }
+      if (!String(t.tarikh_mula || '').trim()) { results.push({ ok: false, error: 'Tarikh mula tidak lengkap.' }); continue; }
+      var id = String(t.id || '').trim();
+      if (!id) { nextBil = nextBil + 1; id = 'CK-' + nextBil; }
+      var rowVals = [
+        0, sanitize_(id), sanitize_(t.jenis || 'Cuti'), sanitize_(t.nama || ''),
+        sanitize_(t.no || ''), sanitize_(t.pangkat || ''), sanitize_(t.team || ''),
+        sanitize_(t.label || ''), sanitize_(t.tarikh_mula || ''),
+        sanitize_(t.tarikh_tamat || t.tarikh_mula || ''), sanitize_(t.catatan || ''),
+        direkodOleh_(sess), new Date()
+      ];
+      if (idToRow[id]) {
+        rowVals[0] = Number(vals[idToRow[id] - 1][0]) || (idToRow[id] - 1);
+        sh.getRange(idToRow[id], 1, 1, rowVals.length).setValues([rowVals]);
+        results.push({ ok: true, recordId: id, updated: true, row: idToRow[id] });
+      } else {
+        rowVals[0] = sh.getLastRow();
+        sh.appendRow(rowVals);
+        idToRow[id] = sh.getLastRow();
+        results.push({ ok: true, recordId: id, updated: false, row: idToRow[id] });
+      }
+    } catch (e) {
+      results.push({ ok: false, error: (e && e.message) ? e.message : String(e) });
+    }
+  }
+  var okCount = results.filter(function (r) { return r.ok; }).length;
+  auditLog_(sess, 'SIMPAN_CUTI', 'Log_Cuti', '', '', okCount + '/' + records.length + ' rekod', okCount ? 'BERJAYA' : 'GAGAL');
+  return { ok: true, results: results, successCount: okCount, failureCount: results.length - okCount };
+}
+
+/** Baca cuti/kursus tersimpan. Tapisan tarikh pilihan (YYYY-MM-DD). */
+function fetchCutiKursus(startDate, endDate) {
+  var from = String(startDate == null ? '' : startDate).trim();
+  var to = String(endDate == null ? '' : endDate).trim();
+  var semua = bacaCutiRows_();
+  if (!from && !to) return semua;
+  return semua.filter(function (c) {
+    /* Rekod dengan julat merentas tempoh dikira jika julatnya BERTINDIHAN dengan
+       tempoh yang diminta — bukan sekadar tarikh mula di dalam tempoh. */
+    var mula = String(c.tarikh_mula || ''), tamat = String(c.tarikh_tamat || c.tarikh_mula || '');
+    if (!mula) return false;
+    if (from && tamat && tamat < from) return false;
+    if (to && mula && mula > to) return false;
+    return true;
+  });
+}
+
+/** Padam satu rekod cuti/kursus ikut id atau bil. */
+function deleteCutiKursus_(body, sess) {
+  body = body || {};
+  var wantId = String(body.id == null ? '' : body.id).trim();
+  var wantBil = String(body.bil == null ? '' : body.bil).trim();
+  if (!wantId && !wantBil) return { ok: false, error: 'Rekod tidak dikenal pasti (id/bil tiada).' };
+  var sh = getSheet_(SHEET_CUTI, CUTI_HEADERS);
+  var vals = sh.getDataRange().getValues();
+  var hitRow = 0, rec = null;
+  for (var i = 1; i < vals.length; i++) {
+    var rid = String(vals[i][1] == null ? '' : vals[i][1]).trim();
+    var rbil = String(vals[i][0] == null ? '' : vals[i][0]).trim();
+    if ((wantId && rid === wantId) || (wantBil && rbil === wantBil)) { hitRow = i + 1; rec = vals[i]; break; }
+  }
+  if (!hitRow) return { ok: false, error: 'Rekod cuti/kursus tidak dijumpai (id/bil tidak sepadan).' };
+  sh.deleteRow(hitRow);
+  auditLog_(sess, 'PADAM_CUTI', 'Log_Cuti', (wantId || wantBil), 'baris ' + hitRow, String(rec[3] || ''), 'BERJAYA');
+  return { ok: true, deleted: true, row: hitRow };
 }
 
 function saveBatchTasks(tasks, sess) {
@@ -3187,6 +3318,7 @@ function setupSheets() {
   ensureTab_(ss, SHEET_KELULUSAN, KELULUSAN_HEADERS, [SHEET_KELULUSAN], created, adjusted);
   ensureTab_(ss, SHEET_PENYELIA, PENYELIA_HEADERS, [SHEET_PENYELIA], created, adjusted);
   ensureTab_(ss, SHEET_OTP, OTP_HEADERS, [SHEET_OTP], created, adjusted);
+  ensureTab_(ss, SHEET_CUTI, CUTI_HEADERS, [SHEET_CUTI], created, adjusted);
   return { ok: true, created: created, adjusted: adjusted };
 }
 

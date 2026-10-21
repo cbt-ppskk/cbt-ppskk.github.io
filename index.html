@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103e">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-dlW55hFqO7aXkTOpPZyHyN5Y/E2lQkviMAbeo3cxns0=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-dlW55hFqO7aXkTOpPZyHyN5Y/E2lQkviMAbeo3cxns0=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-hJwXm7nr20BzzqxZZlTDG2adXVcX9PUxrH1iO0bGgH8=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-hJwXm7nr20BzzqxZZlTDG2adXVcX9PUxrH1iO0bGgH8=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -1609,6 +1609,13 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
             <button type="button" class="btn save" id="ki-save-all">💾 Simpan Semua ke Log Penugasan</button>
             <button type="button" class="btn" id="ki-stage-clear">Buang Semua Draf</button>
           </div>
+          <!-- v107: baris SENDIRI — laporan yang mengandungi cuti SAHAJA (tiada
+               penugasan) mesti tetap boleh disimpan. -->
+          <div class="prow" id="ki-cuti-actions" style="display:none">
+            <button type="button" class="btn save" id="ki-save-cuti">💾 Simpan Cuti/Kursus</button>
+            <span style="font-size:12px;color:var(--muted)" id="ki-cuti-count"></span>
+          </div>
+          <div id="ki-cuti-saved"></div>
         </div>
 
         <!-- v84: RINGKASAN SUBMODUL 1 (khusus halaman ini sahaja) -->
@@ -4631,7 +4638,7 @@ function buildNumberedV56_(gr,globalDate){
   rec.masa_tamat=tr.end!=null?hm(tr.end):'';
   rec.masa_text=timeStr;
   rec.jenis='Majlis/Kursus/Seminar/Bengkel';
-  rec.tarikh_mula=globalDate||'';rec.tarikh_tamat=globalDate||'';
+  var _r=rangeOf_(globalDate);rec.tarikh_mula=_r.start;rec.tarikh_tamat=_r.end;rec.bil_hari=hariRange_(_r);
   rec.sumber='Smart AI Parser (v56)';
   v56Assign_(rec,roles);
   finalizeRecord(rec);
@@ -4655,7 +4662,7 @@ function buildAdminV56_(gr,globalDate){
     var after=roles.admin.length+roles.pa.length+roles.foto.length+roles.video.length;
     if(after===before)roles.admin=roles.admin.concat(splitNames(cl));
   });
-  rec.tarikh_mula=globalDate||'';rec.tarikh_tamat=globalDate||'';
+  var _r=rangeOf_(globalDate);rec.tarikh_mula=_r.start;rec.tarikh_tamat=_r.end;rec.bil_hari=hariRange_(_r);
   rec.sumber='Smart AI Parser (v56)';
   v56Assign_(rec,roles);
   finalizeRecord(rec);
@@ -4685,7 +4692,7 @@ function buildSpecialV56_(gr,globalDate){
       roles[r]=roles[r].concat([n]);
     });
   }
-  rec.tarikh_mula=globalDate||'';rec.tarikh_tamat=globalDate||'';
+  var _r=rangeOf_(globalDate);rec.tarikh_mula=_r.start;rec.tarikh_tamat=_r.end;rec.bil_hari=hariRange_(_r);
   rec.sumber='Smart AI Parser (v56)';
   v56Assign_(rec,roles);
   finalizeRecord(rec);
@@ -4884,31 +4891,143 @@ function renderCutiKursus(res){
   el.innerHTML=h;
 }
 
+/* v107: papar baris tindakan cuti/kursus hanya apabila ada rekod dikesan. */
+function renderCutiActions(){
+  var el=document.getElementById('ki-cuti-actions');if(!el)return;
+  var n=(typeof CUTI_STAGE!=='undefined'&&CUTI_STAGE)?CUTI_STAGE.length:0;
+  el.style.display=n?'flex':'none';
+  var c=document.getElementById('ki-cuti-count');
+  if(c)c.textContent=n?(n+' rekod cuti/kursus dikesan'):'';
+}
+/* v107: ID deterministik daripada kandungan rekod. Date.now() TIDAK boleh
+   digunakan di sini: ia menghasilkan ID baharu setiap simpanan, jadi menekan
+   "Simpan Cuti/Kursus" dua kali akan mencipta DUA baris pendua dalam Log_Cuti.
+   Kunci = jenis|nama|no|label|tarikh mula|tarikh tamat -> laporan yang sama
+   sentiasa memeta ke ID yang sama (UPSERT sebenar di backend). */
+function cutiId_(r){
+  var k=[r.jenis||'',r.nama||'',r.no||'',r.label||'',r.tarikh_mula||'',r.tarikh_tamat||''].join('|');
+  var h=2166136261;
+  for(var i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619);}
+  return 'CK-'+(h>>>0).toString(36);
+}
+/* v107: simpan cuti/kursus ke tab Log_Cuti. ID stabil supaya menekan berulang
+   kali MENGEMAS KINI rekod yang sama, bukan mencipta pendua. */
+function saveCutiAll(){
+  if(typeof CUTI_STAGE==='undefined'||!CUTI_STAGE||!CUTI_STAGE.length){showToast('Tiada cuti/kursus dikesan untuk disimpan.');return;}
+  var recs=CUTI_STAGE.slice();
+  recs.forEach(function(r){
+    if(!r.jenis)r.jenis='Cuti';
+    if(!r.tarikh_tamat)r.tarikh_tamat=r.tarikh_mula||'';
+    if(!r.id)r.id=cutiId_(r);
+  });
+  if(!gasConfigured()){showToast('⚠️ Backend GAS belum dikonfigurasi — cuti/kursus tidak dapat disimpan.');return;}
+  showToast('⏳ Menyimpan '+recs.length+' rekod cuti/kursus…');
+  gasCall('commitCutiKursus',{records:recs,actorEmail:(SESSION&&SESSION.id)||''}).then(function(r){
+    if(r&&r.ok&&Array.isArray(r.results)){
+      var okN=r.results.filter(function(x){return x&&x.ok;}).length;
+      var fail=r.results.filter(function(x){return !x||!x.ok;});
+      if(fail.length){
+        showToast('⚠️ '+recs.length+' dihantar · '+okN+' berjaya · '+fail.length+' gagal: '+fail.map(function(f){return (f&&f.error)||'tidak diketahui';}).join('; '));
+        return;
+      }
+      CUTI_STAGE=[];renderCutiActions();
+      try{renderCutiKursus(null);}catch(e){}
+      showToast('✅ '+okN+' rekod cuti/kursus disimpan ke Log_Cuti.');
+      loadSavedCuti();
+      return;
+    }
+    showToast('⚠️ Gagal menyimpan cuti/kursus: '+((r&&r.error)||'respons pelayan tidak sah.'));
+  }).catch(function(e){
+    showToast('❌ Gagal menyimpan cuti/kursus: '+((e&&e.message)||''));
+  });
+}
+/* v107: papar cuti/kursus yang SUDAH tersimpan (berasingan daripada pratonton
+   parse) supaya pengguna boleh mengesahkan simpanan benar-benar berlaku. */
+function loadSavedCuti(){
+  var el=document.getElementById('ki-cuti-saved');if(!el)return;
+  if(!gasConfigured()){el.innerHTML='';return;}
+  gasCall('fetchCutiKursus',{}).then(function(r){
+    var d=(r&&r.ok&&Array.isArray(r.data))?r.data:[];
+    if(!d.length){el.innerHTML='';return;}
+    var rows=d.slice(-30).map(function(c){
+      return '<tr><td>'+esc(c.nama)+'</td><td>'+esc(c.jenis||'')+'</td><td>'+esc(c.label||'')+
+        '</td><td>'+esc(c.tarikh_mula||'—')+'</td><td>'+esc(c.tarikh_tamat||'—')+'</td></tr>';
+    }).join('');
+    el.innerHTML='<div class="ck-card"><h4>💾 Cuti/Kursus Tersimpan ('+d.length+
+      ')</h4><div class="ck-scroll"><table class="ck-tbl"><thead><tr><th>Nama</th><th>Jenis</th><th>Label</th><th>Tarikh Mula</th><th>Tarikh Tamat</th></tr></thead><tbody>'+
+      rows+'</tbody></table></div></div>';
+  }).catch(function(){});
+}
+
 /* ===== v56 OVERRIDE =====
    Blok v55 lama berada SELEPAS blok v56 di atas, jadi deklarasi lama menang.
    Takrif semula di sini (selepas blok lama) supaya parser v56 yang BERJALAN. */
-function extractGlobalDate_(raw){
+
+/* Kesan JULAT tarikh dalam laporan, bukan tarikh tunggal sahaja.
+   Pulangkan {start,end} ISO; tarikh tunggal -> start===end; null jika tiada.
+   Bentuk disokong: 20-21/10/2026, 20/10/2026-21/10/2026, 20-21 OKTOBER 2026,
+   20 hingga 21 OKTOBER 2026, 30 OKTOBER - 2 NOVEMBER 2026, 28 DIS 2026 - 2 JAN 2027. */
+function parseTarikhRange_(raw){
   var t=String(raw||'');
-  var m=t.match(/(?:tarikh|date)\s*[:\-]?\s*([^\n]+)/i);
-  if(m){var d=parseDate(m[1]);if(d)return d;}
-  var re=/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/g,mm;
-  while((mm=re.exec(t))!==null){
-    var mi=V56_MONTHS.indexOf(String(mm[2]).toLowerCase());
-    if(mi>-1)return mm[3]+'-'+pad2(mi+1)+'-'+pad2(mm[1]);
-  }
-  var m2=t.match(/(\d{1,2}\s*[\/\-.]\s*\d{1,2}\s*[\/\-.]\s*\d{4})/);
-  if(m2){var d2=parseDate(m2[1]);if(d2)return d2;}
-  return '';
+  var mm=t.match(/(?:tarikh|date)\s*[:\-]?\s*([^\n]+)/i);
+  var seg=mm?mm[1]:t;
+  /* Buang penanda hari "@ JUMAAT" dan ekoran "..." pada baris Tarikh sahaja;
+     jika tiada baris Tarikh, jangan potong teks penuh (boleh buang data). */
+  if(mm)seg=seg.replace(/[@(].*$/,'');
+  seg=seg.replace(/\b(ahad|isnin|selasa|rabu|khamis|jumaat|sabtu)\b/ig,' ')
+    .replace(/\s+/g,' ').trim();
+  var D='(?:-|\\u2013|\\u2014|hingga|to)',g;
+  /* 20/10/2026 - 21/10/2026 (kedua-dua bertahun) */
+  g=seg.match(new RegExp('(\\d{1,2})[/.](\\d{1,2})[/.](\\d{4})\\s*'+D+'\\s*(\\d{1,2})[/.](\\d{1,2})[/.](\\d{4})'));
+  if(g)return {start:g[3]+'-'+pad2(g[2])+'-'+pad2(g[1]),end:g[6]+'-'+pad2(g[5])+'-'+pad2(g[4])};
+  /* 20-21/10/2026 (hari julat, bulan/tahun dikongsi) */
+  g=seg.match(new RegExp('(\\d{1,2})\\s*'+D+'\\s*(\\d{1,2})[/.](\\d{1,2})[/.](\\d{4})'));
+  if(g)return {start:g[4]+'-'+pad2(g[3])+'-'+pad2(g[1]),end:g[4]+'-'+pad2(g[3])+'-'+pad2(g[2])};
+  /* 30 OKTOBER 2026 - 2 NOVEMBER 2026 (kedua-dua bertahun) */
+  g=seg.match(new RegExp('(\\d{1,2})\\s+([a-z]+)\\s+(\\d{4})\\s*'+D+'\\s*(\\d{1,2})\\s+([a-z]+)\\s+(\\d{4})','i'));
+  if(g){var a=V56_MONTHS.indexOf(g[2].toLowerCase()),b=V56_MONTHS.indexOf(g[5].toLowerCase());
+    if(a>-1&&b>-1)return {start:g[3]+'-'+pad2(a+1)+'-'+pad2(g[1]),end:g[6]+'-'+pad2(b+1)+'-'+pad2(g[4])};}
+  /* 30 OKTOBER - 2 NOVEMBER 2026 (tahun dikongsi; mungkin rentas tahun) */
+  g=seg.match(new RegExp('(\\d{1,2})\\s+([a-z]+)\\s*'+D+'\\s*(\\d{1,2})\\s+([a-z]+)\\s+(\\d{4})','i'));
+  if(g){var c=V56_MONTHS.indexOf(g[2].toLowerCase()),e=V56_MONTHS.indexOf(g[4].toLowerCase());
+    if(c>-1&&e>-1){var ye=+g[5],ys=(c>e)?ye-1:ye;
+      return {start:ys+'-'+pad2(c+1)+'-'+pad2(g[1]),end:ye+'-'+pad2(e+1)+'-'+pad2(g[3])};}}
+  /* 20-21 OKTOBER 2026 (hari julat, bulan/tahun dikongsi) */
+  g=seg.match(new RegExp('(\\d{1,2})\\s*'+D+'\\s*(\\d{1,2})\\s+([a-z]+)\\s+(\\d{4})','i'));
+  if(g){var f=V56_MONTHS.indexOf(g[3].toLowerCase());
+    if(f>-1)return {start:g[4]+'-'+pad2(f+1)+'-'+pad2(g[1]),end:g[4]+'-'+pad2(f+1)+'-'+pad2(g[2])};}
+  /* tarikh tunggal: 09 OKTOBER 2026 */
+  g=seg.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/i);
+  if(g){var h=V56_MONTHS.indexOf(g[2].toLowerCase());
+    if(h>-1){var d1=g[3]+'-'+pad2(h+1)+'-'+pad2(g[1]);return {start:d1,end:d1};}}
+  /* tarikh tunggal angka: 09/10/2026 */
+  g=seg.match(/(\d{1,2})[/.](\d{1,2})[/.](\d{4})/);
+  if(g){var d2=g[3]+'-'+pad2(g[2])+'-'+pad2(g[1]);return {start:d2,end:d2};}
+  return null;
+}
+function extractGlobalDate_(raw){
+  var r=parseTarikhRange_(raw);
+  return r?r.start:'';
+}
+/* Normalkan argumen tarikh pembina rekod: terima string (tarikh tunggal)
+   ATAU objek {start,end} daripada parseTarikhRange_. Semak jenis objek DAHULU —
+   objek {start:''} (laporan tanpa tarikh) mesti pulangkan string kosong, bukan "[object Object]". */
+function rangeOf_(g){
+  if(g&&typeof g==='object')return {start:g.start||'',end:g.end||g.start||''};
+  var s=String(g==null?'':g);return {start:s,end:s};
+}
+/* Bilangan hari daripada julat. Ikut konvensyen sedia ada (lihat bil_hari dalam
+   laluan legasi): inklusif, jadi 20hb->21hb = 2 hari; julat tak sah = 1. */
+function hariRange_(r){
+  if(!r||!r.start||!r.end||r.end<r.start)return 1;
+  var n=Math.round((new Date(r.end+'T00:00:00')-new Date(r.start+'T00:00:00'))/86400000)+1;
+  return n>0?n:1;
 }
 function parseDateRange_(s){
-  var t=String(s==null?'':s);
-  var a=t.match(/(\d{1,2})\s*\/\s*(\d{1,2})\s*-\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(\d{4})/);
-  if(a)return {start:a[5]+'-'+pad2(a[2])+'-'+pad2(a[1]),end:a[5]+'-'+pad2(a[4])+'-'+pad2(a[3])};
-  var b=t.match(/(\d{1,2})\s*-\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(\d{4})/);
-  if(b)return {start:b[4]+'-'+pad2(b[3])+'-'+pad2(b[1]),end:b[4]+'-'+pad2(b[3])+'-'+pad2(b[2])};
-  var c=t.match(/(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(\d{4})/);
-  if(c)return {start:c[3]+'-'+pad2(c[2])+'-'+pad2(c[1]),end:c[3]+'-'+pad2(c[2])+'-'+pad2(c[1])};
-  return null;
+  /* Satu sumber kebenaran: parseTarikhRange_ (julat penuh + nama bulan).
+     Versi lama salah: "20/10/2026 - 22/10/2026" memberi mula 2026-10-26,
+     dan "30 OKTOBER - 2 NOVEMBER 2026" tidak dikesan langsung. */
+  return parseTarikhRange_(s);
 }
 function parseCutiLines(lines,globalDate){
   var out=[];
@@ -4948,6 +5067,7 @@ function smartParseLaporan(text){
   var raw=String(text||'').replace(/\r/g,'');
   var lines=raw.split('\n');
   var globalDate=extractGlobalDate_(raw);
+  var _rg=parseTarikhRange_(raw)||{start:globalDate,end:globalDate};
   var mode='main',mainLines=[],cutiLines=[],kursusLines=[];
   lines.forEach(function(l){
     var cl=v56Clean(l);if(!cl)return;
@@ -4974,9 +5094,9 @@ function smartParseLaporan(text){
   var assignments=[];
   groups.forEach(function(gr){
     try{
-      if(gr.kind==='num')assignments.push(buildNumberedV56_(gr,globalDate));
-      else if(gr.kind==='admin')assignments.push(buildAdminV56_(gr,globalDate));
-      else assignments.push(buildSpecialV56_(gr,globalDate));
+      if(gr.kind==='num')assignments.push(buildNumberedV56_(gr,_rg));
+      else if(gr.kind==='admin')assignments.push(buildAdminV56_(gr,_rg));
+      else assignments.push(buildSpecialV56_(gr,_rg));
     }catch(e){}
   });
   var cuti=parseCutiLines(cutiLines,globalDate);
@@ -4987,6 +5107,10 @@ function smartParseLaporan(text){
 
 /* ---- Staging ---- */
 let STAGE=[];
+/* v107: cuti & kursus daripada laporan terakhir. Domain BERASINGAN daripada
+   STAGE (penugasan) kerana ia disimpan ke tab Log_Cuti, bukan Log_Penugasan —
+   mencampurkannya akan mengembung KPI dan carta jenis. */
+let CUTI_STAGE=[];
 var STAGE_SEL=0,_SEL_SYNC=false;
 /* ===== v84: sesi sunting kad = keadaan STABIL ikut _eid (bukan indeks array) =====
    Punca bug lama: listener 'input' dalam renderStage() memanggil renderStage() selepas
@@ -4994,7 +5118,7 @@ var STAGE_SEL=0,_SEL_SYNC=false;
    fokus/kedudukan scroll hilang. Panel kini hanya ditutup oleh tindakan pengguna. */
 var STAGE_EDIT={};      /* _eid -> {open:true, snap:{...nilai asal}} */
 var _KI_SAVING=false;   /* elak simpan berganda bila butang ditekan berkali-kali */
-var _STAGE_SNAP_KEYS=['tajuk','jenis','fasa','tarikh_mula','masa_mula','masa_tamat','tempat','petugas_admin','petugas_pa','petugas_foto','petugas_video'];
+var _STAGE_SNAP_KEYS=['tajuk','jenis','fasa','tarikh_mula','tarikh_tamat','masa_mula','masa_tamat','tempat','petugas_admin','petugas_pa','petugas_foto','petugas_video'];
 function t1h(v){ if(v==null||v==='')return ''; return String(v).padStart(4,'0').replace(/(\d{2})(\d{2})/,'$1:$2'); }
 function countNamesAll(r){
   var n=0; if(!r)return 0;
@@ -5096,7 +5220,7 @@ function renderStage(){
       '<div class="kc-h"><div class="kc-n">'+(i+1)+'</div><div class="kc-t">'+esc(r.tajuk||'(tanpa tajuk)')+
         '<div><span class="kc-tag">'+esc(r.jenis||'Penugasan')+'</span></div></div></div>'+
       '<div class="kc-m">'+
-        '<span>📅 '+(esc(r.tarikh_mula)||'—')+' '+(r.hari?'('+esc(r.hari)+')':'')+'</span>'+
+        '<span>📅 '+(esc(r.tarikh_mula)||'—')+(r.tarikh_tamat&&r.tarikh_tamat!==r.tarikh_mula?(' → '+esc(r.tarikh_tamat)):'')+' '+(r.hari?'('+esc(r.hari)+')':'')+'</span>'+
         '<span>🕒 '+(t1||'--')+' – '+(t2||'--')+'</span>'+
         '<span>📍 '+(esc(r.tempat)||'—')+'</span>'+
         '<span>🧩 Fasa: '+(esc(r.fasa)||'—')+'</span>'+
@@ -5117,7 +5241,7 @@ function renderStage(){
       '<details class="kc-edit" data-eid="'+esc(eid)+'"'+(ed?' open':'')+'><summary style="cursor:pointer;font-size:11px;color:var(--muted)">\u270f\ufe0f Sunting kad ini</summary>'+
       '<div style="margin-top:8px;display:grid;gap:6px">'+
       '<input type="text" data-eid="'+esc(eid)+'" data-k="tajuk" value="'+esc(r.tajuk||'')+'" placeholder="Tajuk">'+
-      '<input type="date" data-eid="'+esc(eid)+'" data-k="tarikh_mula" value="'+esc(r.tarikh_mula||'')+'">'+
+      '<div style="display:flex;gap:6px"><input type="date" data-eid="'+esc(eid)+'" data-k="tarikh_mula" value="'+esc(r.tarikh_mula||'')+'" title="Tarikh Mula"><input type="date" data-eid="'+esc(eid)+'" data-k="tarikh_tamat" value="'+esc(r.tarikh_tamat||r.tarikh_mula||'')+'" title="Tarikh Tamat"></div>'+
       '<div style="display:flex;gap:6px"><input type="time" data-eid="'+esc(eid)+'" data-k="masa_mula" value="'+esc(t1)+'"><input type="time" data-eid="'+esc(eid)+'" data-k="masa_tamat" value="'+esc(t2)+'"></div>'+
       '<input type="text" data-eid="'+esc(eid)+'" data-k="tempat" value="'+esc(r.tempat||'')+'" placeholder="Tempat">'+
       ['admin','pa','foto','video'].map(role=>'<input type="text" data-eid="'+esc(eid)+'" data-k="petugas_'+role+'" value="'+esc(r['petugas_'+role]||'')+'" placeholder="Petugas '+roleLbl[role]+'">').join('')+
@@ -5361,8 +5485,10 @@ function initKeyin(){
         return;
       }
       STAGE=out.slice();
+      CUTI_STAGE=((res.cuti||[]).concat(res.kursus||[])).slice();
       renderStage();
       renderCutiKursus(res);
+      renderCutiActions();
       /* v76: maklumat penugasan diisi MANUAL sahaja (tiada auto-isi dari WhatsApp) */
       var extra=[];
       if(res.cuti&&res.cuti.length)extra.push(res.cuti.length+' cuti');
@@ -5372,9 +5498,11 @@ function initKeyin(){
     }catch(e){if(pmsg)pmsg.textContent='Ralat analisis: '+e.message;}
   });
   var pcb=document.getElementById('ki-paste-clear');
-  if(pcb)pcb.addEventListener('click',function(){if(paste)paste.value='';STAGE=[];renderStage();renderCutiKursus(null);if(pmsg)pmsg.textContent='';});
+  if(pcb)pcb.addEventListener('click',function(){if(paste)paste.value='';STAGE=[];CUTI_STAGE=[];renderStage();renderCutiKursus(null);renderCutiActions();if(pmsg)pmsg.textContent='';});
   var sc=document.getElementById('ki-stage-clear');
   if(sc)sc.addEventListener('click',function(){STAGE=[];renderStage();showToast('Draf dibuang.');});
+  var sc2=document.getElementById('ki-save-cuti');
+  if(sc2)sc2.addEventListener('click',saveCutiAll);
   var sa=document.getElementById('ki-save-all');
   if(sa)sa.addEventListener('click',saveStageAll);
   function kiCalc(){

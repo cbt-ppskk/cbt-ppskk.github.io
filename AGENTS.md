@@ -1388,3 +1388,137 @@ sama, dan susunannya dibandingkan huruf demi huruf dengan React.
 **Nota:** `uji-fasa1.js` memanggil backend GAS **sebenar** dan boleh gagal
 secara transien apabila terhad kadar. Jalankan bersendirian untuk mengesahkan;
 kegagalan berkelompok menunjukkan had kadar, bukan regresi.
+
+---
+
+## Parser WhatsApp: jangan percaya "definisi terakhir" sahaja
+
+`index.html` mengandungi **fungsi bertindih** daripada pelbagai generasi kod
+(v55, v56). JavaScript memakai definisi **terakhir**, tetapi fail ini sengaja
+menyusun semula supaya blok tertentu menang. Sebelum mengedit sebarang fungsi
+parser, **kira dahulu** berapa kali ia ditakrifkan:
+
+```bash
+for f in smartParseLaporan extractGlobalDate_ parseDateRange_ parseCutiLines parseKursusLines; do
+  printf "%-22s %s\n" "$f" "$(grep -c "function $f" index.html)"
+done
+```
+
+Setakat Okt 2026: `smartParseLaporan` 3x, `extractGlobalDate_` 2x,
+`parseDateRange_` 2x, `parseCutiLines`/`parseKursusLines` 3x.
+
+Akibatnya `sed` atau ganti-teks global boleh memukul blok **mati**. Sasarkan
+yang **terakhir** (contoh `s.rfind(...)` dalam Python), bukan `s.replace(...)`.
+Komen dalam fail menandakan blok aktif:
+
+```
+/* ===== v56 OVERRIDE ===== ... Takrif semula di sini (selepas blok lama) supaya parser v56 yang BERJALAN. */
+```
+
+### Satu sumber kebenaran untuk tarikh
+
+`parseTarikhRange_(raw)` (dalam blok v56 override) mengesan **julat** tarikh dan
+memulangkan `{start,end}` ISO; tarikh tunggal memulangkan `start===end`; tiada
+tarikh memulangkan `null`. `extractGlobalDate_` dan `parseDateRange_` kini
+kedua-duanya mewakilkan kepadanya — **jangan** tambah logik tarikh berasingan.
+
+Bug asal `parseDateRange_` (kini dibuang): `"20/10/2026 - 22/10/2026"` memberi
+mula `2026-10-26` (sepatutnya `2026-10-20`), dan
+`"30 OKTOBER - 2 NOVEMBER 2026"` tidak dikesan langsung. Ini menjejaskan
+**cuti** dan **kursus**, bukan sekadar penugasan.
+
+### Perangkap objek vs string
+
+`rangeOf_(g)` menerima string ATAU objek julat. Semak `typeof g==='object'`
+**dahulu**, bukan `g.start`. Objek `{start:'',end:''}` (laporan tanpa tarikh)
+akan jatuh ke cawangan string dan menghasilkan `"[object Object]"` yang
+merosakkan data. `uji-parser-tepi.js` menangkap ini.
+
+### `bil_hari` mesti ikut julat
+
+Bilangan hari inklusif (`20hb -> 21hb = 2 hari`), dikira oleh `hariRange_(r)` dan
+ditetapkan dalam ketiga-tiga pembina rekod (`buildNumberedV56_`,
+`buildAdminV56_`, `buildSpecialV56_`). Ia disimpan ke lajur sheet 24, jadi nilai
+salah bermakna data salah di backend, bukan sekadar paparan.
+
+### Ujian
+
+- `uji-parser-julat.js` (22) — julat, bil_hari, aliran penuh, cuti/kursus
+- `uji-parser-tepi.js` (8) — tiada tarikh, bulan tak sah, masa bukan tarikh, en-dash
+- `uji-tarikh-tamat.js` (13) — panel sunting kad + paparan julat
+
+Kedua-dua ujian parser menerima URL sebagai argumen, jadi anda boleh
+membuktikan ia bermakna dengan menjalankannya ke atas kod lama:
+
+```bash
+git show HEAD:index.html > /tmp/old/index.html   # serve /tmp/old pada port lain
+node uji-parser-julat.js http://127.0.0.1:12098  # -> 16 GAGAL pada kod asal
+```
+
+### Cuti & kursus: kini DISIMPAN (v107) — tetapi backend mesti di-deploy
+
+**Sebelum v107:** `smartParseLaporan` memulangkan `{assignments, cuti, kursus}`,
+tetapi hanya `assignments` masuk ke `STAGE`. `res.cuti`/`res.kursus` hanya
+mengalir ke `renderCutiKursus()` untuk paparan, dan **tiada laluan simpan
+wujud** — tiada rujukan `cuti`/`kursus` dalam `Code.gs`, tiada sheet `Log_Cuti`,
+dan `git log -S'res.cuti'` menunjukkan satu commit sahaja (import awal). Rekod
+hanya muncul sekejap pada skrin lalu hilang.
+
+**Selepas v107:** cuti/kursus mempunyai domain storan sendiri.
+
+- Backend: `SHEET_CUTI = 'Log_Cuti'` + `CUTI_HEADERS`, dan tiga aksi —
+  `commitCutiKursus` (UPSERT ikut `id`), `fetchCutiKursus` (tapisan julat
+  bertindih), `deleteCutiKursus`.
+- Frontend: `CUTI_STAGE` (BERASINGAN daripada `STAGE`), `renderCutiActions()`,
+  `saveCutiAll()`, `loadSavedCuti()`, `cutiId_()`.
+
+**Kenapa tab BERASINGAN, bukan Log_Penugasan:** `fetchLogCounts_` mengira
+SETIAP baris `Log_Penugasan` sebagai tugasan. Menyimpan cuti di sana akan
+mengembung KPI ("Jumlah Rekod Penugasan") dan carta "Tugasan Mengikut Jenis".
+Ujian `run-tests.js` seksyen 27 mengunci invarian ini.
+
+**ID mesti DETERMINISTIK.** `saveCutiAll` menggunakan `cutiId_()` (hash kandungan:
+jenis|nama|no|label|tarikh mula|tarikh tamat), BUKAN `Date.now()`. Dengan
+`Date.now()`, menekan "Simpan Cuti/Kursus" dua kali mencipta DUA baris pendua —
+`uji-cuti-simpan.js` bahagian C menangkap ini.
+
+#### ⚠️ Backend MESTI di-deploy atau ciri ini senyap gagal
+
+Perubahan `Code.gs` **tidak berkuat kuasa** sehingga di-push DAN di-deploy.
+Frontend di GitHub Pages boleh dikemas kini lebih awal daripada backend; dalam
+keadaan itu backend lama membalas "Tindakan tidak dikenali", dan UI memapar
+mesej jelas sambil MENGEKALKAN rekod dalam `CUTI_STAGE` (tiada kehilangan data).
+`uji-cuti-backend-lama.js` mengunci tingkah laku degradasi ini.
+
+Deploy backend (perlu akaun Google pemilik projek — langkah MANUAL):
+
+```bash
+cd gas && $CLASP login          # sekali sahaja, buka pelayar
+# isi gas/.clasp.json dengan scriptId sebenar (kini placeholder GANTI_…)
+./gas/clasp.sh push             # tulis ke draf projek
+./gas/clasp.sh deploy "v107: simpan cuti/kursus"   # frontend ambil kod baharu
+```
+
+Tab `Log_Cuti` dicipta AUTOMATIK pada simpanan pertama (`getSheet_` memanggil
+`insertSheet` + header bila tab tiada), jadi `setupSheets` tidak wajib — tetapi
+ia menambahnya dengan bersih bersama header betul.
+
+### Ujian
+
+- `uji-parser-julat.js` (22) — julat, bil_hari, aliran penuh, cuti/kursus
+- `uji-parser-tepi.js` (8) — tiada tarikh, bulan tak sah, masa bukan tarikh, en-dash
+- `uji-tarikh-tamat.js` (13) — panel sunting kad + paparan julat
+- `uji-cuti-simpan.js` — aliran simpan cuti/kursus (termasuk kes cuti SAHAJA)
+- `uji-cuti-backend-lama.js` — degradasi anggun bila backend belum deploy
+- `gas/tests/run-tests.js` — 76 pemeriksaan logik `Code.gs` sebenar
+
+Kedua-dua ujian parser menerima URL sebagai argumen, jadi anda boleh
+membuktikan ia bermakna dengan menjalankannya ke atas kod lama:
+
+```bash
+git show HEAD:index.html > /tmp/old/index.html   # serve /tmp/old pada port lain
+node uji-parser-julat.js http://127.0.0.1:12098  # -> 16 GAGAL pada kod asal
+```
+
+**Selepas setiap edit `<script>` inline, jalankan `python3 tools/csp-hash.py --write`.**
+Lupa langkah ini menjadikan seluruh halaman kosong.

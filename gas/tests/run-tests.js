@@ -358,6 +358,132 @@ console.log('\n=== 22. v106: Sheet ID tiada -> ralat jelas, bukan TypeError ==='
   ok(dibuka, 'Script Property menang -> openSS_ berjaya tanpa Sheet aktif', String(dibuka));
 }
 
+console.log('\n=== 23. v107: CUTI/KURSUS disimpan ke tab Log_Cuti ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  const sess = { email: G('siti'), name: 'SITI', no: 'R3100001', role: 'SUPER_ADMIN', exp: Date.now() + 3600000 };
+  env.__props['SESS_tok'] = JSON.stringify(sess);
+
+  const r = post(env, { action: 'commitCutiKursus', token: 'tok', records: [
+    { id: 'CK-1', jenis: 'Cuti', nama: 'SITI BINTI OMAR', no: 'R3100001', label: 'Cuti Rehat', tarikh_mula: '2026-10-20', tarikh_tamat: '2026-10-22', catatan: 'SITI BINTI OMAR - Cuti Rehat (20/10/2026 - 22/10/2026)' },
+    { id: 'CK-2', jenis: 'Kursus', nama: 'ALI BIN ABU', no: 'R3200265', label: 'Kursus Keselamatan', tarikh_mula: '2026-10-30', tarikh_tamat: '2026-11-02' }
+  ] });
+  ok(r.ok === true, 'commitCutiKursus berjaya', JSON.stringify(r).slice(0, 200));
+  ok(r.successCount === 2, '2 rekod disimpan', 'successCount=' + r.successCount);
+
+  const sh = env.__sheets['Log_Cuti'];
+  ok(!!sh, 'tab Log_Cuti DICIPTA', String(!!sh));
+  ok(sh._d[0].join('|') === 'Bil|ID|Jenis|Nama|No Personel|Pangkat|Team|Label|Tarikh Mula|Tarikh Tamat|Catatan|Direkod Oleh|Tarikh Rekod', 'header Log_Cuti betul', sh._d[0].join('|'));
+  ok(sh._d.length === 3, '2 baris data (+header)', 'baris=' + sh._d.length);
+  ok(String(sh._d[1][8]) === '2026-10-20' && String(sh._d[1][9]) === '2026-10-22', 'tarikh julat tersimpan betul', sh._d[1][8] + ' -> ' + sh._d[1][9]);
+
+  /* Rekod PENUGASAN tidak boleh tercemar. */
+  const logRows = env.__sheets['Log_Penugasan']._d.length;
+  ok(logRows === 1, 'Log_Penugasan TIDAK menerima baris cuti (hanya header)', 'baris=' + logRows);
+}
+
+console.log('\n=== 24. v107: UPSERT — Simpan berulang tidak cipta pendua ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__props['SESS_tok'] = JSON.stringify({ email: G('siti'), name: 'SITI', no: 'R3100001', role: 'SUPER_ADMIN', exp: Date.now() + 3600000 });
+  const rec = { id: 'CK-9', jenis: 'Cuti', nama: 'ALI BIN ABU', tarikh_mula: '2026-10-20', tarikh_tamat: '2026-10-21' };
+
+  post(env, { action: 'commitCutiKursus', token: 'tok', records: [rec] });
+  const r2 = post(env, { action: 'commitCutiKursus', token: 'tok', records: [Object.assign({}, rec, { tarikh_tamat: '2026-10-25' })] });
+
+  const sh = env.__sheets['Log_Cuti'];
+  ok(sh._d.length === 2, 'masih 2 baris (header + 1) — tiada pendua', 'baris=' + sh._d.length);
+  ok(String(sh._d[1][9]) === '2026-10-25', 'rekod DIKEMAS KINI (bukan ditambah)', String(sh._d[1][9]));
+  ok(r2.results[0].updated === true, 'respons tanda updated=true', JSON.stringify(r2.results[0]));
+}
+
+console.log('\n=== 25. v107: validasi medan wajib ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__props['SESS_tok'] = JSON.stringify({ email: G('siti'), name: 'SITI', no: 'R3100001', role: 'SUPER_ADMIN', exp: Date.now() + 3600000 });
+  const r = post(env, { action: 'commitCutiKursus', token: 'tok', records: [
+    { jenis: 'Cuti', tarikh_mula: '2026-10-20' },
+    { jenis: 'Cuti', nama: 'ALI BIN ABU' }
+  ] });
+  ok(r.successCount === 0, 'kedua-dua rekod ditolak', 'successCount=' + r.successCount);
+  ok(/Nama/.test(String(r.results[0].error)), 'rekod tanpa nama ditolak dengan sebab jelas', String(r.results[0].error));
+  ok(/Tarikh/.test(String(r.results[1].error)), 'rekod tanpa tarikh ditolak dengan sebab jelas', String(r.results[1].error));
+}
+
+console.log('\n=== 26. v107: fetchCutiKursus + tapisan tarikh ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__props['SESS_tok'] = JSON.stringify({ email: G('siti'), name: 'SITI', no: 'R3100001', role: 'SUPER_ADMIN', exp: Date.now() + 3600000 });
+  post(env, { action: 'commitCutiKursus', token: 'tok', records: [
+    { id: 'CK-A', jenis: 'Cuti', nama: 'ALI BIN ABU', tarikh_mula: '2026-10-20', tarikh_tamat: '2026-10-22' },
+    { id: 'CK-B', jenis: 'Cuti', nama: 'SITI BINTI OMAR', tarikh_mula: '2026-12-25', tarikh_tamat: '2027-01-02' }
+  ] });
+
+  const semua = post(env, { action: 'fetchCutiKursus', token: 'tok' });
+  ok(semua.ok === true && semua.data.length === 2, 'baca semua: 2 rekod', 'bil=' + (semua.data ? semua.data.length : 'n/a'));
+
+  const okt = post(env, { action: 'fetchCutiKursus', token: 'tok', startDate: '2026-10-01', endDate: '2026-10-31' });
+  ok(okt.data.length === 1 && okt.data[0].nama === 'ALI BIN ABU', 'tapisan Okt: 1 rekod', JSON.stringify(okt.data.map((x) => x.nama)));
+
+  /* Rekod 25/12-02/01 BERTINDIHAN dengan tempoh Disember walau bermula & berakhir di luar. */
+  const dis = post(env, { action: 'fetchCutiKursus', token: 'tok', startDate: '2026-12-01', endDate: '2026-12-31' });
+  ok(dis.data.length === 1 && dis.data[0].nama === 'SITI BINTI OMAR', 'julat rentas tahun dikesan dalam tempoh Dis (bertindih)', JSON.stringify(dis.data.map((x) => x.nama)));
+}
+
+console.log('\n=== 27. v107: cuti TIDAK mengembung KPI (reka bentuk tab berasingan) ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__props['SESS_tok'] = JSON.stringify({ email: G('siti'), name: 'SITI', no: 'R3100001', role: 'SUPER_ADMIN', exp: Date.now() + 3600000 });
+  /* Log_Penugasan TIADA baris header dalam produksi (baris 1 = data pertama —
+     lihat nota v63 dalam fetchLogData). Tanam SATU baris data terus: memanggil
+     commitLogPenugasan pada tab kosong akan menambah header (getSheet_ mengisi
+     header bila getLastRow()===0), yang bukan struktur produksi. */
+  const baris = new Array(21).fill('');
+  baris[0] = 1; baris[1] = 'USR-1'; baris[2] = '2026-10-20'; baris[3] = '2026-10-21';
+  baris[4] = 'KAWALAN KESELAMATAN'; baris[12] = 'Majlis/Kursus/Seminar/Bengkel'; baris[16] = 'CONFIRMED';
+  env.__sheets['Log_Penugasan'] = makeSheet([baris]);
+
+  /* Tiga cuti/kursus masuk tab Log_Cuti. */
+  post(env, { action: 'commitCutiKursus', token: 'tok', records: [
+    { id: 'CK-1', jenis: 'Cuti', nama: 'ALI BIN ABU', tarikh_mula: '2026-10-20' },
+    { id: 'CK-2', jenis: 'Cuti', nama: 'SITI BINTI OMAR', tarikh_mula: '2026-10-21' },
+    { id: 'CK-3', jenis: 'Kursus', nama: 'ALI BIN ABU', tarikh_mula: '2026-10-22' }
+  ] });
+
+  const k = env.fetchLogCounts_('2026-10-01');
+  ok(k.all === 1, 'all = 1 (3 cuti TIDAK dikira)', 'all=' + k.all);
+  ok(k.inPeriod === 1, 'inPeriod = 1 (3 cuti TIDAK dikira)', 'inPeriod=' + k.inPeriod);
+  ok(!k.jenis || !k.jenis['Cuti'], 'carta jenis tiada entri Cuti', JSON.stringify(k.jenis || {}));
+}
+
+console.log('\n=== 28. v107: padam cuti ikut id ===');
+{
+  const env = makeEnv(baseTabs([KPL], []));
+  env.__props['SESS_tok'] = JSON.stringify({ email: G('siti'), name: 'SITI', no: 'R3100001', role: 'SUPER_ADMIN', exp: Date.now() + 3600000 });
+  post(env, { action: 'commitCutiKursus', token: 'tok', records: [
+    { id: 'CK-X', jenis: 'Cuti', nama: 'ALI BIN ABU', tarikh_mula: '2026-10-20' },
+    { id: 'CK-Y', jenis: 'Cuti', nama: 'SITI BINTI OMAR', tarikh_mula: '2026-10-21' }
+  ] });
+  const d = post(env, { action: 'deleteCutiKursus', token: 'tok', id: 'CK-X' });
+  ok(d.ok === true, 'padam berjaya', JSON.stringify(d));
+  const semula = post(env, { action: 'fetchCutiKursus', token: 'tok' });
+  ok(semula.data.length === 1 && semula.data[0].nama === 'SITI BINTI OMAR', 'tinggal 1 rekod yang betul', JSON.stringify(semula.data.map((x) => x.nama)));
+}
+
+console.log('\n=== 29. v107: kawalan akses cuti/kursus ===');
+{
+  /* Tanpa sesi -> NO_SESSION (bukan tulis tanpa kebenaran). */
+  const env = makeEnv(baseTabs([KPL], []));
+  const tiada = post(env, { action: 'commitCutiKursus', records: [{ nama: 'ALI', tarikh_mula: '2026-10-20' }] });
+  ok(tiada.ok === false && tiada.code === 'NO_SESSION', 'tanpa sesi ditolak (NO_SESSION)', JSON.stringify(tiada).slice(0, 140));
+  ok(!env.__sheets['Log_Cuti'] || env.__sheets['Log_Cuti']._d.length === 0, 'tiada baris ditulis', String(env.__sheets['Log_Cuti'] ? env.__sheets['Log_Cuti']._d.length : 0));
+
+  /* Peranan STAF tanpa kebenaran penugasan -> FORBIDDEN. */
+  env.__props['SESS_staf'] = JSON.stringify({ email: G('ali'), name: 'ALI', no: 'R3200265', role: 'STAF', exp: Date.now() + 3600000 });
+  const staf = post(env, { action: 'commitCutiKursus', token: 'staf', records: [{ nama: 'ALI', tarikh_mula: '2026-10-20' }] });
+  ok(staf.ok === false && staf.code === 'FORBIDDEN', 'STAF tanpa kebenaran ditolak (FORBIDDEN)', JSON.stringify(staf).slice(0, 140));
+}
+
 console.log('\n========================================');
 console.log('  LULUS: ' + passes + '   GAGAL: ' + fails);
 console.log('========================================\n');

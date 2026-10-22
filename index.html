@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103e">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-AxtFmV0K+KGIYwpqrDa2bIBcwUhFcN+TGWrVxCPMpIQ=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-AxtFmV0K+KGIYwpqrDa2bIBcwUhFcN+TGWrVxCPMpIQ=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vaZ/gbpr8OCffNQ2lAyuB5GdyOdqhBbsO0HFaEIvors=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vaZ/gbpr8OCffNQ2lAyuB5GdyOdqhBbsO0HFaEIvors=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -5006,8 +5006,26 @@ function parseTarikhRange_(raw){
   return null;
 }
 function extractGlobalDate_(raw){
-  var r=parseTarikhRange_(raw);
-  return r?r.start:'';
+  /* Tarikh KEPALA laporan mesti menang. Versi sebelumnya menyerahkan SELURUH
+     teks kepada parseTarikhRange_, jadi julat dalam item (cth. "12-30/10/2026"
+     pada Kursus Pengawai Penyiasat) mengalahkan tarikh kepala dan semua rekod
+     tersimpan pada tarikh yang salah. Di sini kita hanya percaya:
+       (1) baris bertanda "Tarikh:" / "Date:", atau
+       (2) tarikh pertama dalam beberapa baris KEPALA sahaja.
+     Julat dalam kurungan (cth. "(12-30/10/2026)") dikendalikan berasingan oleh
+     parseDateRange_ dalam parseCutiLines/parseKursusLines. */
+  var t=String(raw||'');
+  var m=t.match(/(?:tarikh|date)\s*[:\-]?\s*([^\n]+)/i);
+  if(m){var r=parseTarikhRange_(m[1]);if(r&&r.start)return r.start;}
+  var head=t.split('\n').slice(0,8).join('\n');
+  var re=/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/g,mm;
+  while((mm=re.exec(head))!==null){
+    var mi=V56_MONTHS.indexOf(String(mm[2]).toLowerCase());
+    if(mi>-1)return mm[3]+'-'+pad2(mi+1)+'-'+pad2(mm[1]);
+  }
+  var m2=t.match(/(\d{1,2}\s*[\/\-.]\s*\d{1,2}\s*[\/\-.]\s*\d{4})/);
+  if(m2){var d2=parseDate(m2[1]);if(d2)return d2;}
+  return '';
 }
 /* Normalkan argumen tarikh pembina rekod: terima string (tarikh tunggal)
    ATAU objek {start,end} daripada parseTarikhRange_. Semak jenis objek DAHULU —
@@ -5067,7 +5085,9 @@ function smartParseLaporan(text){
   var raw=String(text||'').replace(/\r/g,'');
   var lines=raw.split('\n');
   var globalDate=extractGlobalDate_(raw);
-  var _rg=parseTarikhRange_(raw)||{start:globalDate,end:globalDate};
+  /* Julat KEPALA sahaja (bukan julat dalam item seperti "(12-30/10/2026)").
+     Julat item dikendalikan berasingan dalam parseCutiLines/parseKursusLines. */
+  var _rg={start:globalDate,end:globalDate};
   var mode='main',mainLines=[],cutiLines=[],kursusLines=[];
   lines.forEach(function(l){
     var cl=v56Clean(l);if(!cl)return;

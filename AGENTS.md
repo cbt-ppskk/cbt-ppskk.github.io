@@ -1547,3 +1547,35 @@ Sentiasa lalu `parseDateKey()` dahulu — jangan andaikan `tarikh_mula` berforma
 ISO (`YYYY-MM-DD`), data lama boleh jadi `DD/MM/YYYY`.
 
 Ujian: `uji_profil.mjs` (logik) + `uji_profil_ui.mjs` (render DOM sebenar).
+
+## Sync rekod local → Google Sheets (v109)
+
+**Punca "N belum sync" berlarutan:** `localStamp()` menyimpan snapshot `rec`
+yang mengandungi `ED_KEYS` SAHAJA — tiada `id`, `bil` atau `row`. Jadi
+`flushLocalPending()` menghantar `id=undefined` dan backend menolak setiap rekod
+("Rekod tidak dikenal pasti"). Rekod pending itu mustahil sync selamanya.
+
+**Pembetulan:** `ID_KEYS=['id','bil','row']` disimpan bersama `ED_KEYS` dalam
+`localStamp()`. `ID_KEYS` SENGAJA tidak dimasukkan ke `ED_KEYS` — jika tidak,
+`applyEditableFields()` boleh tersalah tulis identiti semasa menggabung data local.
+
+**Rekod lama dipulihkan automatik.** Kunci storan itu sendiri ialah `recKey(rec)`,
+jadi identiti boleh dipulihkan daripadanya: `localRepairIdentity_()` menetapkan
+`row` jika kunci berformat `ROW-<n>`, jika tidak `id=kunci`. Ia dipanggil oleh
+`localPendingKeys()`, jadi rekod tersangkut lama sync sendiri tanpa tindakan pengguna.
+
+**`keperluan` pernah TERTINGGAL** daripada muatan `updateLogPenuh`. Muatan kini
+dikongsi dalam `pendPayload_()` supaya `flushLocalPending()`, `pendHantar_()` dan
+bulk sync tidak boleh terpesong antara satu sama lain.
+
+**UI:** butang `#log-pending` ("⚠️ Belum Sync (N)", admin sahaja) dan chip
+`#save-status` membuka modal `#pend-bg` — senarai rekod pending + **Sync Semua**
+dengan bar kemajuan. Rekod yang GAGAL kekal pending (tiada data hilang). Tiada
+`onclick` inline — semua melalui `addEventListener` (patuh CSP).
+
+Fungsi: `localStamp`, `localRepairIdentity_`, `localPendingKeys`, `localPendingInfo`,
+`pendPayload_`, `pendHantar_`, `flushLocalPending`, `pendRender`, `pendSyncSatu`,
+`pendSyncSemua`, `openPendPanel`, `closePendPanel`, `initPendPanel`.
+
+Ujian: `uji_sync.mjs` (logik sync + pemulihan rekod lama) + `uji_pend_ui.mjs`
+(render DOM: senarai, sync satu, bulk, kemajuan, gagal separa, offline).

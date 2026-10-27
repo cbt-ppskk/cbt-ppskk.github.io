@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103e">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-tSf5Hqq66szzFmvlEx+Sb+RjevcdKPieKwIlRQYm4kI=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-tSf5Hqq66szzFmvlEx+Sb+RjevcdKPieKwIlRQYm4kI=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-+CbubXaasr9fco28n9mMrylImBIOwwjjN9TPL8AYObA=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-+CbubXaasr9fco28n9mMrylImBIOwwjjN9TPL8AYObA=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -585,6 +585,23 @@ td.empty{text-align:center;color:var(--muted);padding:26px}
 .perf-tbl td{padding:8px 10px;border-bottom:1px solid var(--line2);vertical-align:top}
 .perf-tbl tr:last-child td{border-bottom:0}
 .perf-tbl .nowrap{white-space:nowrap}
+/* ===== v109: SENARAI REKOD BELUM SYNC + BULK SYNC ===== */
+.pend-sum{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 12px;font-size:12px;color:var(--muted)}
+.pend-chip{padding:5px 11px;border-radius:999px;font-weight:800;font-size:11.5px;border:1px solid var(--line)}
+.pend-chip.warn{color:#fbbf24;background:rgba(251,191,36,.10);border-color:rgba(251,191,36,.35)}
+.pend-chip.ok{color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.35)}
+.pend-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.pend-tbl th{position:sticky;top:0;text-align:left;padding:8px 10px;background:#0a0f1a;border-bottom:1px solid var(--line);color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+.pend-tbl td{padding:8px 10px;border-bottom:1px solid var(--line2);vertical-align:top}
+.pend-tbl tr:last-child td{border-bottom:0}
+.pend-tbl .nowrap{white-space:nowrap}
+.pend-tbl .btn{padding:4px 10px;font-size:11.5px}
+.pend-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted2)}
+.pend-bad{color:#fca5a5;font-size:11px}
+.pend-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 4px}
+.pend-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--sky));transition:width .25s}
+.pend-prog{font-size:11.5px;color:var(--muted);min-height:16px}
+.pend-kosong{padding:26px 14px;text-align:center;color:var(--muted);font-size:13px}
 .dl{display:grid;grid-template-columns:190px 1fr;gap:8px 14px;font-size:12.5px}
 .dl dt{color:var(--muted);font-weight:700}
 .dl dd{color:var(--text);white-space:pre-wrap;word-break:break-word}
@@ -1370,6 +1387,7 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
           <select id="log-tempat"><option value="">Semua Tempat</option></select>
           <select id="log-year" title="Tapis ikut tahun"></select>
           <button class="btn" id="log-refresh" title="Muat semula data terkini dari pelayan">\ud83d\udd04 Muat Semula</button>
+          <button class="btn admin-only" id="log-pending" title="Senarai rekod yang disimpan di peranti ini tetapi belum sampai ke Google Sheet">⚠️ Belum Sync</button>
           <span class="sync-status" id="log-sync-status"></span>
           <span class="diag-status" id="log-sync-counts" title="Diagnostik kiraan rekod"></span>
           <span class="save-status" id="save-status"></span>
@@ -1916,6 +1934,28 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
       <div id="perf-list"></div>
       <div class="ep-actions">
         <button class="btn" id="perf-close2">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== v109: REKOD BELUM SYNC + BULK SYNC ===== -->
+<div class="modal-bg" id="pend-bg">
+  <div class="modal glass" style="width:min(100%,860px)">
+    <div class="mhead">
+      <h3>🔄 Rekod Belum Sync</h3>
+      <button class="mclose" id="pend-close">&#10005;</button>
+    </div>
+    <div class="mbody">
+      <div class="pend-sum" id="pend-sum"></div>
+      <div id="pend-body"></div>
+      <div class="pend-bar" id="pend-barwrap" style="display:none"><i id="pend-bar"></i></div>
+      <div class="pend-prog" id="pend-prog"></div>
+      <div class="ep-msg" id="pend-msg"></div>
+      <div class="ep-actions">
+        <button class="btn primary" id="pend-all">⬆️ Sync Semua</button>
+        <button class="btn" id="pend-reload">🔄 Semak Semula</button>
+        <button class="btn" id="pend-close2">Tutup</button>
       </div>
     </div>
   </div>
@@ -2557,6 +2597,12 @@ var LOCAL_KEY='cbt_log_local_v97';
 function namaPapar_(full){try{var s=String(full==null?'':full).replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();if(!s)return '';var t=s.replace(/\s+(?:BIN|BINTI|BT|BTE|B\.)\s+.*$/i,'').trim();return t||s;}catch(e){return String(full||'');}}
 var _ADD1=[]; /* v73: rekod key-in tempatan yang BELUM ada di backend (perlu dihantar) */
 var ED_KEYS=['tajuk','jenis','fasa','tarikh_mula','tarikh_tamat','masa_mula','masa_tamat','tempat','keperluan','catatan','petugas_admin','petugas_pa','petugas_foto','petugas_video','jumlah_jam','jam_orang','status','petugas_detail','jumlah_petugas','ringkasan_peranan'];
+/* v109: IDENTITI rekod mesti turut disimpan bersama medan boleh edit. Tanpa id/bil/row,
+   flushLocalPending() menghantar id=undefined dan backend menolak setiap rekod
+   ("Rekod tidak dikenal pasti"), jadi rekod pending TERSANGKUT selama-lamanya.
+   ED_KEYS sengaja TIDAK dimasukkan ke sini supaya applyEditableFields() tidak
+   boleh tersalah tulis identiti semasa menggabung data local. */
+var ID_KEYS=['id','bil','row'];
 var EP_TARGET=null, EP_JO_MANUAL=false, EP_BOUND=false, _LOCAL=null, SYNC_MODE='memuat', _LAST_SAVE=null;
 var ROLE_TEAM_EP={admin:'Admin',pa:'PA System',foto:'Photographer',video:'Juruvideo'};
 
@@ -2576,13 +2622,53 @@ function localStamp(rec,pending){
   if(!rec)return null;
   var L=localLoad(),k=recKey(rec),snap={};
   ED_KEYS.forEach(function(f){snap[f]=rec[f];});
+  ID_KEYS.forEach(function(f){if(rec[f]!==undefined&&rec[f]!==null)snap[f]=rec[f];});
   L.data[k]={ts:Date.now(),pending:!!pending,rec:snap};
   L.ts=Date.now();localSave();
   return L.data[k];
 }
 function localClearPending(key){var L=localLoad();if(L.data[key]){L.data[key].pending=false;L.data[key].ts=Date.now();L.ts=Date.now();localSave();}}
-function localPendingKeys(){var out=[],L=localLoad();for(var k in L.data){if(L.data[k]&&L.data[k].pending)out.push(k);}return out;}
+/* v109: rekod pending yang tersimpan SEBELUM pembetulan identiti tiada id/bil/row
+   dalam snapshot. Kunci storan itu sendiri ialah recKey(rec) — jadi identiti
+   boleh dipulihkan daripadanya. Pulihkan pada muat supaya rekod lama boleh
+   disegerakkan tanpa pengguna perlu buat apa-apa. */
+function localRepairIdentity_(){
+  var L=localLoad(),fixed=0;
+  for(var k in L.data){
+    var e=L.data[k];if(!e||!e.rec)continue;
+    var r=e.rec,changed=false;
+    if(!r.id&&!r.bil&&!(Number(r.row)>0)){
+      if(/^ROW-\d+$/i.test(k)){r.row=Number(k.replace(/^ROW-/i,''));changed=true;}
+      else if(k){r.id=k;changed=true;}
+    }
+    if(changed){e.ts=Date.now();fixed++;}
+  }
+  if(fixed){L.ts=Date.now();localSave();}
+  return fixed;
+}
+/* v109: rekod pending yang dikosongkan identitinya oleh versi lama hanya boleh
+   dihantar selepas identiti dipulihkan. */
+function localPendingKeys(){
+  localRepairIdentity_();
+  var out=[],L=localLoad();
+  for(var k in L.data){if(L.data[k]&&L.data[k].pending)out.push(k);}
+  return out;
+}
 function localPendingCount(){return localPendingKeys().length;}
+/* v109: butiran rekod pending untuk PAPARAN — nama ringkas + tarikh. */
+function localPendingInfo(){
+  var keys=localPendingKeys(),L=localLoad(),out=[];
+  keys.forEach(function(k){
+    var e=L.data[k];if(!e||!e.rec)return;
+    var r=e.rec;
+    out.push({key:k,id:r.id||'',bil:r.bil||'',row:Number(r.row)||0,
+      tajuk:String(r.tajuk==null?'':r.tajuk),jenis:String(r.jenis==null?'':r.jenis),
+      fasa:String(r.fasa==null?'':r.fasa),tempat:String(r.tempat==null?'':r.tempat),
+      tarikh_mula:String(r.tarikh_mula==null?'':r.tarikh_mula),ts:Number(e.ts)||0});
+  });
+  out.sort(function(a,b){return b.ts-a.ts;});
+  return out;
+}
 
 /* ---- penunjuk status simpanan ---- */
 function setSaveStatus(mode,msg){
@@ -2600,12 +2686,21 @@ function renderSaveStatus(){
   }
   var n=localPendingCount();
   if(SYNC_MODE==='memuat'){el.textContent='\u23f3 Memuat data pelayan...';el.className='save-status';return;}
-  if(SYNC_MODE==='offline'){el.textContent='\u26a0\ufe0f Rangkaian: data LOCAL'+(n?(' \u00b7 '+n+' belum sync'):'');el.className='save-status local';return;}
+  if(SYNC_MODE==='offline'){el.textContent='\u26a0\ufe0f Rangkaian: data LOCAL'+(n?(' \u00b7 '+n+' belum sync'):'');el.className='save-status local';el.title=n?('Klik untuk lihat & sync '+n+' rekod belum sync.'):'';el.style.cursor=n?'pointer':'';return;}
   el.textContent='\u2705 Data pelayan (Sheet) \u00b7 selari'+(n?(' \u00b7 '+n+' local belum sync'):'');
   el.className='save-status ok';
+  el.title=n?('Klik untuk lihat & sync '+n+' rekod belum sync.'):'';
+  el.style.cursor=n?'pointer':'';
 }
 function renderSaveStatusSafe(){try{renderSaveStatus();}catch(e){}}
 setInterval(renderSaveStatusSafe,5000);
+/* v109: klik chip status untuk buka senarai rekod belum sync (jika ada). */
+document.addEventListener('click',function(e){
+  if(e.target&&e.target.id==='save-status'&&localPendingCount()){try{openPendPanel();}catch(err){}}
+});
+/* v109: kiraan pada butang toolbar dikemas kini berkala supaya keadaan pending
+   kelihatan tanpa perlu buka panel. */
+setInterval(function(){try{pendUpdateBtn_();}catch(e){}},8000);
 
 /* ---- gabung data local ke jadual (dibaca bila offline) ---- */
 function applyEditableFields(rec,src){if(!rec||!src)return;ED_KEYS.forEach(function(f){if(src[f]!==undefined)rec[f]=src[f];});}
@@ -2634,29 +2729,55 @@ function mergeServerIntoLocal(){
 }
 
 /* ---- hantar rekod local yang belum sync ---- */
-function flushLocalPending(){
+/* v109: muatan untuk satu rekod pending. DIKONGSI oleh flushLocalPending(),
+   syncSatuRekod_() dan bulk sync supaya tidak boleh terpesong antara satu sama
+   lain. `keperluan` sebelum ini TERTINGGAL — medan itu disimpan local tetapi
+   tidak pernah dihantar, jadi suntingan Keperluan senyap-senyap hilang. */
+function pendPayload_(r){
+  return {id:r.id,bil:r.bil,row:r.row,tempat:r.tempat,masa_mula:r.masa_mula,masa_tamat:r.masa_tamat,
+    petugas_admin:r.petugas_admin,petugas_pa:r.petugas_pa,petugas_foto:r.petugas_foto,petugas_video:r.petugas_video,
+    jumlah_jam:r.jumlah_jam,jam_orang:r.jam_orang,jenis:r.jenis,fasa:r.fasa,status:r.status,
+    tarikh_mula:r.tarikh_mula,tarikh_tamat:r.tarikh_tamat,tajuk:r.tajuk,catatan:r.catatan,keperluan:r.keperluan};
+}
+/* v109: hantar SATU rekod pending. Pemulihan: jika backend memulangkan "tidak
+   dijumpai" (rekod tiada dalam Sheet), cuba cipta semula melalui
+   commitLogPenugasan supaya rekod tidak tersangkut selama-lamanya. */
+function pendHantar_(key){
+  var e=localLoad().data[key];
+  if(!e||!e.rec)return Promise.resolve(false);
+  if(!gasConfigured()||!SESSION)return Promise.resolve(false);
+  var r=e.rec;
+  return gasCall('updateLogPenuh',pendPayload_(r)).then(function(res){
+    if(res&&res.ok){localClearPending(key);return true;}
+    if(res&&/tidak dijumpai/i.test(String(res.error||''))){
+      return gasCall('commitLogPenugasan',{records:[r],actorEmail:(SESSION&&SESSION.id)||''})
+        .then(function(r2){if(r2&&r2.ok&&!r2.failureCount){localClearPending(key);return true;}return false;});
+    }
+    return false;
+  }).catch(function(){return false;});
+}
+/* v109: hantar SEMUA rekod pending. onProgress(siap,jumlah) dipanggil selepas
+   setiap rekod supaya UI boleh tunjuk kemajuan. Pulangan: {sent,failed,total}.
+   Rekod yang GAGAL kekal pending — tiada data hilang. */
+function flushLocalPending(onProgress){
   var keys=localPendingKeys();
-  if(!keys.length)return Promise.resolve({sent:0});
-  if(!gasConfigured()||!SESSION)return Promise.resolve({sent:0,offline:true});
-  var done=0,chain=Promise.resolve();
+  var total=keys.length;
+  if(!total)return Promise.resolve({sent:0,failed:0,total:0});
+  if(!gasConfigured()||!SESSION)return Promise.resolve({sent:0,failed:0,total:total,offline:true});
+  var done=0,failed=0,seq=0,chain=Promise.resolve();
   keys.forEach(function(k){
-    var e=localLoad().data[k];if(!e||!e.rec)return;
-    var r=e.rec;
     chain=chain.then(function(){
-      return gasCall('updateLogPenuh',{id:r.id,bil:r.bil,row:r.row,tempat:r.tempat,masa_mula:r.masa_mula,masa_tamat:r.masa_tamat,
-          petugas_admin:r.petugas_admin,petugas_pa:r.petugas_pa,petugas_foto:r.petugas_foto,petugas_video:r.petugas_video,
-          jumlah_jam:r.jumlah_jam,jam_orang:r.jam_orang,jenis:r.jenis,fasa:r.fasa,status:r.status,
-          tarikh_mula:r.tarikh_mula,tarikh_tamat:r.tarikh_tamat,tajuk:r.tajuk,catatan:r.catatan})
-        .then(function(res){
-          if(res&&res.ok){localClearPending(k);done++;return;}
-          if(res&&/tidak dijumpai/i.test(String(res.error||''))){
-            return gasCall('commitLogPenugasan',{records:[r],actorEmail:(SESSION&&SESSION.id)||''})
-              .then(function(r2){if(r2&&r2.ok&&!r2.failureCount){localClearPending(k);done++;}});
-          }
-        }).catch(function(){});
+      return pendHantar_(k).then(function(ok){
+        if(ok)done++;else failed++;
+        seq++;
+        if(typeof onProgress==='function'){try{onProgress(seq,total);}catch(e){}}
+      });
     });
   });
-  return chain.then(function(){if(done){try{refreshAfterEdit();}catch(e){}try{ syncNowAfterSave_(); }catch(e){}}return {sent:done};});
+  return chain.then(function(){
+    if(done){try{refreshAfterEdit();}catch(e){}try{ syncNowAfterSave_(); }catch(e){}}
+    return {sent:done,failed:failed,total:total};
+  });
 }
 
 /* ---- segarkan UI selepas edit ---- */
@@ -6179,6 +6300,133 @@ function closeProfilPersonel(){
   var bg=document.getElementById('perf-bg'); if(bg)bg.classList.remove('show');
   PERF_SEMASA=null;
 }
+/* ===== v109: PANEL REKOD BELUM SYNC + BULK SYNC =====
+   Menjadikan keadaan "N belum sync" boleh dilihat dan diselesaikan tanpa
+   membuka Developer Tools. Semua tindakan melalui fungsi yang sama
+   (pendHantar_ / flushLocalPending) supaya tiada laluan sync kedua. */
+var PEND_BUSY=false;
+function pendEl(id){return document.getElementById(id);}
+function pendTarikh_(v){
+  var s=String(v==null?'':v).trim();if(!s)return '\u2014';
+  var m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m)return m[3]+'/'+m[2]+'/'+m[1];
+  return s;
+}
+function pendOnline_(){return (typeof gasConfigured==='function'&&gasConfigured()&&!!SESSION);}
+function pendUpdateBtn_(){
+  var ob=pendEl('log-pending');if(!ob)return;
+  var n=localPendingCount();
+  ob.textContent=n?('\u26a0\ufe0f Belum Sync ('+n+')'):'\u26a0\ufe0f Belum Sync';
+  ob.title=n?(n+' rekod disimpan di peranti ini tetapi belum sampai ke Google Sheet. Klik untuk lihat & sync.'):'Tiada rekod menunggu sync.';
+}
+function pendRender(){
+  var sum=pendEl('pend-sum'),body=pendEl('pend-body');
+  if(!body)return;
+  var info=localPendingInfo(),online=pendOnline_();
+  if(sum){
+    var c='<span class="pend-chip '+(info.length?'warn':'ok')+'">'+(info.length?('\u26a0\ufe0f '+info.length+' rekod belum sync'):'\u2705 Semua rekod sudah sync')+'</span>';
+    if(info.length&&!online)c+='<span class="pend-chip warn">\u26a0\ufe0f Perlu log masuk &amp; online</span>';
+    sum.innerHTML=c;
+  }
+  try{pendUpdateBtn_();}catch(e){}
+  if(!info.length){
+    body.innerHTML='<div class="pend-kosong">\u2705 Tiada rekod menunggu. Semua suntingan telah sampai ke Google Sheet.</div>';
+    return;
+  }
+  var h='<div class="perf-scroll"><table class="pend-tbl"><thead><tr>'
+    +'<th>Tarikh</th><th>Tajuk</th><th>Jenis / Fasa</th><th>Tempat</th><th>Identiti</th><th></th>'
+    +'</tr></thead><tbody>';
+  info.forEach(function(x){
+    var idTxt=x.id?esc(x.id):(x.row?('baris '+esc(x.row)):'<span class="pend-bad">tiada identiti</span>');
+    h+='<tr>'
+      +'<td class="nowrap">'+esc(pendTarikh_(x.tarikh_mula))+'</td>'
+      +'<td>'+esc(x.tajuk||'(tiada tajuk)')+'</td>'
+      +'<td class="nowrap">'+esc(x.jenis||'\u2014')+(x.fasa?('<br><small>'+esc(x.fasa)+'</small>'):'')+'</td>'
+      +'<td>'+esc(x.tempat||'\u2014')+'</td>'
+      +'<td class="pend-id">'+idTxt+'</td>'
+      +'<td class="nowrap"><button class="btn" data-pend-satu="'+esc(x.key)+'"'+(online?'':' disabled')+'>\u2b06\ufe0f Sync</button></td>'
+      +'</tr>';
+  });
+  body.innerHTML=h+'</tbody></table></div>';
+}
+function pendSyncSatu(key){
+  if(PEND_BUSY)return Promise.resolve(false);
+  var msg=pendEl('pend-msg');
+  if(!pendOnline_()){if(msg)msg.textContent='\u26a0\ufe0f Sila log masuk dan pastikan online sebelum sync.';return Promise.resolve(false);}
+  PEND_BUSY=true;
+  if(msg)msg.textContent='Menghantar\u2026';
+  return pendHantar_(key).then(function(ok){
+    PEND_BUSY=false;
+    if(msg)msg.textContent=ok?'\u2705 Rekod berjaya disegerakkan ke Sheet.':'\u26a0\ufe0f Gagal disegerakkan. Rekod KEKAL dalam senarai \u2014 cuba lagi.';
+    try{pendRender();}catch(e){}
+    try{renderSaveStatusSafe();}catch(e){}
+    if(ok){try{loadLogFromServer();}catch(e){}}
+    return ok;
+  }).catch(function(){PEND_BUSY=false;if(msg)msg.textContent='\u26a0\ufe0f Ralat rangkaian semasa sync.';return false;});
+}
+function pendSyncSemua(){
+  if(PEND_BUSY)return Promise.resolve({sent:0,failed:0,total:0});
+  var msg=pendEl('pend-msg'),wrap=pendEl('pend-barwrap'),bar=pendEl('pend-bar'),prog=pendEl('pend-prog'),btn=pendEl('pend-all');
+  if(!pendOnline_()){if(msg)msg.textContent='\u26a0\ufe0f Sila log masuk dan pastikan online sebelum sync.';return Promise.resolve({sent:0,failed:0,total:localPendingCount(),offline:true});}
+  if(!localPendingCount()){if(msg)msg.textContent='Tiada rekod menunggu.';pendRender();return Promise.resolve({sent:0,failed:0,total:0});}
+  PEND_BUSY=true;
+  if(btn)btn.disabled=true;
+  if(wrap)wrap.style.display='';
+  if(bar)bar.style.width='0%';
+  if(msg)msg.textContent='Menyegerak\u2026 jangan tutup halaman ini.';
+  return flushLocalPending(function(n,t){
+    if(bar)bar.style.width=Math.round(n/t*100)+'%';
+    if(prog)prog.textContent=n+' / '+t;
+  }).then(function(res){
+    PEND_BUSY=false;
+    if(btn)btn.disabled=false;
+    var sisa=localPendingCount();
+    if(res&&res.offline){
+      if(msg)msg.textContent='\u26a0\ufe0f Tidak dapat sync: sila log masuk dan pastikan online.';
+    }else if(res&&res.sent&&!res.failed){
+      if(msg)msg.textContent='\u2705 Semua '+res.sent+' rekod berjaya disegerakkan ke Sheet.';
+    }else if(res&&res.sent&&res.failed){
+      if(msg)msg.textContent='\u26a0\ufe0f '+res.sent+' berjaya, '+res.failed+' gagal. '+sisa+' rekod masih menunggu \u2014 cuba Sync Semua lagi.';
+    }else{
+      if(msg)msg.textContent='\u26a0\ufe0f Tiada rekod berjaya disegerakkan. '+sisa+' rekod masih menunggu.';
+    }
+    try{pendRender();}catch(e){}
+    if(!localPendingCount()&&wrap)wrap.style.display='none';
+    try{renderSaveStatusSafe();}catch(e){}
+    if(res&&res.sent){try{loadLogFromServer();}catch(e){}}
+    return res;
+  }).catch(function(){PEND_BUSY=false;if(btn)btn.disabled=false;if(msg)msg.textContent='\u26a0\ufe0f Ralat rangkaian semasa sync.';return {sent:0,failed:0,total:0};});
+}
+function openPendPanel(){
+  var bg=pendEl('pend-bg');if(!bg)return;
+  var msg=pendEl('pend-msg');if(msg)msg.textContent='';
+  var wrap=pendEl('pend-barwrap');if(wrap)wrap.style.display='none';
+  var prog=pendEl('pend-prog');if(prog)prog.textContent='';
+  var bar=pendEl('pend-bar');if(bar)bar.style.width='0%';
+  pendRender();
+  bg.classList.add('show');
+}
+function closePendPanel(){var bg=pendEl('pend-bg');if(bg)bg.classList.remove('show');}
+function initPendPanel(){
+  function ikat(id,fn){
+    var e=pendEl(id);if(e&&!e.dataset.pendbound){e.addEventListener('click',fn);e.dataset.pendbound='1';}
+  }
+  ikat('pend-close',closePendPanel);
+  ikat('pend-close2',closePendPanel);
+  ikat('log-pending',openPendPanel);
+  ikat('pend-reload',function(){pendRender();});
+  ikat('pend-all',pendSyncSemua);
+  var bg=pendEl('pend-bg');
+  if(bg&&!bg.dataset.pendbound){bg.addEventListener('click',function(e){if(e.target===bg)closePendPanel();});bg.dataset.pendbound='1';}
+  var body=pendEl('pend-body');
+  if(body&&!body.dataset.pendbound){
+    body.addEventListener('click',function(e){
+      var b=(e.target&&e.target.closest)?e.target.closest('[data-pend-satu]'):null;
+      if(b)pendSyncSatu(b.getAttribute('data-pend-satu'));
+    });
+    body.dataset.pendbound='1';
+  }
+}
 function initProfilPersonel(){
   var c=document.getElementById('perf-close'); if(c&&!c.dataset.perfbound){c.addEventListener('click',closeProfilPersonel);c.dataset.perfbound='1';}
   var c2=document.getElementById('perf-close2'); if(c2&&!c2.dataset.perfbound){c2.addEventListener('click',closeProfilPersonel);c2.dataset.perfbound='1';}
@@ -6313,6 +6561,7 @@ function initPersonel(){
     tbody.dataset.perbound='1';
   }
   try{ initProfilPersonel(); }catch(e){ console.warn('[v108] initProfilPersonel:',e); }
+  try{ initPendPanel(); }catch(e){ console.warn('[v109] initPendPanel:',e); }
   perApply();
 }
 function pmEl(id){return document.getElementById(id);}

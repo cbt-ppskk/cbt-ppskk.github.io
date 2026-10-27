@@ -1579,3 +1579,39 @@ Fungsi: `localStamp`, `localRepairIdentity_`, `localPendingKeys`, `localPendingI
 
 Ujian: `uji_sync.mjs` (logik sync + pemulihan rekod lama) + `uji_pend_ui.mjs`
 (render DOM: senarai, sync satu, bulk, kemajuan, gagal separa, offline).
+
+## Pepijat: rekod key-in LENYAP ~60s selepas disimpan (dibetulkan v103f)
+
+**Gejala.** Pengguna key-in acara sehari (cth 27 Okt 2026), tekan
+"Sahkan & Masuk Log Utama". Rekod MUNCUL sebentar, kemudian HILANG dari
+Log Penugasan dan dari kotak "Menarik Hari Ini" — tanpa muat semula.
+Rekod lama yang berlangsung (cth kursus 12–30 Okt) kekal kelihatan, jadi
+nampak seolah-olah "hanya acara sehari yang gagal".
+
+**Punca.** `removeAddedByIds()` membuang rekod daripada `ADDED` sebaik
+`commitLogPenugasan` berjaya, TANPA menyemak sama ada `LOG_BASE` sudah
+mengandungi rekod itu. Tetapi `LOG` dibina daripada `ADDED + LOG_BASE`.
+Oleh sebab `fetchLogData` biasanya diambil SEBELUM commit, `LOG_BASE`
+masih lama -> rekod tiada dalam kedua-dua senarai -> lenyap.
+
+Laluan pencetus: `setInterval(..., 60000)` dalam `initV67()` memanggil
+`flushPendingAdded()` setiap 60 saat. Itu sebabnya rekod "muncul sekejap
+lalu hilang" walaupun pengguna tidak buat apa-apa.
+
+**Pembetulan.** `removeAddedByIds()` kini membuang daripada `ADDED`
+HANYA jika `LOG_BASE` sudah mempunyai rekod yang sama (`recKey`). Jika
+belum, rekod kekal sehingga `fetchLogData` berikutnya membawanya masuk —
+selepas itu ia dibuang dengan selamat. Tiada kiraan berganda kerana
+`LOG` menyahduplikasi ikut `recKey`.
+
+**Ujian pengawal:** `uji_lenyap.mjs` (10 pemeriksaan). Ia meniru turutan
+sebenar: key-in -> `flushPendingAdded()` -> `loadLogFromServer()`, dan
+memastikan rekod kekal dalam `LOG` + kotak selepas setiap langkah, serta
+tiada commit berganda dan tiada pendua.
+
+**Pelajaran.** Bila membuang rekod daripada sumber tempatan selepas sync,
+sentiasa sahkan sumber RASMI (backend) sudah memuatkannya. `ADDED` dan
+`LOG_BASE` ialah dua senarai berasingan yang bergabung lewat; membuang
+daripada satu sebelum yang lain dikemas kini menghasilkan kehilangan
+sementara yang kelihatan seperti kehilangan kekal.
+

@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103e">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-QzqikaXfekhWwZnZfRT5CHTLsGSpa5tV6Ej+FYjexik=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-QzqikaXfekhWwZnZfRT5CHTLsGSpa5tV6Ej+FYjexik=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-tSf5Hqq66szzFmvlEx+Sb+RjevcdKPieKwIlRQYm4kI=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-tSf5Hqq66szzFmvlEx+Sb+RjevcdKPieKwIlRQYm4kI=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -568,6 +568,23 @@ td.empty{text-align:center;color:var(--muted);padding:26px}
 .mclose{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(3,7,18,.6);color:var(--muted);cursor:pointer;font-size:15px}
 .mclose:hover{color:var(--err);border-color:var(--err)}
 .mbody{padding:18px 20px}
+/* ===== v108: PROFIL PERSONEL (klik nama dalam tab Personel) ===== */
+.perf-nama{cursor:pointer;border-bottom:1px dashed rgba(0,242,254,.45)}
+.perf-nama:hover{color:var(--cyan)}
+.perf-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:2px 0 14px}
+.perf-kpi{padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--glass2)}
+.perf-kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700}
+.perf-kpi .val{font-size:22px;font-weight:800;margin-top:4px;line-height:1.1;color:#eafcff}
+.perf-kpi .foot{font-size:10.5px;color:var(--muted2);margin-top:3px}
+.perf-period{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px;align-items:center}
+.perf-period select{padding:5px 9px;border-radius:9px;border:1px solid var(--line);background:rgba(9,14,24,.75);color:#e8f0fb;font-size:12.5px;font-family:inherit;max-width:230px}
+.perf-period select:focus{outline:none;border-color:var(--cyan)}
+.perf-scroll{max-height:320px;overflow:auto;border:1px solid var(--line2);border-radius:12px}
+.perf-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.perf-tbl th{position:sticky;top:0;text-align:left;padding:8px 10px;background:#0a0f1a;border-bottom:1px solid var(--line);color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+.perf-tbl td{padding:8px 10px;border-bottom:1px solid var(--line2);vertical-align:top}
+.perf-tbl tr:last-child td{border-bottom:0}
+.perf-tbl .nowrap{white-space:nowrap}
 .dl{display:grid;grid-template-columns:190px 1fr;gap:8px 14px;font-size:12.5px}
 .dl dt{color:var(--muted);font-weight:700}
 .dl dd{color:var(--text);white-space:pre-wrap;word-break:break-word}
@@ -1880,6 +1897,25 @@ body.is-super .navdrop-menu .tab-btn.super-only{display:block!important}
         <button class="btn" id="pm-deactivate" style="color:#fca5a5;border-color:rgba(252,165,165,.45)">&#128465; Nyahaktifkan</button>
         <button class="btn primary" id="pm-save">Simpan Personel</button>
         <button class="btn" id="pm-cancel">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== v108: PROFIL PERSONEL — klik nama dalam tab Personel ===== -->
+<div class="modal-bg" id="perf-bg">
+  <div class="modal glass" style="width:min(100%,760px)">
+    <div class="mhead">
+      <h3 id="perf-title">Profil Personel</h3>
+      <button class="mclose" id="perf-close">&#10005;</button>
+    </div>
+    <div class="mbody">
+      <div id="perf-head" class="fasa-info"></div>
+      <div class="perf-period" id="perf-period"></div>
+      <div class="perf-kpis" id="perf-kpis"></div>
+      <div id="perf-list"></div>
+      <div class="ep-actions">
+        <button class="btn" id="perf-close2">Tutup</button>
       </div>
     </div>
   </div>
@@ -5969,6 +6005,186 @@ function perStats(){
   });
   return stat;
 }
+/* ===== v108: PROFIL PERSONEL — berapa kali tugasan per minggu/bulan =====
+   Klik nama dalam tab Personel -> panel tunjuk kiraan tugasan, jam dan senarai
+   penugasan untuk tempoh dipilih. Padanan orang guna KOD (No. Personel) kerana
+   petugas_detail menyimpan "PANGKAT NAMA (NO)" — kod itu unik dan tahan
+   perbezaan ejaan nama. */
+function isoMinggu_(nilai){         /* tarikh apa-apa format -> Isnin minggu itu (kunci padat YYYYMMDD) */
+  var k=parseDateKey(nilai); if(!k)return '';
+  var d=keyToDate(k); if(isNaN(d.getTime()))return '';
+  var dow=(d.getDay()+6)%7;          /* Isnin=0 ... Ahad=6 */
+  d.setDate(d.getDate()-dow);
+  return ymdKey(d);
+}
+function kunciBulan_(nilai){        /* tarikh apa-apa format -> 'YYYY-MM' */
+  var k=parseDateKey(nilai); if(!k)return '';
+  return k.slice(0,4)+'-'+k.slice(4,6);
+}
+function labelMinggu_(kunci){
+  var a=keyToDate(kunci); if(isNaN(a.getTime()))return String(kunci||'');
+  var b=new Date(a.getTime()); b.setDate(b.getDate()+6);
+  var s=GREG_MONTHS[a.getMonth()].slice(0,3), e=GREG_MONTHS[b.getMonth()].slice(0,3);
+  return a.getDate()+' '+s+' – '+b.getDate()+' '+e+' '+b.getFullYear();
+}
+/* Rekod yang melibatkan seseorang: padan KOD dahulu (tepat), kemudian nama. */
+function rekodPersonel_(p){
+  var kod=normNoKey(p&&p.no), nama=normName(p&&p.nama);
+  return (typeof LOG!=='undefined'&&LOG?LOG:[]).filter(function(r){
+    var det=String(r.petugas_detail||'');
+    if(kod){
+      var m=det.match(/\(([^)]+)\)/g)||[];
+      for(var i=0;i<m.length;i++){ if(normNoKey(m[i].slice(1,-1))===kod)return true; }
+    }
+    if(nama){
+      var lines=det.split('\n');
+      for(var j=0;j<lines.length;j++){
+        var l=normTxt(lines[j].replace(/\([^)]*\)\s*$/,''));
+        if(l&&normName(l)===nama)return true;
+      }
+    }
+    return false;
+  });
+}
+function statTempoh_(rekod,jenis,byk){
+  var rows=rekod.slice();
+  if(jenis==='minggu')rows=rows.filter(function(r){return isoMinggu_(r.tarikh_mula)===byk;});
+  else if(jenis==='bulan')rows=rows.filter(function(r){return kunciBulan_(r.tarikh_mula)===byk;});
+  var hari={},jam=0,jo=0;
+  rows.forEach(function(r){
+    var k=parseDateKey(r.tarikh_mula); if(k)hari[k]=1;
+    var j=Number(r.jumlah_jam); if(!isNaN(j)&&j>0)jam+=j;
+    var o=Number(r.jam_orang); if(!isNaN(o)&&o>0)jo+=o;
+  });
+  return {bil:rows.length,hari:Object.keys(hari).length,jam:Math.round(jam*10)/10,jo:Math.round(jo*10)/10,rows:rows};
+}
+function perfPeriodPilihan_(rekod){
+  var minggu={},bulan={};
+  rekod.forEach(function(r){
+    var w=isoMinggu_(r.tarikh_mula); if(w)minggu[w]=1;
+    var b=kunciBulan_(r.tarikh_mula); if(b)bulan[b]=1;
+  });
+  return {minggu:Object.keys(minggu).sort().reverse(),bulan:Object.keys(bulan).sort().reverse()};
+}
+var PERF_SEMASA=null;
+function perfRender(){
+  var p=PERF_SEMASA&&PERF_SEMASA.p, st=PERF_SEMASA&&PERF_SEMASA.stat;
+  if(!p||!st)return;
+  var t=document.getElementById('perf-title');
+  if(t)t.textContent='Profil Personel';
+  var h=document.getElementById('perf-head');
+  if(h)h.innerHTML='<b>'+esc(p.nama||'')+'</b>'+(p.pangkat?' &middot; '+esc(p.pangkat):'')+
+    (p.no?' <span class="ep-hint">No. Personel: '+esc(p.no)+'</span>':'')+
+    (p.team?' <span class="badge-team">'+esc(p.team)+'</span>':'')+
+    '<div class="ep-hint" style="margin-top:5px">Jumlah keseluruhan: <b>'+st.semua.bil+'</b> penugasan &middot; <b>'+num(st.semua.jam)+'</b> jam</div>';
+  var pl=document.getElementById('perf-period');
+  if(pl){
+    var html='';
+    html+='<button class="btn xs'+(st.jenis==='minggu'?' primary':'')+'" data-perf-mode="minggu">Minggu</button>';
+    html+='<button class="btn xs'+(st.jenis==='bulan'?' primary':'')+'" data-perf-mode="bulan">Bulan</button>';
+    html+='<button class="btn xs'+(st.jenis==='semua'?' primary':'')+'" data-perf-mode="semua">Semua</button>';
+    /* Pemilih tempoh: senaraikan SEMUA minggu/bulan yang ada tugasan (terbaru dahulu)
+       supaya pengguna boleh semak minggu mana-mana, bukan minggu terakhir sahaja. */
+    if(st.jenis==='minggu'&&st.minggu.length){
+      html+='<select id="perf-sel" title="Pilih minggu">'+st.minggu.map(function(w){
+        var c=statTempoh_(PERF_SEMASA.rekod,'minggu',w).bil;
+        return '<option value="'+esc(w)+'"'+(w===st.byk?' selected':'')+'>'+esc(labelMinggu_(w))+' &mdash; '+c+' tugasan</option>';
+      }).join('')+'</select>';
+    } else if(st.jenis==='bulan'&&st.bulan.length){
+      html+='<select id="perf-sel" title="Pilih bulan">'+st.bulan.map(function(b){
+        var c=statTempoh_(PERF_SEMASA.rekod,'bulan',b).bil;
+        return '<option value="'+esc(b)+'"'+(b===st.byk?' selected':'')+'>'+esc(monthLabel(b)||b)+' &mdash; '+c+' tugasan</option>';
+      }).join('')+'</select>';
+    }
+    pl.innerHTML=html;
+    pl.querySelectorAll('[data-perf-mode]').forEach(function(el){
+      el.addEventListener('click',function(){perfTukarMod(el.getAttribute('data-perf-mode'));});
+    });
+    var sel=document.getElementById('perf-sel');
+    if(sel)sel.addEventListener('change',function(){perfPilihTempoh(sel.value);});
+  }
+  var k=document.getElementById('perf-kpis');
+  if(k){
+    var t2=st.tempoh;
+    var lblTempoh = st.jenis==='semua' ? 'keseluruhan'
+      : (st.jenis==='minggu' ? labelMinggu_(st.byk) : (monthLabel(st.byk)||st.byk));
+    k.innerHTML=
+      '<div class="perf-kpi"><div class="lbl">Tugasan</div><div class="val">'+t2.bil+'</div><div class="foot">'+esc(lblTempoh)+'</div></div>'+
+      '<div class="perf-kpi"><div class="lbl">Hari Bertugas</div><div class="val">'+t2.hari+'</div><div class="foot">hari berbeza</div></div>'+
+      '<div class="perf-kpi"><div class="lbl">Jumlah Jam</div><div class="val">'+num(t2.jam)+'</div><div class="foot">jam tugasan</div></div>'+
+      '<div class="perf-kpi"><div class="lbl">Jam-Orang</div><div class="val">'+num(t2.jo)+'</div><div class="foot">jumlah jam-anggota</div></div>';
+  }
+  var l=document.getElementById('perf-list');
+  if(l){
+    var rw=st.tempoh.rows.slice().sort(function(a,b){
+      var x=String(a.tarikh_mula||''), y=String(b.tarikh_mula||'');
+      return x<y?1:(x>y?-1:0);
+    });
+    if(!rw.length){ l.innerHTML='<div style="padding:14px;color:var(--muted)">Tiada penugasan dalam tempoh ini.</div>'; }
+    else{
+      var body=rw.map(function(r){
+        var peran=String(r.petugas_detail||'').split('\n').filter(function(x){return normTxt(x)!=='';});
+        var kod=normNoKey(p.no), milik=[];
+        peran.forEach(function(x){
+          var mm=x.match(/\(([^)]+)\)\s*$/);
+          var pk=mm?normNoKey(mm[1]):'';
+          if((kod&&pk===kod)||(!kod&&normName(x.replace(/\([^)]*\)\s*$/,''))===normName(p.nama))) milik.push(x);
+        });
+        var jj=Number(r.jumlah_jam);
+        return '<tr><td class="nowrap">'+esc(r.tarikh_mula||'')+(r.hari?'<br><small style="color:var(--muted)">'+esc(r.hari)+'</small>':'')+'</td>'+
+          '<td><b>'+esc(r.tajuk||'(tanpa tajuk)')+'</b>'+(r.tempat?'<br><small style="color:var(--muted)">'+esc(r.tempat)+'</small>':'')+'</td>'+
+          '<td class="nowrap">'+esc(r.jenis||'')+(r.fasa?'<br><small style="color:var(--muted)">'+esc(r.fasa)+'</small>':'')+'</td>'+
+          '<td class="nowrap">'+(jj>0?num(jj)+' jam':'—')+'</td>'+
+          '<td>'+esc(milik.join('; ')||'—')+'</td></tr>';
+      }).join('');
+      l.innerHTML='<div class="perf-scroll"><table class="perf-tbl"><thead><tr>'+
+        '<th>Tarikh</th><th>Penugasan</th><th>Jenis</th><th>Jam</th><th>Peranan</th>'+
+        '</tr></thead><tbody>'+body+'</tbody></table></div>';
+    }
+  }
+}
+function perfTukarMod(jenis){
+  if(!PERF_SEMASA)return;
+  var st=PERF_SEMASA.stat;
+  st.jenis=jenis;
+  if(jenis==='minggu')st.byk=st.minggu[0]||'';
+  else if(jenis==='bulan')st.byk=st.bulan[0]||'';
+  else st.byk='';
+  st.tempoh=statTempoh_(PERF_SEMASA.rekod,jenis,st.byk);
+  perfRender();
+}
+function perfPilihTempoh(byk){
+  if(!PERF_SEMASA||!byk)return;
+  var st=PERF_SEMASA.stat;
+  st.byk=byk;
+  st.tempoh=statTempoh_(PERF_SEMASA.rekod,st.jenis,byk);
+  perfRender();
+}
+function openProfilPersonel(p){
+  if(!p)return;
+  var rekod=rekodPersonel_(p);
+  var pilih=perfPeriodPilihan_(rekod);
+  var st={
+    semua:statTempoh_(rekod,'semua',''),
+    minggu:pilih.minggu, bulan:pilih.bulan, jenis:'semua', byk:'', tempoh:null
+  };
+  if(pilih.minggu.length)st.jenis='minggu', st.byk=pilih.minggu[0];
+  else if(pilih.bulan.length)st.jenis='bulan', st.byk=pilih.bulan[0];
+  st.tempoh=statTempoh_(rekod,st.jenis,st.byk);
+  PERF_SEMASA={p:p,rekod:rekod,stat:st};
+  perfRender();
+  var bg=document.getElementById('perf-bg'); if(bg)bg.classList.add('show');
+}
+function closeProfilPersonel(){
+  var bg=document.getElementById('perf-bg'); if(bg)bg.classList.remove('show');
+  PERF_SEMASA=null;
+}
+function initProfilPersonel(){
+  var c=document.getElementById('perf-close'); if(c&&!c.dataset.perfbound){c.addEventListener('click',closeProfilPersonel);c.dataset.perfbound='1';}
+  var c2=document.getElementById('perf-close2'); if(c2&&!c2.dataset.perfbound){c2.addEventListener('click',closeProfilPersonel);c2.dataset.perfbound='1';}
+  var bg=document.getElementById('perf-bg');
+  if(bg&&!bg.dataset.perfbound){bg.addEventListener('click',function(e){if(e.target===bg)closeProfilPersonel();});bg.dataset.perfbound='1';}
+}
 /* v103e: PEPIJAT DIBETULKAN — PEN = DATA.penyelia ialah [] dan TIADA fungsi
    pernah mengisinya, jadi tab Mapping Penyelia sentiasa kosong, lajur Penyelia
    sentiasa '—', dan pembantu Meja Maya sentiasa gagal cari penyelia. Medan
@@ -6009,7 +6225,7 @@ function perRowHtml(p){
     ?'<button class="btn xs per-act pm-edit" data-no="'+esc(code)+'" title="Edit personel">&#9998;</button>'
      +'<button class="btn xs per-act pm-del" data-no="'+esc(code)+'" title="Nyahaktif (soft delete)" style="color:#fca5a5;margin-left:6px">&#128465;</button>'
     :'<span style="color:var(--muted);font-size:11px">&mdash;</span>';
-  return '<tr><td class="nowrap">'+esc(p.bil)+'</td><td class="nowrap">'+esc(p.pangkat)+'</td><td><b>'+esc(p.nama)+'</b>'+(roleTxt?'<br><small style="color:var(--muted);font-size:10.5px">'+esc(roleTxt)+'</small>':'')+'</td><td class="nowrap per-no-cell num-cell num-ltr" title="'+esc(code)+'">'+esc(shown)+'</td><td><span class="badge-team">'+esc(p.team||'\u2014')+'</span></td><td>'+st+'</td><td class="nowrap">'+num(s.t)+'</td><td class="nowrap">'+num(Math.round(s.j*10)/10)+'</td><td class="nowrap">'+act+'</td></tr>';
+  return '<tr><td class="nowrap">'+esc(p.bil)+'</td><td class="nowrap">'+esc(p.pangkat)+'</td><td><b class="perf-nama" data-no="'+esc(code)+'" title="Klik untuk lihat profil &amp; bilangan tugasan">'+esc(p.nama)+'</b>'+(roleTxt?'<br><small style="color:var(--muted);font-size:10.5px">'+esc(roleTxt)+'</small>':'')+'</td><td class="nowrap per-no-cell num-cell num-ltr" title="'+esc(code)+'">'+esc(shown)+'</td><td><span class="badge-team">'+esc(p.team||'\u2014')+'</span></td><td>'+st+'</td><td class="nowrap">'+num(s.t)+'</td><td class="nowrap">'+num(Math.round(s.j*10)/10)+'</td><td class="nowrap">'+act+'</td></tr>';
 }
 function perFiltered(){
   const q=(document.getElementById('per-q')||{}).value?String(document.getElementById('per-q').value).toLowerCase().trim():'';
@@ -6081,6 +6297,13 @@ function initPersonel(){
   const tbody=document.querySelector('#per-tbl tbody');
   if(tbody&&!tbody.dataset.perbound){
     tbody.addEventListener('click',function(ev){
+      /* v108: klik NAMA -> profil personel (bilangan tugasan minggu/bulan). */
+      var nm=ev.target.closest?ev.target.closest('.perf-nama'):null;
+      if(nm){
+        var recN=(PER||[]).filter(function(x){return normNoKey(x.no)===normNoKey(nm.getAttribute('data-no'));})[0];
+        openProfilPersonel(recN);
+        return;
+      }
       var b=ev.target.closest?ev.target.closest('.per-act'):null; if(!b)return;
       ev.stopPropagation();
       var no=b.getAttribute('data-no');
@@ -6089,6 +6312,7 @@ function initPersonel(){
     });
     tbody.dataset.perbound='1';
   }
+  try{ initProfilPersonel(); }catch(e){ console.warn('[v108] initProfilPersonel:',e); }
   perApply();
 }
 function pmEl(id){return document.getElementById(id);}

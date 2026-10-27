@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ms" data-app-version="v103g">
+<html lang="ms" data-app-version="v103h">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-prmOPe57Vjyl0JSahmFBSCDEVrQmzfqCukIdSaDaA5Q=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-prmOPe57Vjyl0JSahmFBSCDEVrQmzfqCukIdSaDaA5Q=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-m7Pr18Snx9fupfkwuajpcX5q1ja1LCRkYEsMW72LRrw=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-m7Pr18Snx9fupfkwuajpcX5q1ja1LCRkYEsMW72LRrw=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -3777,17 +3777,19 @@ function acaraItemHtml(r,today){
   const e=keyToDate(parseDateKey(r.tarikh_tamat||r.tarikh_mula));
   const diff=Math.round((s-today)/86400000);
   const multi=(e-s)>0;
-  /* v103g: acara BERBILANG HARI yang sedang berjalan dipapar sebagai JULAT tarikh
+  /* v103h: acara BERBILANG HARI yang sedang berjalan dipapar sebagai JULAT tarikh
      + "Berlangsung (hari ke-N)". Sebelum ini ia memapar tarikh MULA dgn label
      "Hari ini", jadi kotak kelihatan tersekat pada tarikh mula acara lama
      (cth acara 12-30 Okt dipapar "12 Oktober 2026 · Hari ini" pada 27 Okt). */
   const hariKe=(multi&&diff<=0)?(Math.round((today-s)/86400000)+1):0;
+  const jumlahHari=multi?(Math.round((e-s)/86400000)+1):1;
   const hariAkhir=(multi&&diff<=0&&Math.round((e-today)/86400000)===0);
   const soon=diff<=2;
   const ic=diff<=0?'🚨':(diff<=2?'⚠️':'🔔');
   const days=multi
     ? (diff>0?('Mula '+(diff===1?'esok':(diff+' hari lagi')))
-             :(hariAkhir?('Hari terakhir \u00b7 hari ke-'+hariKe):('Berlangsung \u00b7 hari ke-'+hariKe)))
+             :(hariAkhir?('Hari terakhir \u00b7 hari ke-'+hariKe)
+                        :(hariKe<=1?'Mula hari ini \u00b7 '+jumlahHari+' hari':('Berlangsung \u00b7 hari ke-'+hariKe+'/'+jumlahHari))))
     : (diff<=0?'Hari ini':(diff===1?'Esok':(diff+' hari lagi')));
   const tkh=multi
     ? (s.getDate()+' '+GREG_MONTHS[s.getMonth()]+' \u2013 '+e.getDate()+' '+GREG_MONTHS[e.getMonth()]+' '+e.getFullYear())
@@ -3821,19 +3823,24 @@ function buildHariIni(){
   const wrap=document.getElementById('hariini-list');if(!wrap)return;
   const today=new Date();today.setHours(0,0,0,0);
   const todayKey=ymdKey(today);
+  /* v103h: kotak ini hanya memapar acara yang BERMULA hari ini (tarikh_mula =
+     hari ini). Sebelum ini ia memapar SEMUA acara berbilang hari yang merentasi
+     hari ini (cth kursus 12-30 Okt), jadi kotak penuh dengan acara lama yang
+     sudah diketahui pengguna. Acara yang masih berlangsung diringkaskan sebagai
+     kiraan di bawah supaya ia tidak hilang sepenuhnya. */
   const now=(LOG||[]).slice().filter(function(r){
     if(!r.tarikh_mula)return false;
-    const startKey=parseDateKey(r.tarikh_mula);
-    const endKey=parseDateKey(r.tarikh_tamat||r.tarikh_mula);
-    if(!startKey||!endKey)return false;
-    return startKey<=todayKey && endKey>=todayKey;
+    return parseDateKey(r.tarikh_mula)===todayKey;
   }).sort(function(a,b){const ka=parseDateKey(a.tarikh_mula),kb=parseDateKey(b.tarikh_mula);return ka<kb?-1:(ka>kb?1:0);});
-  /* v103g: papar tarikh HARI INI pada kepala kotak supaya pengguna boleh
-     mengesahkan kotak ini memang untuk hari ini (bukan tersekat pada tarikh lama). */
+  const sedang=(LOG||[]).slice().filter(function(r){
+    const s=parseDateKey(r&&r.tarikh_mula),e=parseDateKey(r&&(r.tarikh_tamat||r.tarikh_mula));
+    return s&&e&&s<todayKey&&e>=todayKey;
+  });
   const hd=document.getElementById('hariini-head');
   if(hd)hd.textContent='\ud83d\udd14 Menarik Hari Ini \u2014 '+today.getDate()+' '+GREG_MONTHS[today.getMonth()]+' '+today.getFullYear();
-  if(!now.length){wrap.innerHTML='<div class="acara-empty">Tiada acara pada hari ini.</div>';return;}
-  wrap.innerHTML=now.slice(0,30).map(function(r){return acaraItemHtml(r,today);}).join('');
+  const nota=sedang.length?('<div class="acara-empty" style="padding:8px 10px;font-size:10.5px;border-top:1px dashed var(--line2)">\u2139\ufe0f '+sedang.length+' acara berbilang hari masih berlangsung \u2014 lihat \ud83d\udcc5 Kalendar</div>'):'';
+  if(!now.length){wrap.innerHTML='<div class="acara-empty">Tiada acara bermula hari ini.</div>'+nota;return;}
+  wrap.innerHTML=now.slice(0,30).map(function(r){return acaraItemHtml(r,today);}).join('')+nota;
 }
 
 /* ===== REKOD TARIKH PROFIL (kotak dinyahaktifkan v38) ===== */
@@ -7771,7 +7778,7 @@ if(SESSION) setTimeout(function(){ LAST_SYNC_TS=Date.now(); renderSyncStatus(fal
 (function(){
   if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
-      /* v103g: ambil versi daripada <html data-app-version> supaya ?v= TIDAK
+      /* v103h: ambil versi daripada <html data-app-version> supaya ?v= TIDAK
          boleh terpesong daripada CACHE dlm sw.js (dahulu ia hardcoded dan
          tertinggal beberapa versi -> pelanggan terus dapat aset lama). */
       var _swv=(document.documentElement.getAttribute('data-app-version')||'').trim()||'v0';
@@ -7857,17 +7864,31 @@ function renderLogSync(){
   el.textContent=counts+' · Dikemas kini '+(s<60?(s+'s'):(Math.floor(s/60)+' min'))+' lalu';
 }
 /* hantar rekod key-in (ADDED) yang tersangkut di peranti ini ke Sheet */
+var _FLUSH_BUSY=null,_FLUSH_CUBA=0;
 function flushPendingAdded(){
+  /* v103h: KUNCI ANTI-BERTINDIH. Sebelum ini tiada kunci, jadi pemasa 60s dan
+     syncNowAfterSave_ (serta burst 1.5s) boleh memanggil fungsi ini serentak.
+     Kedua-duanya membaca ADDED SEBELUM mana-mana selesai, jadi rekod yang SAMA
+     dihantar dua kali. Backend mencipta baris BAHARU apabila id tiada ->
+     rekod BERGUNDA dalam Sheet (pengguna nampak tajuk sama dua kali).
+     Sekarang: jika hantaran sedang berjalan, pulangkan promise yang SAMA. */
+  if(_FLUSH_BUSY) return _FLUSH_BUSY;
   try{
-    if(!ADDED || !ADDED.length) return;
+    if(!ADDED || !ADDED.length) return Promise.resolve({sent:0});
     var have={};
     try{ if(Array.isArray(LOG_BASE)) LOG_BASE.forEach(function(r){ have[recKey(r)]=1; }); }catch(e){}
     var pend=ADDED.filter(function(r){ return !have[recKey(r)]; });
     if(!pend.length){ try{ ADDED.length=0; saveAdded(ADDED); rebuildLog(); }catch(e){} return Promise.resolve({sent:0}); }
     if(typeof gasConfigured!=='function' || !gasConfigured()) return Promise.resolve({sent:0,offline:true});
     if(typeof SESSION==='undefined' || !SESSION) return Promise.resolve({sent:0,offline:true});
+    /* v103h: PASTIKAN setiap rekod ada ID STABIL sebelum dihantar. Tanpa id,
+       backend menjana 'LP-<n>' dan MENAMBAH baris baharu -> setiap cubaan
+       ulang mencipta pendua. Import/OCR lama boleh menghasilkan rekod tanpa id. */
+    pend.forEach(function(r){
+      if(!r.id || /^(LEG-|undefined|null)$/i.test(String(r.id))) r.id='USR-'+Date.now()+'-'+(r.bil||0);
+    });
     /* v74: pulangkan PROMISE supaya sendDrafts boleh tunjuk hasil yang tepat. */
-    return gasCall('commitLogPenugasan',{records:pend.slice(),actorEmail:(SESSION&&SESSION.id)||''}).then(function(r){
+    _FLUSH_BUSY=gasCall('commitLogPenugasan',{records:pend.slice(),actorEmail:(SESSION&&SESSION.id)||''}).then(function(r){
       var sent=0;
       if(r && r.ok){
         var ids=[];
@@ -7878,8 +7899,18 @@ function flushPendingAdded(){
       }
       try{ rebuildLog(); updateDraftBadge(); }catch(e){}
       return {sent:sent};
-    }).catch(function(){ return {sent:0,error:true}; });
-  }catch(e){ return Promise.resolve({sent:0,error:true}); }
+    }).catch(function(){ return {sent:0,error:true}; }).then(function(res){
+      _FLUSH_BUSY=null;
+      /* v103h: cuba semula SEKALI sahaja jika gagal (elak gelung tanpa had yg
+         membanjiri backend). Pemasa 60s akan cuba lagi selepas ini. */
+      if(!res.sent && res.error && _FLUSH_CUBA<1 && ADDED && ADDED.length){
+        _FLUSH_CUBA++;
+        try{ setTimeout(function(){ try{flushPendingAdded();}catch(e){} },1200); }catch(e){}
+      } else if(res.sent){ _FLUSH_CUBA=0; }
+      return res;
+    });
+    return _FLUSH_BUSY;
+  }catch(e){ _FLUSH_BUSY=null; return Promise.resolve({sent:0,error:true}); }
 }
 /* paksa buang cache service-worker LAMA (snapshot/data versi lama) */
 function purgeOldCaches(){
@@ -7920,7 +7951,7 @@ function initV67(){
          backend) -> hanya AMARAN kuat supaya admin terbit versi baharu.
      (c) Tempoh rasmi tidak dipaparkan -> label tempoh kini datang dari backend
          (fetchLogCounts.periodStart / fetchLogCounts_) pada SETIAP peranti. */
-var APP_VER = 'v103g';
+var APP_VER = 'v103h';
 var _BACKEND_VER = null, _VER_MISMATCH = false, _OFFICIAL_PERIOD = null, _VER_GUARD_RUN = 0;
 function effectivePeriodStart(){
   try{ if(_OFFICIAL_PERIOD && String(_OFFICIAL_PERIOD).length>=10) return String(_OFFICIAL_PERIOD).slice(0,10); }catch(e){}

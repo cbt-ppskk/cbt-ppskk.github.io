@@ -1657,3 +1657,51 @@ sepadan -> CSP menyekat skrip -> laman putih. Alat kini menggantikan hash
 **ikut kedudukan** dan idempoten. Sentiasa sahkan secara bebas selepas
 menggunakannya.
 
+
+## Pepijat: rekod BERGUNDA dalam Sheet (dibetulkan v103h)
+
+**Gejala.** Pengguna nampak tajuk SAMA dua kali dalam kotak "Menarik Hari Ini"
+(cth "KURSUS PEMBANGUNAN KOMPETENSI AI" dengan tempat + tarikh identik).
+
+**Punca 1 — tiada kunci anti-bertindih.** `flushPendingAdded()` boleh dipanggil
+SERENTAK oleh beberapa pencetus: pemasa 60s, `syncNowAfterSave_()`, gelung
+burst 1.5s, dan `initV67`. Tiada kunci, jadi setiap panggilan membaca `ADDED`
+SEBELUM mana-mana selesai -> rekod yang SAMA dihantar dua kali.
+
+**Punca 2 — id tiada -> backend cipta baris baharu.** Dalam `Code.gs`
+`commitLogPenugasan()`: id ADA -> KEMAS KINI baris; id TIADA -> jana `LP-<n>`
+dan **append baris baharu**. Jadi rekod tanpa id yang dihantar dua kali
+menghasilkan dua baris. Import/OCR lama (`if(!r.id)r.id='LP-'+Date.now()`) dan
+rekod draf boleh menghasilkan id yang hilang atau tidak stabil.
+
+**Pembetulan.**
+1. Kunci `_FLUSH_BUSY` — panggilan bertindih memulangkan promise yang SAMA.
+2. Sebelum hantar, setiap rekod tanpa id diberi id stabil (`USR-...`).
+3. Cuba semula SEKALI sahaja jika gagal (`_FLUSH_CUBA`), elak gelung tanpa had.
+
+**Ujian pengawal:** `uji_pendua.mjs` (7 pemeriksaan) meniru `commitLogPenugasan`
+SEBENAR termasuk kelewatan rangkaian 40ms supaya panggilan bertindih berlaku.
+Ia GAGAL pada kod lama (2 baris dalam Sheet) dan lulus selepas pembetulan.
+**Penting:** ujian yang tidak meniru dedup-ikut-id backend akan terlepas pepijat
+ini sepenuhnya.
+
+**Rekod pendua sedia ada** boleh dibuang oleh admin guna **🔍 Kesan Duplikat**
+(`findDuplicates_` mengumpulkan ikut tarikh|tajuk|petugas|masa). Ia hard delete
+dengan salinan diarkib ke helaian `Log_Deleted`.
+
+## Perubahan tingkah laku: kotak "Menarik Hari Ini" (v103h)
+
+Sebelum ini kotak memapar SEMUA acara berbilang hari yang merentasi hari ini.
+Untuk unit dengan kursus panjang (cth 12–30 Okt), kotak itu penuh dengan acara
+yang sudah diketahui pengguna, sehingga acara HARI INI tenggelam.
+
+Kini kotak memapar **hanya acara yang BERMULA hari ini** (`tarikh_mula === today`).
+Acara berbilang hari yang masih berlangsung diringkaskan sebagai satu baris
+nota kiraan di bawah ("N acara berbilang hari masih berlangsung — lihat Kalendar")
+supaya ia tidak hilang sepenuhnya.
+
+Label `acaraItemHtml()` bagi acara berbilang hari:
+- mula hari ini -> `Mula hari ini · N hari`
+- sedang berlangsung -> `Berlangsung · hari ke-N/M`
+- hari akhir -> `Hari terakhir · hari ke-N`
+

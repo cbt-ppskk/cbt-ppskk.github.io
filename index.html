@@ -2,7 +2,7 @@
 <html lang="ms" data-app-version="v103e">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vaZ/gbpr8OCffNQ2lAyuB5GdyOdqhBbsO0HFaEIvors=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-vaZ/gbpr8OCffNQ2lAyuB5GdyOdqhBbsO0HFaEIvors=' 'sha256-zdkcTTXSQrFU5RD/hjeNsge8Mpy3lOMA3FtEKFZI9Vo=' 'sha256-DtTgNC3nGgODrIBGPki+QC/Ujfp+7Jp/lm1BYXVSrPo=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-oTbrpGotW+AVrHYXpKzr9FtqXGEVz15akujHAoOVRbw=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-QzqikaXfekhWwZnZfRT5CHTLsGSpa5tV6Ej+FYjexik=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-QzqikaXfekhWwZnZfRT5CHTLsGSpa5tV6Ej+FYjexik=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -2728,12 +2728,12 @@ function epAttachAuto(){
        (cth 08:00 -> 11:00 = 3 jam). Jam-Orang = jam seorang x bilangan petugas. */
     var a=epHMdec(epVal('ep-masa_mula')),b=epHMdec(epVal('ep-masa_tamat'));
     if(a==null||b==null){epJamOrangAuto();return;}
-    if(b<=a){
+    if(b<a){
       var w=epEl('ep-jam-info');
       if(w)w.innerHTML='<span style="color:#ffb4b4">'+'\u26a0\ufe0f'+' Masa tamat lebih awal daripada masa mula &mdash; sila betulkan.</span>';
       return;
     }
-    var jam=Math.round((b-a)*10)/10;
+    var jam=Math.round(jamDariMasa_(a,b,1)*10)/10;
     var jEl=epEl('ep-jumlah_jam');if(jEl)jEl.value=jam;
     EP_JO_MANUAL=false;
     epJamOrangAuto();
@@ -2761,12 +2761,12 @@ function epJamAutoNow(){
     if(msg)msg.textContent='Sila isi Masa Mula dan Masa Tamat untuk kira automatik.';
     return;
   }
-  if(b<=a){
+  if(b<a){
     if(msg)msg.textContent='Masa Tamat mesti LEBIH LEWAT daripada Masa Mula.';
     epJamInfoRender();
     return;
   }
-  var jam=Math.round((b-a)*10)/10;
+  var jam=Math.round(jamDariMasa_(a,b,1)*10)/10;
   var jEl=epEl('ep-jumlah_jam');if(jEl)jEl.value=jam;
   EP_JO_MANUAL=false;
   epJamOrangAuto();
@@ -4269,9 +4269,28 @@ function toMinutes(v){
   return null;
 }
 function hm(mins){if(mins==null)return '';const m=((Math.round(mins)%1440)+1440)%1440;return Math.floor(m/60)*100+(m%60);}
+/** v106: Jam tugasan daripada masa mula/tamat.
+   KES KHAS 24 JAM: masa_tamat === masa_mula (cth 0800-0800) bermakna tugas
+   sepanjang hari, BUKAN ralat. Pulangkan 24 jam, bukan 0.
+   Rentas tengah malam (2000-0600) -> tambah 24 jam supaya menjadi 10 jam.
+   `tanpaRehat` = true mengekalkan tempoh penuh (tiada potongan 1 jam rehat). */
+function jamDariMasa_(a,b,divisor,tanpaRehat){
+  if(a==null||b==null)return null;
+  if(b===a)return 24;
+  var j=(b-a)/(divisor||60);
+  if(j<0)j+=24;
+  if(tanpaRehat)return j;
+  return j>1?j-1:j;   /* potong 1 jam rehat (kekalkan tingkah laku v24) */
+}
+/** v106: true jika masa mula/tamat ialah julat 24 jam (mula === tamat). */
+function isJulat24Jam_(a,b){ return a!=null&&b!=null&&a===b; }
 function parseTimeRange(s){
   if(!s)return {start:null,end:null};
   var t=String(s).toLowerCase();
+  /* v106: 24 jam boleh ditulis sebagai perkataan, bukan julat nombor. */
+  if(/\b(24\s*(jam|j|hrs?|hours?)|sehari|sepanjang\s*hari|2400)\b/.test(t)&&!/\d{3,4}\s*-\s*\d{3,4}/.test(t)){
+    return {start:480,end:480};
+  }
   var re=/(\d{1,2}\s*[:.]\s*\d{2}|\d{3,4})\s*(am|pm|pagi|tengahari|petang|malam|mlm)?/g;
   var toks=[],m;
   while((m=re.exec(t))!==null){
@@ -4286,7 +4305,9 @@ function parseTimeRange(s){
     if(re.lastIndex===m.index)re.lastIndex++;
   }
   var start=toks.length?toks[0].mins:null,end=toks.length>1?toks[1].mins:null;
-  if(start!=null&&end!=null&&!toks[1].mer&&end<start&&end+720>start)end+=720;
+  /* v106: rentas tengah malam -> tambah 24 jam (bukan 12 jam seperti dahulu, yang
+     hanya betul untuk julat lebih 12 jam dan rosak untuk julat malam yang pendek). */
+  if(start!=null&&end!=null&&!toks[1].mer&&end<start)end+=1440;
   return {start:start,end:end};
 }
 function splitNames(str){
@@ -4403,7 +4424,11 @@ function parseWhats(text){
   rec.status=statusOption(statusRaw);
   var jj=null;
   if(jamRaw&&!/[\u2013\u2014-]|hingga/.test(jamRaw)){var jm=String(jamRaw).match(/(\d+(?:\.\d+)?)/);if(jm)jj=parseFloat(jm[1]);}
-  if(jj==null&&mulaMin!=null&&tamatMin!=null&&tamatMin>mulaMin)jj=(tamatMin-mulaMin)/60;
+  /* v106: KES 24 JAM — masa_tamat === masa_mula (cth 0800-0800) bermakna tugas
+     sepanjang hari. Tanpa baris ini jumlah_jam kekal kosong (masa_tamat tidak
+     lebih besar daripada masa_mula), jadi tugas 24 jam tidak dikira.
+     tanpaRehat=true: parser tidak pernah potong 1 jam rehat, jadi kekalkan itu. */
+  if(jj==null&&mulaMin!=null&&tamatMin!=null&&(tamatMin>mulaMin||tamatMin===mulaMin))jj=jamDariMasa_(mulaMin,tamatMin,60,true);
   var jo=null;var jom=String(jamOrangRaw||'').match(/(\d+(?:\.\d+)?)/);if(jom)jo=parseFloat(jom[1]);
   if(jo==null&&jj!=null){var pc=(R.admin.length+R.pa.length+R.foto.length+R.video.length)||1;jo=Math.round(jj*pc*10)/10;}
   rec.jumlah_jam=(jj!=null)?Math.round(jj*10)/10:'';
@@ -4605,10 +4630,32 @@ function v56Assign_(rec,roles){
   return rec;
 }
 function v56Time_(head){
-  var h=v56Clean(String(head||'').replace(/\s*hrs\b/ig,'').replace(/\s*hours\b/ig,''));
+  var asal=v56Clean(String(head||''));
+  var h=asal.replace(/\s*hrs\b/ig,'').replace(/\s*hours\b/ig,'');
   var m=h.match(/\((\d{3,4})\s*-\s*(\d{3,4}|selesai|tamat|siap|habis)\)/i);
-  if(!m)return null;
+  if(!m){
+    /* v106: tugas 24 jam TANPA julat nombor, cth "(24 JAM)", "24JAM", "(24 HRS)",
+       "(sehari)". Semak teks ASAL kerana perkataan 'hrs'/'hours' sudah dibuang
+       di atas — tanpa ini "(24 HRS)" tidak dikesan.
+       Diwakili 0800-0800 (masa mula === masa tamat) -> dikira 24 jam. */
+    var m24=asal.match(/\(?\b24\s*(?:jam|j|hrs|hours|hour)\b\)?/i)||asal.match(/\(?\bsehari\b\)?/i)||asal.match(/\(\s*2400\s*\)/);
+    if(m24)return {str:'0800-0800',idx:m24.index,alt:m24[0],text:'24 jam'};
+    return null;
+  }
   return {str:m[1]+'-'+m[2],idx:m.index,alt:m[0],text:m[1]+'-'+m[2]};
+}
+/** v106: tugas 24 jam (masa mula === masa tamat) tidak dikira oleh formula biasa
+   (yang menolak kes tamat<=mula). Isi jumlah_jam=24 + jam_orang supaya rekod
+   24 jam tidak masuk log dengan jam kosong. Tugas biasa TIDAK disentuh. */
+function v56Jam24_(rec){
+  try{
+    var a=toMinutes(rec.masa_mula),b=toMinutes(rec.masa_tamat);
+    if(!isJulat24Jam_(a,b))return rec;
+    rec.jumlah_jam=24;
+    var pc=countNamesAll(rec)||1;
+    rec.jam_orang=Math.round(24*pc*10)/10;
+  }catch(e){}
+  return rec;
 }
 function buildNumberedV56_(gr,globalDate){
   var rec=newUserRecord();
@@ -4641,6 +4688,7 @@ function buildNumberedV56_(gr,globalDate){
   var _r=rangeOf_(globalDate);rec.tarikh_mula=_r.start;rec.tarikh_tamat=_r.end;rec.bil_hari=hariRange_(_r);
   rec.sumber='Smart AI Parser (v56)';
   v56Assign_(rec,roles);
+  v56Jam24_(rec);
   finalizeRecord(rec);
   return rec;
 }
@@ -4665,6 +4713,7 @@ function buildAdminV56_(gr,globalDate){
   var _r=rangeOf_(globalDate);rec.tarikh_mula=_r.start;rec.tarikh_tamat=_r.end;rec.bil_hari=hariRange_(_r);
   rec.sumber='Smart AI Parser (v56)';
   v56Assign_(rec,roles);
+  v56Jam24_(rec);
   finalizeRecord(rec);
   return rec;
 }
@@ -4695,6 +4744,7 @@ function buildSpecialV56_(gr,globalDate){
   var _r=rangeOf_(globalDate);rec.tarikh_mula=_r.start;rec.tarikh_tamat=_r.end;rec.bil_hari=hariRange_(_r);
   rec.sumber='Smart AI Parser (v56)';
   v56Assign_(rec,roles);
+  v56Jam24_(rec);
   finalizeRecord(rec);
   return rec;
 }
@@ -5421,7 +5471,7 @@ function kiRead(){
   var r=newUserRecord(ensureKeyinBil());
   Object.keys(KI_FIELDS).forEach(function(k){var el=document.getElementById(KI_FIELDS[k]);if(el)r[k]=el.value;});
   ['masa_mula','masa_tamat'].forEach(function(k){var mm=toMinutes(r[k]);r[k]=(mm==null?'':hm(mm));});
-  if(r.jumlah_jam===''){var _m1=toMinutes(document.getElementById('ki-masa-mula').value),_m2=toMinutes(document.getElementById('ki-masa-tamat').value);if(_m1!=null&&_m2!=null&&_m2>_m1){var _s=(_m2-_m1)/60;if(_s>1)_s-=1;r.jumlah_jam=Math.round(_s*10)/10;}} /* v24: potong 1 jam rehat */
+  if(r.jumlah_jam===''){var _m1=toMinutes(document.getElementById('ki-masa-mula').value),_m2=toMinutes(document.getElementById('ki-masa-tamat').value);var _s=jamDariMasa_(_m1,_m2);if(_s!=null)r.jumlah_jam=Math.round(_s*10)/10;} /* v106: 24 jam = 24 */
   r.jumlah_jam=(r.jumlah_jam===''?'':Number(r.jumlah_jam));
   r.jam_orang=(r.jam_orang===''?'':Number(r.jam_orang));
   r.bil_hari=(r.bil_hari===''?1:Number(r.bil_hari));
@@ -5528,7 +5578,7 @@ function initKeyin(){
   function kiCalc(){
     var m1=toMinutes(document.getElementById('ki-masa-mula').value),m2=toMinutes(document.getElementById('ki-masa-tamat').value);
     var jam=parseFloat(document.getElementById('ki-jumlah-jam').value);
-    if(isNaN(jam)&&m1!=null&&m2!=null&&m2>m1){jam=(m2-m1)/60;if(jam>1)jam-=1;} /* v24: potong 1 jam rehat */
+    if(isNaN(jam)){var _s=jamDariMasa_(m1,m2);if(_s!=null)jam=_s;} /* v106: 24 jam = 24 */
     if(!isNaN(jam))document.getElementById('ki-jumlah-jam').value=(Math.round(jam*10)/10);
     var d1=document.getElementById('ki-tarikh-mula').value,d2=document.getElementById('ki-tarikh-tamat').value;
     if(d1&&d2&&d2>=d1){var dd=Math.round((new Date(d2+'T00:00:00')-new Date(d1+'T00:00:00'))/86400000)+1;if(dd>0)document.getElementById('ki-bil-hari').value=dd;}
@@ -7800,13 +7850,12 @@ try{ initV67(); }catch(e){}
     var ids=opts.ids||{m1:'ki-masa-mula',m2:'ki-masa-tamat',jam:'ki-jumlah-jam',jo:'ki-jam-orang',info:'ki-jam-info'};
     var a=mins(val(ids.m1)),b=mins(val(ids.m2)),warn='';
     if(a!=null&&b!=null){
-      if(b<=a){warn='⚠️ Masa tamat lebih awal daripada masa mula — sila betulkan.';}
+      if(b<a){warn='⚠️ Masa tamat lebih awal daripada masa mula — sila betulkan.';}
       else{
-        var j=(b-a)/60; if(j>1)j-=1; /* potong 1 jam rehat */
-        j=Math.round(j*10)/10; setVal(ids.jam,String(j));
+        var j=jamDariMasa_(a,b); j=Math.round(j*10)/10; setVal(ids.jam,String(j));
         var pc=(opts.n!=null?opts.n:nPetugas());
         setVal(ids.jo,String(Math.round(j*pc*10)/10));
-        if(opts.info!==false)info(ids.info,'⏱️ <b>Auto kira</b> — Jam Tugas: <b style="color:var(--gold-lt)">'+j+' jam</b> · Bil. Petugas: <b>'+pc+'</b> · Jam-Orang: <b style="color:var(--gold-lt)">'+(Math.round(j*pc*10)/10)+'</b>');
+        if(opts.info!==false)info(ids.info,'⏱️ <b>Auto kira</b> — Jam Tugas: <b style="color:var(--gold-lt)">'+j+' jam</b> · Bil. Petugas: <b>'+pc+'</b> · Jam-Orang: <b style="color:var(--gold-lt)">'+(Math.round(j*pc*10)/10)+'</b>'+(isJulat24Jam_(a,b)?' <b style="color:var(--gold-lt)">(24 jam)</b>':''));
       }
     } else { if(opts.info!==false)info(ids.info,'⏱️ <b>Auto Kira Jam:</b> isi Masa Mula &amp; Masa Tamat, jumlah jam &amp; jam-orang dikira serta-merta.'); }
     if(warn&&opts.info!==false)info(ids.info,warn,true);
@@ -8260,7 +8309,7 @@ try{ initV67(); }catch(e){}
         if(r.tarikh_mula)days[String(r.tarikh_mula)]=1;
         var j=Number(r.jumlah_jam);
         if(isNaN(j)||j<=0){ /* v84: kira dari masa bila medan jam tiada */
-          try{var a=toMinutes(r.masa_mula),b=toMinutes(r.masa_tamat);if(a!=null&&b!=null&&b>a){j=(b-a)/60;if(j>1)j-=1;}}catch(e){}
+          try{var a=toMinutes(r.masa_mula),b=toMinutes(r.masa_tamat);if(a!=null&&b!=null&&b>=a){j=jamDariMasa_(a,b);}}catch(e){}
         }
         if(!isNaN(j)&&j>0)jam+=j;
         var np=0; ['admin','pa','foto','video'].forEach(function(role){np+=countNames(r['petugas_'+role]);});
@@ -8352,7 +8401,7 @@ try{ initV67(); }catch(e){}
       if(typeof STAGE==='undefined'||!STAGE.length){showToast('Tiada penugasan untuk dikira.');return;}
       STAGE.forEach(function(r){
         var a=toMinutes(r.masa_mula),b=toMinutes(r.masa_tamat);
-        if(a!=null&&b!=null&&b>a){var j=(b-a)/60;if(j>1)j-=1;r.jumlah_jam=Math.round(j*10)/10;}
+        if(a!=null&&b!=null&&b>=a){var j=jamDariMasa_(a,b);r.jumlah_jam=Math.round(j*10)/10;}
         var np=0;['admin','pa','foto','video'].forEach(function(role){np+=countNames(r['petugas_'+role]);});
         var jj=Number(r.jumlah_jam); if(!isNaN(jj)&&jj>0&&np>0)r.jam_orang=Math.round(jj*np*10)/10;
       });
@@ -8857,7 +8906,7 @@ try{ initV67(); }catch(e){}
   function recalcRec(r){
     try{
       var a=toMinutes(r.masa_mula),b=toMinutes(r.masa_tamat);
-      if(a!=null&&b!=null&&b>a){ var j=(b-a)/60; if(j>1)j-=1; r.jumlah_jam=Math.round(j*10)/10; }
+      if(a!=null&&b!=null&&b>=a){ var j=jamDariMasa_(a,b); r.jumlah_jam=Math.round(j*10)/10; }
       var np=countNamesAll(r);
       var jj=Number(r.jumlah_jam);
       if(!isNaN(jj)&&jj>0&&np>0)r.jam_orang=Math.round(jj*np*10)/10;

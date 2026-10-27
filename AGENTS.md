@@ -1522,3 +1522,28 @@ node uji-parser-julat.js http://127.0.0.1:12098  # -> 16 GAGAL pada kod asal
 
 **Selepas setiap edit `<script>` inline, jalankan `python3 tools/csp-hash.py --write`.**
 Lupa langkah ini menjadikan seluruh halaman kosong.
+
+## Profil Personel — klik nama (v108)
+
+Tab **Personel**: klik nama anggota (`<b class="perf-nama">`) membuka modal
+`#perf-bg` yang menunjukkan bilangan tugasan ikut **minggu / bulan / semua**.
+
+**Padanan orang guna KOD (No. Personel), bukan nama.** `petugas_detail` menyimpan
+`PANGKAT NAMA (NO)`; kod itu unik dan tahan perbezaan ejaan pangkat (`LKPL` vs
+`L/KPL`) atau nama. Fallback padan nama penuh untuk rekod lama tanpa kod.
+
+**Konsisten dengan `perStats()`.** Kiraan mod "Semua" memberi hasil SAMA dengan
+lajur Tugasan/Jumlah Jam dalam tab Personel — kedua-duanya membaca
+`petugas_detail` dan mengira sekali sahaja setiap kod per rekod. Jangan tukar
+satu tanpa menguji yang lain (`uji_profil.mjs` bahagian I membandingkannya).
+
+Fungsi: `isoMinggu_`, `kunciBulan_`, `labelMinggu_`, `rekodPersonel_`,
+`statTempoh_`, `perfPeriodPilihan_`, `perfRender`, `perfTukarMod`,
+`perfPilihTempoh`, `openProfilPersonel`, `closeProfilPersonel`,
+`initProfilPersonel`.
+
+Kunci tempoh: minggu = kunci padat `YYYYMMDD` (Isnin, ISO 8601); bulan = `YYYY-MM`.
+Sentiasa lalu `parseDateKey()` dahulu — jangan andaikan `tarikh_mula` berformat
+ISO (`YYYY-MM-DD`), data lama boleh jadi `DD/MM/YYYY`.
+
+Ujian: `uji_profil.mjs` (logik) + `uji_profil_ui.mjs` (render DOM sebenar).

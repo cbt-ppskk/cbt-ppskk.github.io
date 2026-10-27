@@ -1615,3 +1615,45 @@ sentiasa sahkan sumber RASMI (backend) sudah memuatkannya. `ADDED` dan
 daripada satu sebelum yang lain dikemas kini menghasilkan kehilangan
 sementara yang kelihatan seperti kehilangan kekal.
 
+
+## Pepijat: kotak "Menarik Hari Ini" nampak tersekat pada tarikh lama (dibetulkan v103g)
+
+**Gejala.** Pengguna melihat kotak "Menarik Hari Ini" memapar
+"📅 12 Oktober 2026 ... Hari ini" sedangkan hari ini 27 Oktober. Nampak
+seolah-olah kotak tersekat pada 12 Okt atau rekod baharu tidak masuk.
+
+**Punca.** `acaraItemHtml()` memapar **tarikh MULA** acara, tetapi label
+"hari" dikira daripada tarikh mula itu juga:
+
+```js
+const d = keyToDate(parseDateKey(r.tarikh_mula));   // tarikh MULA
+const diff = Math.round((d - today) / 86400000);
+const days = diff <= 0 ? 'Hari ini' : ...;
+```
+
+Untuk acara BERBILANG HARI yang sedang berjalan, `diff <= 0` adalah benar
+pada setiap hari acara itu, jadi ia melabel "Hari ini" sambil memapar
+tarikh mula. Acara 12–30 Okt dipapar "12 Oktober 2026 · Hari ini" pada
+27 Okt. Kotak itu sebenarnya betul — labelnya sahaja mengelirukan.
+
+**Pembetulan.**
+1. `acaraItemHtml()` memapar **julat tarikh** (`12 Oktober – 30 Oktober 2026`)
+   bagi acara berbilang hari, dan melabel `Berlangsung · hari ke-N`, atau
+   `Hari terakhir · hari ke-N` pada hari akhir. Acara sehari kekal "Hari ini".
+2. Kepala kotak memapar tarikh hari ini (`🔔 Menarik Hari Ini — 27 Oktober 2026`)
+   supaya pengguna boleh mengesahkan kotak memang untuk hari ini.
+3. Had item dinaikkan 12 -> 30 (dahulu acara ke-13 dan seterusnya terpotong
+   tanpa sebarang petunjuk).
+
+**Ujian pengawal:** `uji_kotak.mjs` (16 pemeriksaan) mengunci julat tarikh,
+label "Berlangsung/hari ke-N", "Hari terakhir", penapisan acara lepas/akan
+datang, dan had item. `uji_hariini.mjs` dikemas kini — ia dahulunya mengunci
+TINGKAH LAKU PEPIJAT ini (`label multi-hari sebut "Hari ini"`).
+
+**Perangkap alat:** `kira_csp.py` dahulunya mencari hash LAMA dan
+menggantikannya. Ia gagal secara senyap apabila dijalankan dua kali (hash
+lama sudah tiada) atau selepas edit berturutan — menghasilkan hash tidak
+sepadan -> CSP menyekat skrip -> laman putih. Alat kini menggantikan hash
+**ikut kedudukan** dan idempoten. Sentiasa sahkan secara bebas selepas
+menggunakannya.
+

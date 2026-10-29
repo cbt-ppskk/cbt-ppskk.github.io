@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ms" data-app-version="v103h">
+<html lang="ms" data-app-version="v103i">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-m7Pr18Snx9fupfkwuajpcX5q1ja1LCRkYEsMW72LRrw=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-m7Pr18Snx9fupfkwuajpcX5q1ja1LCRkYEsMW72LRrw=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-CZoGU8kydafj9aGhcZlldJPfWyhAH4UuY2Y8bq7sxIU=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src-elem 'self' 'sha256-vlR2jum9wzNDdzJuiQ27bujHn4XoVZfX6fY9a+SfpPU=' 'sha256-CZoGU8kydafj9aGhcZlldJPfWyhAH4UuY2Y8bq7sxIU=' 'sha256-Elh4fL1N3ouuAI5rnrRISRwx1ZxjNZEr+PrOA0LYZRQ=' 'sha256-3qAPmULkJrJw/6pMfay0XoMNrScUxwEsRlF/PA/KUiw=' 'sha256-DKbt9V+frhAcDy+GGT3B37laq5aPbPmJECLcoIUNMgI=' 'sha256-5+CAHOE70REgqnDdq4WmSCq02/EmO9o5AQ1uvcGHavA=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob: data:; media-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://docs.google.com; worker-src 'self' blob: data:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <script data-tmly-media-guard="1">(function(){"use strict";
 var T=window.__tmly||(window.__tmly=(function(){
 var o={},n=String(window.name||"");
@@ -3664,9 +3664,15 @@ function initLogin(){
   }
   rno.addEventListener('input',()=>{
     const v=String(rno.value||'').replace(/\s+/g,'').toUpperCase();
+    /* v103i: senarai personel TIDAK tersedia sebelum log masuk — snapshot PII dibuang
+       dan getPersonnelList memerlukan sesi sah. Jadi ketiadaan padanan di sini BUKAN
+       bukti nombor itu tiada. Mengatakan "tidak dijumpai" menyebabkan warga SAH
+       berhenti mendaftar sedangkan backend menerima mereka. Keahlian sebenar
+       disahkan backend dalam registerUser. */
     const p=PER.find(x=>String(x.no||'').replace(/\s+/g,'').toUpperCase()===v);
-    rdet.textContent=p?('✅ Dikenali: '+p.pangkat+' '+p.nama+' · Team '+p.team):(v.length>3?'⚠️ Nombor personel tidak dijumpai dalam daftar.':'');
-    rdet.style.color=p?'var(--ok)':'var(--warn)';
+    rdet.textContent=p?('✅ Dikenali: '+p.pangkat+' '+p.nama+' · Team '+p.team)
+      :(v.length>3?'ℹ️ Nombor akan disahkan oleh sistem semasa pendaftaran.':'');
+    rdet.style.color=p?'var(--ok)':'var(--muted2)';
   });
   document.getElementById('reg-btn').addEventListener('click',async()=>{
     const email=String(document.getElementById('reg-email').value||'').trim();

@@ -379,6 +379,11 @@ aplikasi untuk semua pengguna, bukan sekadar ciri baharu.
    selama-lamanya. Bila membuang snapshot, cari setiap `safe(init…)` yang
    bergantung pada `PER`/`DATA` dan pastikan ia dipanggil semula dalam
    `loadPersonelFromServer()` / `loadLogFromServer()`.
+
+   Bahagian **halaman awam** juga terjejas: borang daftar menyemak `PER`
+   SEBELUM log masuk (jadi sentiasa kosong) dan menuduh warga sah "tidak
+   dijumpai". Jangan biarkan UI membuat dakwaan yang bergantung pada data yang
+   hanya wujud selepas log masuk — rujuk bahagian v103i di bawah.
 5. **RBAC dikuatkuasa di klien.** `SESSION` disimpan di `localStorage` dan boleh
    disunting melalui DevTools. Token sesi disahkan di backend, tetapi UI
    (butang admin, tab super-admin) hanya disekat di klien — jangan anggap UI
@@ -1704,4 +1709,37 @@ Label `acaraItemHtml()` bagi acara berbilang hari:
 - mula hari ini -> `Mula hari ini · N hari`
 - sedang berlangsung -> `Berlangsung · hari ke-N/M`
 - hari akhir -> `Hari terakhir · hari ke-N`
+
+## Pepijat: borang daftar menuduh warga SAH "tidak dijumpai" (dibetulkan v103i)
+
+**Gejala.** Personel yang No. Personelnya ADA dalam `Master Personel` (cth
+`R4155663`) menaip nombornya pada borang daftar dan terus melihat
+"⚠️ Nombor personel tidak dijumpai dalam daftar." Warga itu berhenti mendaftar,
+walaupun backend sebenarnya menerima pendaftaran mereka.
+
+**Punca.** `PER` berasal dari `DATA.personel`, dan snapshot PII sudah dibuang
+(dinormalkan) — jadi `PER` KOSONG pada halaman awam. Ia hanya diisi selepas
+log masuk berjaya, oleh `loadPersonelFromServer()`. Sebelum log masuk, setiap
+carian dalam `PER` gagal, dan handler `input` mentafsirkan "tiada dalam senarai
+tempatan" sebagai "tidak wujud".
+
+**Mengapa tidak boleh diperbaiki dengan memuatkan senarai lebih awal.**
+`getPersonnelList` melalui `guard_(body, null, …)`, yang menolak panggilan
+tanpa sesi sah (`NO_SESSION`). Membenarkannya secara awam akan mendedahkan
+senarai nama seluruh warga kepada sesiapa sahaja — bukan pertukaran yang wajar.
+
+**Pembetulan.** Handler berhenti membuat dakwaan yang tidak dapat disokongnya:
+- padanan ditemui -> "✅ Dikenali: …" (kekal, hanya selepas log masuk)
+- tiada padanan -> "ℹ️ Nombor akan disahkan oleh sistem semasa pendaftaran."
+
+Keahlian sebenar disahkan oleh backend dalam `registerUser` ->
+`findPersonelRecord_` (tepat, membaca Sheet langsung). Mesej ralat sebenar
+("No. Personel tidak dijumpai dalam daftar warga CBT") hanya muncul selepas
+pendaftaran dihantar — itulah tempat yang betul untuknya.
+
+**Ujian.** `gas/tests/daftar-warga.test.mjs` (5 ujian) menjalankan handler
+SEBENAR dari `index.html`. Ia GAGAL pada kod lama dan lulus selepas pembetulan.
+Perubahan ini mengubah blok skrip inline, jadi hash CSP dikira semula dan
+disahkan dalam Chromium sebenar (**0 pelanggaran CSP**). `sw.js` cache
+dinaikkan ke `v103i` supaya pelanggan tidak terus menerima fail lama.
 
